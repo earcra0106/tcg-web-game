@@ -44,6 +44,7 @@ describe('food data types', () => {
       category: 'dish',
       frontDirection: '-Z',
       unitScale: 1,
+      pivot: [0, 0.25, 0],
       bounds: { size: [2.4, 0.5, 2], center: [0, 0.25, 0] },
       parts: [
         {
@@ -99,6 +100,7 @@ describe('food data types', () => {
       displayName: '食パン',
       category: 'ingredient',
       frontDirection: '-Z',
+      pivot: [0, 0.54, 0],
     });
     expect(breadModel?.parts.length).toBeGreaterThan(0);
   });
@@ -131,6 +133,7 @@ describe('food data types', () => {
         displayName: name,
         category: 'ingredient',
         frontDirection: '-Z',
+        pivot: model?.bounds.center,
       });
       expect(model?.parts.length).toBeGreaterThan(0);
     });

@@ -7,6 +7,7 @@ export const riceFoodModel = {
   category: 'ingredient',
   frontDirection: '-Z',
   unitScale: 1,
+  pivot: [0, 0.59, 0],
   bounds: { size: [0.86, 1.18, 0.5], center: [0, 0.59, 0] },
   parts: [
     {

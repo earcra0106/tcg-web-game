@@ -7,6 +7,7 @@ export const breadFoodModel = {
   category: 'ingredient',
   frontDirection: '-Z',
   unitScale: 1,
+  pivot: [0, 0.54, 0],
   bounds: { size: [1.12, 1.08, 0.42], center: [0, 0.54, 0] },
   parts: [
     {

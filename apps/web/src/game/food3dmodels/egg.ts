@@ -7,6 +7,7 @@ export const eggFoodModel = {
   category: 'ingredient',
   frontDirection: '-Z',
   unitScale: 1,
+  pivot: [0, 0.51, 0],
   bounds: { size: [0.78, 1.02, 0.72], center: [0, 0.51, 0] },
   parts: [
     {

@@ -1,5 +1,5 @@
 import { Canvas } from '@react-three/fiber';
-import { BookOpen, ChevronLeft } from 'lucide-react';
+import { BookOpen, ChevronLeft, Plus } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { GameCanvas } from './components/GameCanvas.tsx';
 import { FoodModel } from './components/FoodModel.tsx';
@@ -13,14 +13,27 @@ import type { FoodId } from './game/food.ts';
 
 export function App() {
   const [screen, setScreen] = useState<'game' | 'encyclopedia'>('game');
+  const [selectedFoodId, setSelectedFoodId] = useState<FoodId>('bread');
+  const selectedFood =
+    foodInfos.find((food) => food.id === selectedFoodId) ?? foodInfos[0];
+  const selectedModel =
+    getFoodModel(selectedFood.modelId) ?? getFoodModel('bread')!;
 
   if (screen === 'encyclopedia') {
-    return <FoodEncyclopedia onBack={() => setScreen('game')} />;
+    return (
+      <FoodEncyclopedia
+        onBack={() => setScreen('game')}
+        onInspect={(foodId) => {
+          setSelectedFoodId(foodId);
+          setScreen('game');
+        }}
+      />
+    );
   }
 
   return (
     <main className="app-shell">
-      <GameCanvas />
+      <GameCanvas model={selectedModel} />
       <button
         className="icon-button encyclopedia-button"
         type="button"
@@ -35,7 +48,7 @@ export function App() {
         <dl className="hud__stats">
           <div>
             <dt>Model</dt>
-            <dd>食パン</dd>
+            <dd>{selectedFood.name}</dd>
           </div>
           <div>
             <dt>Look</dt>
@@ -47,7 +60,13 @@ export function App() {
   );
 }
 
-function FoodEncyclopedia({ onBack }: { onBack: () => void }) {
+function FoodEncyclopedia({
+  onBack,
+  onInspect,
+}: {
+  onBack: () => void;
+  onInspect: (foodId: FoodId) => void;
+}) {
   return (
     <main className="app-shell app-shell--panel">
       <header className="encyclopedia-header">
@@ -66,14 +85,20 @@ function FoodEncyclopedia({ onBack }: { onBack: () => void }) {
         {foodInfos
           .filter((food) => getFoodModel(food.modelId))
           .map((food) => (
-            <FoodCard key={food.id} foodId={food.id} />
+            <FoodCard key={food.id} foodId={food.id} onInspect={onInspect} />
           ))}
       </section>
     </main>
   );
 }
 
-function FoodCard({ foodId }: { foodId: FoodId }) {
+function FoodCard({
+  foodId,
+  onInspect,
+}: {
+  foodId: FoodId;
+  onInspect: (foodId: FoodId) => void;
+}) {
   const food = foodInfos.find((item) => item.id === foodId);
   const model = food ? getFoodModel(food.modelId) : null;
   const [isDetailVisible, setIsDetailVisible] = useState(false);
@@ -148,6 +173,15 @@ function FoodCard({ foodId }: { foodId: FoodId }) {
               </dd>
             </div>
           </dl>
+          <button
+            className="food-card__inspect-button"
+            type="button"
+            onClick={() => onInspect(food.id)}
+            aria-label={`${food.name}を観察する`}
+            title={`${food.name}を観察する`}
+          >
+            <Plus aria-hidden="true" size={18} />
+          </button>
         </div>
       ) : null}
     </article>

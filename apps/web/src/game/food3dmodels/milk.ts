@@ -7,6 +7,7 @@ export const milkFoodModel = {
   category: 'ingredient',
   frontDirection: '-Z',
   unitScale: 1,
+  pivot: [0, 0.66, 0],
   bounds: { size: [0.78, 1.32, 0.58], center: [0, 0.66, 0] },
   parts: [
     {
