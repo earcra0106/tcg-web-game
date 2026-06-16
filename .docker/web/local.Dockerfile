@@ -23,6 +23,7 @@ RUN apt-get update && \
 ENV TZ=Asia/Tokyo
 
 WORKDIR /workspace/apps
+EXPOSE 3000
 
 USER node
 RUN pnpm config set store-dir "/home/node/.local/share/pnpm/store"
