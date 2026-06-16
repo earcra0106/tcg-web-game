@@ -8,4 +8,5 @@
 ## 参照
 
 devcontainer環境の概要: `docs/devcontainer-overview.md`
-フォルダ構成: `docs/folder-architechture/workspace.md`
+フォルダ構成: `docs/web-folder-architecture.md`
+技術的要件: `docs/web-technical-requirements.md`
