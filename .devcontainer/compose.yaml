@@ -48,6 +48,11 @@ services:
         target: /home/dev/.local/share/pnpm/store
     command: sleep infinity
     init: true
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - seccomp=unconfined
+      - apparmor=unconfined
 
 volumes:
   pnpm_store:
