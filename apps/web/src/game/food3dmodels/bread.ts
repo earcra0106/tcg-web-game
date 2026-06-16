@@ -1,0 +1,58 @@
+import type { FoodModelData } from '../food.ts';
+
+export const breadFoodModel = {
+  schemaVersion: 'food-model-v1',
+  id: 'bread',
+  displayName: '食パン',
+  category: 'ingredient',
+  frontDirection: '-Z',
+  unitScale: 1,
+  bounds: { size: [1.12, 1.08, 0.42], center: [0, 0.54, 0] },
+  parts: [
+    {
+      id: 'crust-body',
+      shape: 'roundedBox',
+      position: [0, 0.54, 0],
+      size: [1.08, 1.04, 0.36],
+      rotation: [0, 0, 0],
+      color: '#C8843E',
+      material: { roughness: 0.88, metalness: 0 },
+      appearance: { radius: 0.1, segments: 6, flatShading: false },
+    },
+    {
+      id: 'crust-head',
+      shape: 'roundedBox',
+      position: [0, 0.91, 0],
+      size: [1.13, 0.3, 0.36],
+      rotation: [0, 0, 0],
+      color: '#C8843E',
+      material: { roughness: 0.88, metalness: 0 },
+      appearance: { radius: 0.1, segments: 6, flatShading: false },
+    },
+    {
+      id: 'soft-center',
+      shape: 'roundedBox',
+      position: [0, 0.54, 0],
+      size: [1.04, 1.0, 0.38],
+      rotation: [0, 0, 0],
+      color: '#F3D28A',
+      material: { roughness: 0.9, metalness: 0 },
+      appearance: { radius: 0.12, segments: 6, flatShading: false },
+    },
+    {
+      id: 'soft-head',
+      shape: 'roundedBox',
+      position: [0, 0.9, 0],
+      size: [1.07, 0.3, 0.38],
+      rotation: [0, 0, 0],
+      color: '#F3D28A',
+      material: { roughness: 0.9, metalness: 0 },
+      appearance: { radius: 0.12, segments: 6, flatShading: false },
+    },
+  ],
+  designNotes: [
+    '四角い一枚食パンとして読めるよう、厚めの耳と淡い中身を正面に置く。',
+    '丸みのある外形で、温かいボクセル調の食材に見えるようにする。',
+    '小さなハイライトでパンの柔らかい断面を表現する。',
+  ],
+} as const satisfies FoodModelData;
