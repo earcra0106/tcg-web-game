@@ -1,22 +1,155 @@
+import { Canvas } from '@react-three/fiber';
+import { BookOpen, ChevronLeft } from 'lucide-react';
+import { useRef, useState } from 'react';
 import { GameCanvas } from './components/GameCanvas.tsx';
+import { FoodModel } from './components/FoodModel.tsx';
+import {
+  foodInfos,
+  getFoodModel,
+  getIngredientNames,
+  getProcessedIntoNames,
+} from './game/foods.ts';
+import type { FoodId } from './game/food.ts';
 
 export function App() {
+  const [screen, setScreen] = useState<'game' | 'encyclopedia'>('game');
+
+  if (screen === 'encyclopedia') {
+    return <FoodEncyclopedia onBack={() => setScreen('game')} />;
+  }
+
   return (
     <main className="app-shell">
       <GameCanvas />
+      <button
+        className="icon-button encyclopedia-button"
+        type="button"
+        onClick={() => setScreen('encyclopedia')}
+        aria-label="食べもの図鑑を開く"
+      >
+        <BookOpen aria-hidden="true" size={20} />
+        <span>食べもの図鑑</span>
+      </button>
       <section className="hud" aria-label="Game status">
-        <p className="hud__label">Three Game Template</p>
+        <p className="hud__label">Voxel Kitchen Automation</p>
         <dl className="hud__stats">
           <div>
-            <dt>Move</dt>
-            <dd>WASD / Arrow</dd>
+            <dt>Model</dt>
+            <dd>食パン</dd>
           </div>
           <div>
             <dt>Look</dt>
-            <dd>Pointer</dd>
+            <dd>Drag / Pinch</dd>
           </div>
         </dl>
       </section>
     </main>
+  );
+}
+
+function FoodEncyclopedia({ onBack }: { onBack: () => void }) {
+  return (
+    <main className="app-shell app-shell--panel">
+      <header className="encyclopedia-header">
+        <button
+          className="icon-button icon-button--quiet"
+          type="button"
+          onClick={onBack}
+          aria-label="3D確認画面に戻る"
+        >
+          <ChevronLeft aria-hidden="true" size={20} />
+          <span>戻る</span>
+        </button>
+        <h1>食べもの図鑑</h1>
+      </header>
+      <section className="food-grid" aria-label="食べもの一覧">
+        {foodInfos
+          .filter((food) => getFoodModel(food.modelId))
+          .map((food) => (
+            <FoodCard key={food.id} foodId={food.id} />
+          ))}
+      </section>
+    </main>
+  );
+}
+
+function FoodCard({ foodId }: { foodId: FoodId }) {
+  const food = foodInfos.find((item) => item.id === foodId);
+  const model = food ? getFoodModel(food.modelId) : null;
+  const [isDetailVisible, setIsDetailVisible] = useState(false);
+  const longPressTimerRef = useRef<number | null>(null);
+
+  if (!food || !model) {
+    return null;
+  }
+
+  const ingredientNames = getIngredientNames(food);
+  const processedIntoNames = getProcessedIntoNames(food.id);
+
+  const clearLongPress = () => {
+    if (longPressTimerRef.current !== null) {
+      window.clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  };
+
+  return (
+    <article
+      className="food-card"
+      onPointerEnter={() => setIsDetailVisible(true)}
+      onPointerLeave={() => {
+        clearLongPress();
+        setIsDetailVisible(false);
+      }}
+      onPointerDown={(event) => {
+        if (event.pointerType === 'mouse') {
+          return;
+        }
+
+        clearLongPress();
+        longPressTimerRef.current = window.setTimeout(() => {
+          setIsDetailVisible(true);
+        }, 450);
+      }}
+      onPointerUp={clearLongPress}
+      onPointerCancel={clearLongPress}
+    >
+      <div className="food-card__model" aria-hidden="true">
+        <Canvas camera={{ position: [2.2, 1.8, 2.8], fov: 34 }}>
+          <color attach="background" args={['#FFFDF9']} />
+          <ambientLight intensity={1.6} />
+          <directionalLight position={[3, 4, 4]} intensity={2} />
+          <FoodModel model={model} scale={1.1} />
+        </Canvas>
+      </div>
+      <div className="food-card__body">
+        <h2>{food.name}</h2>
+        <p>
+          {food.canSpawnFromStorage ? '倉庫から搬出できる基本素材' : '加工食品'}
+        </p>
+      </div>
+      {isDetailVisible ? (
+        <div className="food-card__detail" role="status">
+          <dl>
+            <div>
+              <dt>加工元</dt>
+              <dd>
+                {ingredientNames.length > 0
+                  ? ingredientNames.join('、')
+                  : 'なし'}
+              </dd>
+            </div>
+            <div>
+              <dt>加工先</dt>
+              <dd>
+                {processedIntoNames.length > 0
+                  ? processedIntoNames.join('、')
+                  : 'なし'}
+              </dd>
+            </div>
+          </dl>
+        </div>
+      ) : null}
+    </article>
   );
 }
