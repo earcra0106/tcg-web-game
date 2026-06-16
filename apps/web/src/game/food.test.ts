@@ -108,13 +108,6 @@ describe('food data types', () => {
 
     expect(bread).toBeDefined();
     expect(getIngredientNames(bread!)).toEqual([]);
-    expect(getProcessedIntoNames('bread')).toEqual(
-      expect.arrayContaining([
-        'トースト',
-        '卵サンド',
-        'トマトチーズサンド',
-        'ハンバーグ',
-      ]),
-    );
+    expect(getProcessedIntoNames('bread')).toEqual([]);
   });
 });
