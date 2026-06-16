@@ -1,0 +1,4 @@
+interface:
+  display_name: "Food 3D Model Generator"
+  short_description: "食材の軽量3Dモデル定義を生成"
+  default_prompt: "Use $generate-food-3d-model to create a warm voxel-style 3D model definition for a tomato."
