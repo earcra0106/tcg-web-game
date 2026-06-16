@@ -9,12 +9,12 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'pwa-192.svg', 'pwa-512.svg'],
       manifest: {
-        name: 'Three Game Template',
-        short_name: 'ThreeGame',
+        name: 'Voxel Kitchen Automation',
+        short_name: 'VoxelKitchen',
         description:
-          'A Vite, React, and Three.js template for installable 3D games.',
-        theme_color: '#111827',
-        background_color: '#0f172a',
+          'A cozy voxel cooking automation game with food models and recipes.',
+        theme_color: '#A8DADC',
+        background_color: '#F4EAE1',
         display: 'standalone',
         orientation: 'landscape',
         start_url: '/',

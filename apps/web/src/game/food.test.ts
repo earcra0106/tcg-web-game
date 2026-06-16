@@ -1,9 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import type { FoodGameData, FoodModelData } from './food.ts';
+import type { FoodInfoData, FoodModelData } from './food.ts';
+import {
+  foodInfos,
+  foodModels,
+  getIngredientNames,
+  getProcessedIntoNames,
+} from './foods.ts';
 
 describe('food data types', () => {
-  it('describes food game data', () => {
-    const hamburg: FoodGameData = {
+  it('describes food info data', () => {
+    const hamburg: FoodInfoData = {
       id: 'hamburg',
       name: 'ハンバーグ',
       ingredientIds: [
@@ -32,44 +38,83 @@ describe('food data types', () => {
 
   it('describes a food model as primitive parts', () => {
     const hamburgModel: FoodModelData = {
+      schemaVersion: 'food-model-v1',
       id: 'hamburg',
-      name: 'ハンバーグ',
-      bounds: [2.4, 0.5, 2],
-      materials: [
-        { id: 'plate', color: '#f8fafc', roughness: 0.35 },
-        { id: 'meat', color: '#7c2d12', roughness: 0.85 },
-        { id: 'sauce', color: '#b91c1c', roughness: 0.6 },
-      ],
+      displayName: 'ハンバーグ',
+      category: 'dish',
+      frontDirection: '-Z',
+      unitScale: 1,
+      bounds: { size: [2.4, 0.5, 2], center: [0, 0.25, 0] },
       parts: [
         {
           id: 'plate',
-          primitive: 'cylinder',
-          materialId: 'plate',
+          shape: 'cylinder',
           position: [0, 0, 0],
-          scale: [1.2, 0.08, 1],
+          size: [1.2, 0.08, 1],
+          rotation: [0, 0, 0],
+          color: '#F8FAFC',
         },
         {
           id: 'patty',
-          primitive: 'cylinder',
-          materialId: 'meat',
+          shape: 'cylinder',
           position: [0, 0.16, 0],
-          scale: [0.75, 0.22, 0.6],
+          size: [0.75, 0.22, 0.6],
+          rotation: [0, 0, 0],
+          color: '#7C2D12',
         },
         {
           id: 'sauce',
-          primitive: 'cylinder',
-          materialId: 'sauce',
+          shape: 'cylinder',
           position: [0.05, 0.3, -0.02],
-          scale: [0.55, 0.04, 0.32],
+          size: [0.55, 0.04, 0.32],
+          rotation: [0, 0, 0],
+          color: '#B91C1C',
         },
       ],
+      designNotes: ['円柱の重なりで皿と肉を表す。'],
     };
 
-    expect(hamburgModel.parts.map((part) => part.primitive)).toEqual([
+    expect(hamburgModel.parts.map((part) => part.shape)).toEqual([
       'cylinder',
       'cylinder',
       'cylinder',
     ]);
-    expect(hamburgModel.parts[2]?.scale).toEqual([0.55, 0.04, 0.32]);
+    expect(hamburgModel.parts[2]?.size).toEqual([0.55, 0.04, 0.32]);
+  });
+
+  it('registers bread as a basic ingredient with a model', () => {
+    const bread = foodInfos.find((food) => food.id === 'bread');
+    const breadModel = foodModels.find((model) => model.id === 'bread');
+
+    expect(bread).toMatchObject({
+      name: '食パン',
+      ingredientIds: [],
+      canSpawnFromStorage: true,
+      canBeServed: false,
+      canBeIngredient: true,
+      modelId: 'bread',
+    });
+    expect(breadModel).toMatchObject({
+      schemaVersion: 'food-model-v1',
+      displayName: '食パン',
+      category: 'ingredient',
+      frontDirection: '-Z',
+    });
+    expect(breadModel?.parts.length).toBeGreaterThan(0);
+  });
+
+  it('resolves bread processing sources and targets', () => {
+    const bread = foodInfos.find((food) => food.id === 'bread');
+
+    expect(bread).toBeDefined();
+    expect(getIngredientNames(bread!)).toEqual([]);
+    expect(getProcessedIntoNames('bread')).toEqual(
+      expect.arrayContaining([
+        'トースト',
+        '卵サンド',
+        'トマトチーズサンド',
+        'ハンバーグ',
+      ]),
+    );
   });
 });

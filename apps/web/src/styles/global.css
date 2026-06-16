@@ -1,14 +1,7 @@
 :root {
-  color: #f8fafc;
-  background: #0f172a;
-  font-family:
-    Inter,
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    sans-serif;
+  color: #3b3028;
+  background: #f4eae1;
+  font-family: Nunito, 'Zen Maru Gothic', sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -43,7 +36,12 @@ select {
   width: 100%;
   min-width: 320px;
   height: 100%;
-  background: #0f172a;
+  background: #f4eae1;
+}
+
+.app-shell--panel {
+  overflow: auto;
+  padding: 18px;
 }
 
 .game-canvas {
@@ -65,16 +63,16 @@ select {
   gap: 10px;
   width: min(320px, calc(100vw - 32px));
   padding: 12px;
-  border: 1px solid rgb(148 163 184 / 0.32);
+  border: 1px solid rgb(190 150 111 / 0.26);
   border-radius: 8px;
-  background: rgb(15 23 42 / 0.72);
+  background: rgb(255 253 249 / 0.82);
   backdrop-filter: blur(12px);
-  box-shadow: 0 16px 40px rgb(15 23 42 / 0.24);
+  box-shadow: 0 16px 40px rgb(92 64 42 / 0.14);
 }
 
 .hud__label {
   margin: 0;
-  color: #e2e8f0;
+  color: #3b3028;
   font-size: 0.95rem;
   font-weight: 700;
 }
@@ -91,7 +89,7 @@ select {
 }
 
 .hud__stats dt {
-  color: #94a3b8;
+  color: #8a6f5b;
   font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -100,6 +98,138 @@ select {
 .hud__stats dd {
   margin: 2px 0 0;
   overflow-wrap: anywhere;
-  color: #f8fafc;
+  color: #3b3028;
   font-size: 0.82rem;
+}
+
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid rgb(89 120 119 / 0.32);
+  border-radius: 8px;
+  color: #2f4948;
+  background: #fffdf9;
+  box-shadow: 0 10px 24px rgb(92 64 42 / 0.12);
+  cursor: pointer;
+}
+
+.icon-button:hover {
+  background: #f8ffff;
+}
+
+.icon-button--quiet {
+  box-shadow: none;
+}
+
+.encyclopedia-button {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+}
+
+.encyclopedia-header {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 14px;
+  max-width: 1120px;
+  margin: 0 auto 18px;
+}
+
+.encyclopedia-header h1 {
+  margin: 0;
+  color: #3b3028;
+  font-size: clamp(1.45rem, 3vw, 2.2rem);
+}
+
+.food-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.food-card {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgb(190 150 111 / 0.28);
+  border-radius: 8px;
+  background: #fffdf9;
+  box-shadow: 0 14px 34px rgb(92 64 42 / 0.12);
+  touch-action: manipulation;
+}
+
+.food-card__model {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-bottom: 1px solid #eedcc8;
+  background: #fffdf9;
+}
+
+.food-card__body {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+}
+
+.food-card__body h2 {
+  margin: 0;
+  color: #3b3028;
+  font-size: 1.08rem;
+}
+
+.food-card__body p {
+  margin: 0;
+  color: #745d4a;
+  font-size: 0.88rem;
+}
+
+.food-card__detail {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  left: 10px;
+  padding: 10px;
+  border: 1px solid rgb(89 120 119 / 0.24);
+  border-radius: 8px;
+  color: #2f3028;
+  background: rgb(255 253 249 / 0.94);
+  box-shadow: 0 12px 26px rgb(92 64 42 / 0.16);
+}
+
+.food-card__detail dl {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.food-card__detail dt {
+  margin: 0 0 2px;
+  color: #597877;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.food-card__detail dd {
+  margin: 0;
+  color: #3b3028;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 560px) {
+  .hud {
+    top: auto;
+    bottom: 16px;
+  }
+
+  .encyclopedia-button {
+    max-width: calc(100vw - 32px);
+  }
 }

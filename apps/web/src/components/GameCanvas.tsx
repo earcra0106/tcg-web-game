@@ -1,25 +1,35 @@
-import { useEffect, useRef } from 'react';
-import { ThreeGame } from '../game/ThreeGame.ts';
+import { OrbitControls } from '@react-three/drei';
+import { Canvas } from '@react-three/fiber';
+import { FoodModel } from './FoodModel.tsx';
+import { foodModels } from '../game/foods.ts';
 
 export function GameCanvas() {
-  const hostRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    const host = hostRef.current;
-
-    if (!host) {
-      return;
-    }
-
-    const game = new ThreeGame(host);
-    game.start();
-
-    return () => {
-      game.dispose();
-    };
-  }, []);
+  const breadModel = foodModels[0];
 
   return (
-    <div ref={hostRef} className="game-canvas" aria-label="3D game viewport" />
+    <div className="game-canvas" aria-label="3D game viewport">
+      <Canvas camera={{ position: [2.8, 2.2, 3.2], fov: 38 }}>
+        <color attach="background" args={['#F4EAE1']} />
+        <ambientLight intensity={1.5} />
+        <directionalLight position={[3, 5, 4]} intensity={2.2} />
+        <group position={[0, 0.02, 0]}>
+          <mesh position={[0, -0.02, 0]}>
+            <boxGeometry args={[2.6, 0.08, 1.8]} />
+            <meshStandardMaterial color="#FFFDF9" roughness={0.82} />
+          </mesh>
+          <FoodModel model={breadModel} scale={1.35} />
+        </group>
+        <gridHelper
+          args={[8, 8, '#EEDCC8', '#EEDCC8']}
+          position={[0, -0.05, 0]}
+        />
+        <OrbitControls
+          enablePan={false}
+          minDistance={2.2}
+          maxDistance={6}
+          target={[0, 0.55, 0]}
+        />
+      </Canvas>
+    </div>
   );
 }
