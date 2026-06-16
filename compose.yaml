@@ -13,8 +13,10 @@ services:
       - type: volume
         source: pnpm_store
         target: /home/node/.local/share/pnpm/store
-    working_dir: /workspace/apps
-    command: sleep infinity
+    working_dir: /workspace/apps/web
+    command: pnpm dev
+    ports:
+      - "3000:3000"
     init: true
 
 volumes:
