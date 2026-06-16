@@ -148,10 +148,23 @@ function FoodCard({
         </Canvas>
       </div>
       <div className="food-card__body">
-        <h2>{food.name}</h2>
-        <p>
-          {food.canSpawnFromStorage ? '倉庫から搬出できる基本素材' : '加工食品'}
-        </p>
+        <div className="food-card__summary">
+          <h2>{food.name}</h2>
+          <p>
+            {food.canSpawnFromStorage
+              ? '倉庫から搬出できる基本素材'
+              : '加工食品'}
+          </p>
+        </div>
+        <button
+          className="food-card__inspect-button"
+          type="button"
+          onClick={() => onInspect(food.id)}
+          aria-label={`${food.name}を観察する`}
+          title={`${food.name}を観察する`}
+        >
+          <Plus aria-hidden="true" size={18} />
+        </button>
       </div>
       {isDetailVisible ? (
         <div className="food-card__detail" role="status">
@@ -173,15 +186,6 @@ function FoodCard({
               </dd>
             </div>
           </dl>
-          <button
-            className="food-card__inspect-button"
-            type="button"
-            onClick={() => onInspect(food.id)}
-            aria-label={`${food.name}を観察する`}
-            title={`${food.name}を観察する`}
-          >
-            <Plus aria-hidden="true" size={18} />
-          </button>
         </div>
       ) : null}
     </article>
