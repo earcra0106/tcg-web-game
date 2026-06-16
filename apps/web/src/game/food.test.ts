@@ -103,6 +103,39 @@ describe('food data types', () => {
     expect(breadModel?.parts.length).toBeGreaterThan(0);
   });
 
+  it('registers rice, egg, and milk as basic ingredients with models', () => {
+    const basicIngredients = [
+      { id: 'rice', name: '米' },
+      { id: 'egg', name: '卵' },
+      { id: 'milk', name: '牛乳' },
+    ] as const;
+
+    basicIngredients.forEach(({ id, name }) => {
+      const food = foodInfos.find((item) => item.id === id);
+      const model = foodModels.find((item) => item.id === id);
+
+      expect(food).toMatchObject({
+        id,
+        name,
+        ingredientIds: [],
+        process: null,
+        canSpawnFromStorage: true,
+        canBeServed: false,
+        canBeIngredient: true,
+        difficulty: null,
+        modelId: id,
+      });
+      expect(model).toMatchObject({
+        schemaVersion: 'food-model-v1',
+        id,
+        displayName: name,
+        category: 'ingredient',
+        frontDirection: '-Z',
+      });
+      expect(model?.parts.length).toBeGreaterThan(0);
+    });
+  });
+
   it('resolves bread processing sources and targets', () => {
     const bread = foodInfos.find((food) => food.id === 'bread');
 
