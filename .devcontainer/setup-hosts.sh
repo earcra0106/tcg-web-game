@@ -9,12 +9,12 @@ mkdir -p "${HOME}/.ssh"
 [ -f "${HOME}/.ssh/known_hosts" ] || touch "${HOME}/.ssh/known_hosts"
 [ -f "${HOME}/.gitconfig" ]       || touch "${HOME}/.gitconfig"
 
-if [ -n "$SSH_AUTH_SOCK" ] && [ -S "$SSH_AUTH_SOCK" ]; then
+if [ -n "${SSH_AUTH_SOCK:-}" ] && [ -S "${SSH_AUTH_SOCK:-}" ]; then
     echo "SSH_AUTH_SOCK is valid: $SSH_AUTH_SOCK"
 else
     # SSH_AUTH_SOCKがディレクトリとして作成されている場合はエラーを出す
-    if [ -d "$SSH_AUTH_SOCK" ]; then
-        echo "Error: SSH_AUTH_SOCK is a directory: $SSH_AUTH_SOCK"
+    if [ -d "${SSH_AUTH_SOCK:-}" ]; then
+        echo "Error: SSH_AUTH_SOCK is a directory: ${SSH_AUTH_SOCK:-}"
         exit 1
     fi
 
