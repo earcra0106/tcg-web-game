@@ -7,8 +7,8 @@ export const cookedRiceFoodModel = {
   category: 'dish',
   frontDirection: '-Z',
   unitScale: 1,
-  pivot: [0, 0.48, 0],
-  bounds: { size: [1.12, 0.96, 0.92], center: [0, 0.48, 0] },
+  pivot: [0, 0.52, 0],
+  bounds: { size: [1.12, 1.04, 0.92], center: [0, 0.52, 0] },
   parts: [
     {
       id: 'bowl',
@@ -23,27 +23,17 @@ export const cookedRiceFoodModel = {
     {
       id: 'rice-mound',
       shape: 'cone',
-      position: [0, 0.64, -0.02],
-      size: [0.82, 0.66, 0.68],
+      position: [0, 0.68, -0.02],
+      size: [0.92, 0.82, 0.76],
       rotation: [0, 0, 0],
       color: '#FFFDF4',
       material: { roughness: 0.9, metalness: 0 },
-      appearance: { radius: 0.12, segments: 8, flatShading: false },
-    },
-    {
-      id: 'rounded-rice-tip',
-      shape: 'sphere',
-      position: [0, 0.98, -0.02],
-      size: [0.18, 0.12, 0.16],
-      rotation: [0, 0, 0],
-      color: '#FFFDF4',
-      material: { roughness: 0.9, metalness: 0 },
-      appearance: { radius: 0.04, segments: 8, flatShading: false },
+      appearance: { radius: 0.22, segments: 10, flatShading: false },
     },
     {
       id: 'rice-grain-left',
       shape: 'sphere',
-      position: [-0.12, 1.03, -0.14],
+      position: [-0.13, 1.08, -0.16],
       size: [0.16, 0.06, 0.05],
       rotation: [0.2, 0, 0.45],
       color: '#F0E7D3',
@@ -53,7 +43,7 @@ export const cookedRiceFoodModel = {
     {
       id: 'rice-grain-right',
       shape: 'sphere',
-      position: [0.12, 0.96, -0.15],
+      position: [0.12, 1.0, -0.16],
       size: [0.15, 0.05, 0.05],
       rotation: [-0.15, 0.1, -0.5],
       color: '#F0E7D3',
@@ -63,7 +53,7 @@ export const cookedRiceFoodModel = {
   ],
   designNotes: [
     '淡い水色の半球でお椀を表現し、器の丸いシルエットを優先する。',
-    '白い円錐に小さな球を重ねて、ごはん山の頂点を丸く見せる。',
+    '白い円錐の頂点を大きく丸めて、ふっくらしたごはん山に見せる。',
     '頂点付近に向きを変えた楕円球の米粒を2つ置き、白米らしさを加える。',
   ],
 } as const satisfies FoodModelData;

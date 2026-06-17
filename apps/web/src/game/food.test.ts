@@ -228,8 +228,8 @@ describe('food data types', () => {
       'cone',
       'sphere',
       'sphere',
-      'sphere',
     ]);
+    expect(cookedRiceModel?.parts[1]?.appearance?.radius).toBe(0.22);
     expect(cookedRiceModel?.parts.slice(-2).map((part) => part.id)).toEqual([
       'rice-grain-left',
       'rice-grain-right',
