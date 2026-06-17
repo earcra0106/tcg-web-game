@@ -144,6 +144,77 @@ describe('food data types', () => {
 
     expect(bread).toBeDefined();
     expect(getIngredientNames(bread!)).toEqual([]);
-    expect(getProcessedIntoNames('bread')).toEqual([]);
+    expect(getProcessedIntoNames('bread')).toEqual(['トースト']);
+  });
+
+  it('registers all foods craftable from the current basic ingredients', () => {
+    const craftableFoods = [
+      {
+        id: 'cooked-rice',
+        name: 'ごはん',
+        ingredientIds: ['rice'],
+        process: 'heating',
+        canBeServed: true,
+        canBeIngredient: true,
+        difficulty: 1,
+        category: 'dish',
+      },
+      {
+        id: 'toast',
+        name: 'トースト',
+        ingredientIds: ['bread'],
+        process: 'heating',
+        canBeServed: true,
+        canBeIngredient: true,
+        difficulty: 1,
+        category: 'dish',
+      },
+      {
+        id: 'fried-egg',
+        name: '目玉焼き',
+        ingredientIds: ['egg'],
+        process: 'heating',
+        canBeServed: true,
+        canBeIngredient: true,
+        difficulty: 1,
+        category: 'dish',
+      },
+      {
+        id: 'boiled-egg',
+        name: 'ゆで卵',
+        ingredientIds: ['egg'],
+        process: 'heating',
+        canBeServed: false,
+        canBeIngredient: true,
+        difficulty: null,
+        category: 'intermediate',
+      },
+    ] as const;
+
+    craftableFoods.forEach((expected) => {
+      const food = foodInfos.find((item) => item.id === expected.id);
+      const model = foodModels.find((item) => item.id === expected.id);
+
+      expect(food).toMatchObject({
+        id: expected.id,
+        name: expected.name,
+        ingredientIds: expected.ingredientIds,
+        process: expected.process,
+        canSpawnFromStorage: false,
+        canBeServed: expected.canBeServed,
+        canBeIngredient: expected.canBeIngredient,
+        difficulty: expected.difficulty,
+        modelId: expected.id,
+      });
+      expect(model).toMatchObject({
+        schemaVersion: 'food-model-v1',
+        id: expected.id,
+        displayName: expected.name,
+        category: expected.category,
+        frontDirection: '-Z',
+        pivot: model?.bounds.center,
+      });
+      expect(model?.parts.length).toBeGreaterThan(0);
+    });
   });
 });
