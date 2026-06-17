@@ -1,5 +1,6 @@
 import { Canvas } from '@react-three/fiber';
 import { BookOpen, ChevronLeft, Plus } from 'lucide-react';
+import type { PointerEvent } from 'react';
 import { useRef, useState } from 'react';
 import { GameCanvas } from './components/GameCanvas.tsx';
 import { FoodModel } from './components/FoodModel.tsx';
@@ -102,6 +103,7 @@ function FoodCard({
   const food = foodInfos.find((item) => item.id === foodId);
   const model = food ? getFoodModel(food.modelId) : null;
   const [isDetailVisible, setIsDetailVisible] = useState(false);
+  const [detailPosition, setDetailPosition] = useState({ x: 0, y: 0 });
   const longPressTimerRef = useRef<number | null>(null);
 
   if (!food || !model) {
@@ -118,10 +120,18 @@ function FoodCard({
     }
   };
 
+  const updateDetailPosition = (event: PointerEvent<HTMLElement>) => {
+    setDetailPosition({ x: event.clientX, y: event.clientY });
+  };
+
   return (
     <article
       className="food-card"
-      onPointerEnter={() => setIsDetailVisible(true)}
+      onPointerEnter={(event) => {
+        updateDetailPosition(event);
+        setIsDetailVisible(true);
+      }}
+      onPointerMove={updateDetailPosition}
       onPointerLeave={() => {
         clearLongPress();
         setIsDetailVisible(false);
@@ -132,6 +142,7 @@ function FoodCard({
         }
 
         clearLongPress();
+        updateDetailPosition(event);
         longPressTimerRef.current = window.setTimeout(() => {
           setIsDetailVisible(true);
         }, 450);
@@ -167,7 +178,11 @@ function FoodCard({
         </button>
       </div>
       {isDetailVisible ? (
-        <div className="food-card__detail" role="status">
+        <div
+          className="food-card__detail"
+          role="status"
+          style={{ left: detailPosition.x, top: detailPosition.y }}
+        >
           <dl>
             <div>
               <dt>加工元</dt>
