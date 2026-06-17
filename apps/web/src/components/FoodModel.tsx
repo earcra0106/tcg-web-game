@@ -66,6 +66,20 @@ function PrimitiveGeometry({ part }: { part: FoodModelPart }) {
       return <cylinderGeometry args={[0.5, 0.5, 1, segments]} />;
     case 'cone':
       return <coneGeometry args={[0.5, 1, segments]} />;
+    case 'hemisphere':
+      return (
+        <sphereGeometry
+          args={[
+            0.5,
+            segments,
+            Math.max(4, segments / 2),
+            0,
+            Math.PI * 2,
+            0,
+            Math.PI / 2,
+          ]}
+        />
+      );
     case 'sphere':
       return <sphereGeometry args={[0.5, segments, segments]} />;
     case 'capsule':

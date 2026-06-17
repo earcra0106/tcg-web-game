@@ -33,6 +33,7 @@ export type FoodModelShape =
   | 'box'
   | 'cylinder'
   | 'cone'
+  | 'hemisphere'
   | 'sphere'
   | 'capsule'
   | 'wedge'

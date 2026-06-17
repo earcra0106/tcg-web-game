@@ -217,4 +217,22 @@ describe('food data types', () => {
       expect(model?.parts.length).toBeGreaterThan(0);
     });
   });
+
+  it('models cooked rice with a hemisphere bowl and cone rice mound', () => {
+    const cookedRiceModel = foodModels.find(
+      (model) => model.id === 'cooked-rice',
+    );
+
+    expect(cookedRiceModel?.parts.map((part) => part.shape)).toEqual([
+      'hemisphere',
+      'cone',
+      'sphere',
+      'sphere',
+      'sphere',
+    ]);
+    expect(cookedRiceModel?.parts.slice(-2).map((part) => part.id)).toEqual([
+      'rice-grain-left',
+      'rice-grain-right',
+    ]);
+  });
 });
