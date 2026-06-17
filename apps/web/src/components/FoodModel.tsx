@@ -9,9 +9,11 @@ type FoodModelProps = {
 export function FoodModel({ model, scale = 1 }: FoodModelProps) {
   return (
     <group scale={scale * model.unitScale}>
-      {model.parts.map((part) => (
-        <FoodModelPartMesh key={part.id} part={part} />
-      ))}
+      <group position={[-model.pivot[0], -model.pivot[1], -model.pivot[2]]}>
+        {model.parts.map((part) => (
+          <FoodModelPartMesh key={part.id} part={part} />
+        ))}
+      </group>
     </group>
   );
 }

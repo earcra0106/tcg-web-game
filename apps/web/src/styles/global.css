@@ -174,12 +174,21 @@ select {
 
 .food-card__body {
   display: grid;
-  gap: 6px;
+  grid-template-columns: minmax(0, 1fr) 38px;
+  align-items: center;
+  gap: 10px;
   padding: 12px;
+}
+
+.food-card__summary {
+  display: grid;
+  min-width: 0;
+  gap: 6px;
 }
 
 .food-card__body h2 {
   margin: 0;
+  overflow-wrap: anywhere;
   color: #3b3028;
   font-size: 1.08rem;
 }
@@ -191,16 +200,17 @@ select {
 }
 
 .food-card__detail {
-  position: absolute;
-  right: 10px;
-  bottom: 10px;
-  left: 10px;
+  position: fixed;
+  z-index: 20;
+  width: min(260px, calc(100vw - 28px));
   padding: 10px;
   border: 1px solid rgb(89 120 119 / 0.24);
   border-radius: 8px;
   color: #2f3028;
   background: rgb(255 253 249 / 0.94);
   box-shadow: 0 12px 26px rgb(92 64 42 / 0.16);
+  pointer-events: none;
+  transform: translate(12px, 12px);
 }
 
 .food-card__detail dl {
@@ -221,6 +231,24 @@ select {
   color: #3b3028;
   font-size: 0.84rem;
   line-height: 1.45;
+}
+
+.food-card__inspect-button {
+  display: inline-grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid rgb(89 120 119 / 0.34);
+  border-radius: 8px;
+  color: #2f4948;
+  background: #f8ffff;
+  box-shadow: 0 8px 18px rgb(92 64 42 / 0.12);
+  cursor: pointer;
+}
+
+.food-card__inspect-button:hover {
+  background: #edfafa;
 }
 
 @media (max-width: 560px) {

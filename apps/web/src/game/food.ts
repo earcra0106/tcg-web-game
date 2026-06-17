@@ -69,6 +69,7 @@ export type FoodModelData = {
   category: FoodModelCategory;
   frontDirection: '-Z';
   unitScale: number;
+  pivot: Vector3Tuple;
   bounds: {
     size: Vector3Tuple;
     center: Vector3Tuple;

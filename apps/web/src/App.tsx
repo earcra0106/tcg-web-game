@@ -1,5 +1,6 @@
 import { Canvas } from '@react-three/fiber';
-import { BookOpen, ChevronLeft } from 'lucide-react';
+import { BookOpen, ChevronLeft, Plus } from 'lucide-react';
+import type { PointerEvent } from 'react';
 import { useRef, useState } from 'react';
 import { GameCanvas } from './components/GameCanvas.tsx';
 import { FoodModel } from './components/FoodModel.tsx';
@@ -13,14 +14,27 @@ import type { FoodId } from './game/food.ts';
 
 export function App() {
   const [screen, setScreen] = useState<'game' | 'encyclopedia'>('game');
+  const [selectedFoodId, setSelectedFoodId] = useState<FoodId>('bread');
+  const selectedFood =
+    foodInfos.find((food) => food.id === selectedFoodId) ?? foodInfos[0];
+  const selectedModel =
+    getFoodModel(selectedFood.modelId) ?? getFoodModel('bread')!;
 
   if (screen === 'encyclopedia') {
-    return <FoodEncyclopedia onBack={() => setScreen('game')} />;
+    return (
+      <FoodEncyclopedia
+        onBack={() => setScreen('game')}
+        onInspect={(foodId) => {
+          setSelectedFoodId(foodId);
+          setScreen('game');
+        }}
+      />
+    );
   }
 
   return (
     <main className="app-shell">
-      <GameCanvas />
+      <GameCanvas model={selectedModel} />
       <button
         className="icon-button encyclopedia-button"
         type="button"
@@ -35,7 +49,7 @@ export function App() {
         <dl className="hud__stats">
           <div>
             <dt>Model</dt>
-            <dd>食パン</dd>
+            <dd>{selectedFood.name}</dd>
           </div>
           <div>
             <dt>Look</dt>
@@ -47,7 +61,13 @@ export function App() {
   );
 }
 
-function FoodEncyclopedia({ onBack }: { onBack: () => void }) {
+function FoodEncyclopedia({
+  onBack,
+  onInspect,
+}: {
+  onBack: () => void;
+  onInspect: (foodId: FoodId) => void;
+}) {
   return (
     <main className="app-shell app-shell--panel">
       <header className="encyclopedia-header">
@@ -66,17 +86,24 @@ function FoodEncyclopedia({ onBack }: { onBack: () => void }) {
         {foodInfos
           .filter((food) => getFoodModel(food.modelId))
           .map((food) => (
-            <FoodCard key={food.id} foodId={food.id} />
+            <FoodCard key={food.id} foodId={food.id} onInspect={onInspect} />
           ))}
       </section>
     </main>
   );
 }
 
-function FoodCard({ foodId }: { foodId: FoodId }) {
+function FoodCard({
+  foodId,
+  onInspect,
+}: {
+  foodId: FoodId;
+  onInspect: (foodId: FoodId) => void;
+}) {
   const food = foodInfos.find((item) => item.id === foodId);
   const model = food ? getFoodModel(food.modelId) : null;
   const [isDetailVisible, setIsDetailVisible] = useState(false);
+  const [detailPosition, setDetailPosition] = useState({ x: 0, y: 0 });
   const longPressTimerRef = useRef<number | null>(null);
 
   if (!food || !model) {
@@ -93,10 +120,18 @@ function FoodCard({ foodId }: { foodId: FoodId }) {
     }
   };
 
+  const updateDetailPosition = (event: PointerEvent<HTMLElement>) => {
+    setDetailPosition({ x: event.clientX, y: event.clientY });
+  };
+
   return (
     <article
       className="food-card"
-      onPointerEnter={() => setIsDetailVisible(true)}
+      onPointerEnter={(event) => {
+        updateDetailPosition(event);
+        setIsDetailVisible(true);
+      }}
+      onPointerMove={updateDetailPosition}
       onPointerLeave={() => {
         clearLongPress();
         setIsDetailVisible(false);
@@ -107,6 +142,7 @@ function FoodCard({ foodId }: { foodId: FoodId }) {
         }
 
         clearLongPress();
+        updateDetailPosition(event);
         longPressTimerRef.current = window.setTimeout(() => {
           setIsDetailVisible(true);
         }, 450);
@@ -123,13 +159,30 @@ function FoodCard({ foodId }: { foodId: FoodId }) {
         </Canvas>
       </div>
       <div className="food-card__body">
-        <h2>{food.name}</h2>
-        <p>
-          {food.canSpawnFromStorage ? '倉庫から搬出できる基本素材' : '加工食品'}
-        </p>
+        <div className="food-card__summary">
+          <h2>{food.name}</h2>
+          <p>
+            {food.canSpawnFromStorage
+              ? '倉庫から搬出できる基本素材'
+              : '加工食品'}
+          </p>
+        </div>
+        <button
+          className="food-card__inspect-button"
+          type="button"
+          onClick={() => onInspect(food.id)}
+          aria-label={`${food.name}を観察する`}
+          title={`${food.name}を観察する`}
+        >
+          <Plus aria-hidden="true" size={18} />
+        </button>
       </div>
       {isDetailVisible ? (
-        <div className="food-card__detail" role="status">
+        <div
+          className="food-card__detail"
+          role="status"
+          style={{ left: detailPosition.x, top: detailPosition.y }}
+        >
           <dl>
             <div>
               <dt>加工元</dt>
