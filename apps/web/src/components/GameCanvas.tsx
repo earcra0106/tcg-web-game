@@ -11,10 +11,6 @@ export function GameCanvas({ model }: { model: FoodModelData }) {
         <ambientLight intensity={1.5} />
         <directionalLight position={[3, 5, 4]} intensity={2.2} />
         <group position={[0, 0.02, 0]}>
-          <mesh position={[0, -0.02, 0]}>
-            <boxGeometry args={[2.6, 0.08, 1.8]} />
-            <meshStandardMaterial color="#FFFDF9" roughness={0.82} />
-          </mesh>
           <group position={[0, model.pivot[1], 0]}>
             <FoodModel model={model} scale={1.35} />
           </group>
