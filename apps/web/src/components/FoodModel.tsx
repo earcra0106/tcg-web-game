@@ -19,17 +19,6 @@ export function FoodModel({ model, scale = 1 }: FoodModelProps) {
 }
 
 function FoodModelPartMesh({ part }: { part: FoodModelPart }) {
-  const material = (
-    <meshStandardMaterial
-      color={part.color}
-      roughness={part.material?.roughness ?? 0.85}
-      metalness={part.material?.metalness ?? 0}
-      transparent={part.material?.opacity !== undefined}
-      opacity={part.material?.opacity ?? 1}
-      flatShading={part.appearance?.flatShading ?? false}
-    />
-  );
-
   if (part.shape === 'roundedBox') {
     return (
       <RoundedBox
@@ -39,9 +28,17 @@ function FoodModelPartMesh({ part }: { part: FoodModelPart }) {
         radius={part.appearance?.radius ?? 0.08}
         smoothness={part.appearance?.segments ?? 4}
       >
-        {material}
+        <FoodModelPartMaterial part={part} />
       </RoundedBox>
     );
+  }
+
+  if (part.shape === 'hemisphere') {
+    return <HemispherePartMesh part={part} />;
+  }
+
+  if (part.shape === 'cone' && (part.appearance?.radius ?? 0) > 0) {
+    return <RoundedConePartMesh part={part} />;
   }
 
   return (
@@ -51,8 +48,78 @@ function FoodModelPartMesh({ part }: { part: FoodModelPart }) {
       scale={[...part.size]}
     >
       <PrimitiveGeometry part={part} />
-      {material}
+      <FoodModelPartMaterial part={part} />
     </mesh>
+  );
+}
+
+function FoodModelPartMaterial({ part }: { part: FoodModelPart }) {
+  return (
+    <meshStandardMaterial
+      color={part.color}
+      roughness={part.material?.roughness ?? 0.85}
+      metalness={part.material?.metalness ?? 0}
+      transparent={part.material?.opacity !== undefined}
+      opacity={part.material?.opacity ?? 1}
+      flatShading={part.appearance?.flatShading ?? false}
+    />
+  );
+}
+
+function HemispherePartMesh({ part }: { part: FoodModelPart }) {
+  const segments = part.appearance?.segments ?? 8;
+
+  return (
+    <group
+      position={[...part.position]}
+      rotation={[...part.rotation]}
+      scale={[...part.size]}
+    >
+      <mesh>
+        <sphereGeometry
+          args={[
+            0.5,
+            segments,
+            Math.max(4, segments / 2),
+            0,
+            Math.PI * 2,
+            0,
+            Math.PI / 2,
+          ]}
+        />
+        <FoodModelPartMaterial part={part} />
+      </mesh>
+      <mesh rotation={[-Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[0.5, segments]} />
+        <FoodModelPartMaterial part={part} />
+      </mesh>
+    </group>
+  );
+}
+
+function RoundedConePartMesh({ part }: { part: FoodModelPart }) {
+  const segments = part.appearance?.segments ?? 8;
+  const tipRadius = Math.min(
+    Math.max(part.appearance?.radius ?? 0.08, 0),
+    0.24,
+  );
+  const coneHeight = Math.max(0.1, 1 - tipRadius);
+
+  return (
+    <group
+      position={[...part.position]}
+      rotation={[...part.rotation]}
+      scale={[...part.size]}
+    >
+      <mesh position={[0, -tipRadius / 2, 0]}>
+        <coneGeometry args={[0.5, coneHeight, segments]} />
+        <FoodModelPartMaterial part={part} />
+      </mesh>
+      <mesh position={[0, 0.5 - tipRadius / 2, 0]}>
+        <sphereGeometry args={[tipRadius, segments, segments]} />
+        <FoodModelPartMaterial part={part} />
+      </mesh>
+    </group>
   );
 }
 
@@ -66,6 +133,8 @@ function PrimitiveGeometry({ part }: { part: FoodModelPart }) {
       return <cylinderGeometry args={[0.5, 0.5, 1, segments]} />;
     case 'cone':
       return <coneGeometry args={[0.5, 1, segments]} />;
+    case 'hemisphere':
+      return <sphereGeometry args={[0.5, segments, segments]} />;
     case 'sphere':
       return <sphereGeometry args={[0.5, segments, segments]} />;
     case 'capsule':
