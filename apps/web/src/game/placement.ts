@@ -1,3 +1,4 @@
+import type { FoodId } from './food.ts';
 import type { MachineId } from './machine.ts';
 import { gridKey, isValidGridPosition, type GridPosition } from './grid.ts';
 
@@ -7,6 +8,7 @@ export type PlacedMachine = {
   id: PlacementId;
   machineId: MachineId;
   position: GridPosition;
+  foodId?: FoodId;
 };
 
 export function findMachineAtPosition(

@@ -1,7 +1,9 @@
 import {
   createConnection,
+  removeConnection,
   removeConnectionsForMachine,
   type MachineConnection,
+  type ConnectionId,
 } from './connections.ts';
 import {
   placeMachine,
@@ -82,6 +84,22 @@ export function connectMachinesInState(
   );
 
   if (connections === state.connections) {
+    return state;
+  }
+
+  return {
+    ...state,
+    connections,
+  };
+}
+
+export function removeConnectionFromState(
+  state: GameState,
+  connectionId: ConnectionId,
+): GameState {
+  const connections = removeConnection(state.connections, connectionId);
+
+  if (connections.length === state.connections.length) {
     return state;
   }
 
