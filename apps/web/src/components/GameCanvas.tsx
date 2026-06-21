@@ -1,8 +1,10 @@
 import { OrbitControls } from '@react-three/drei';
-import { Canvas } from '@react-three/fiber';
-import { MOUSE, TOUCH } from 'three';
+import { Canvas, useLoader } from '@react-three/fiber';
+import { MOUSE, TOUCH, TextureLoader } from 'three';
 import type { EditorModel } from '../game/editorActions.ts';
 import type { EditorTool } from '../game/editorState.ts';
+import { FOOD_SPRITESHEET_URL } from '../game/foodSprites.ts';
+import { MACHINE_SPRITESHEET_URL } from '../game/machineSprites.ts';
 import { GameScene } from './GameScene.tsx';
 
 type PlaceMachineTool = Extract<EditorTool, { kind: 'place-machine' }>;
@@ -14,6 +16,9 @@ type GameCanvasProps = {
   onModelChange: (updater: (model: EditorModel) => EditorModel) => void;
   onPlacementDrop: () => void;
 };
+
+useLoader.preload(TextureLoader, MACHINE_SPRITESHEET_URL);
+useLoader.preload(TextureLoader, FOOD_SPRITESHEET_URL);
 
 export function GameCanvas({
   model,
