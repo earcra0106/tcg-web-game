@@ -20,6 +20,9 @@ type GameCanvasProps = {
 useLoader.preload(TextureLoader, MACHINE_SPRITESHEET_URL);
 useLoader.preload(TextureLoader, FOOD_SPRITESHEET_URL);
 
+const CAMERA_PAN_SPEED = 2.4;
+const CAMERA_ZOOM_SPEED = 1.5;
+
 export function GameCanvas({
   model,
   dragPlacementTool,
@@ -45,6 +48,8 @@ export function GameCanvas({
           enableRotate={false}
           minDistance={2.2}
           maxDistance={10}
+          panSpeed={CAMERA_PAN_SPEED}
+          zoomSpeed={CAMERA_ZOOM_SPEED}
           target={[0, 0, 0]}
           mouseButtons={{
             LEFT: undefined,
