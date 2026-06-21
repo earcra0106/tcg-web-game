@@ -213,6 +213,7 @@ select {
   color: #3b3028;
   background: #fffdf9;
   min-width: 0;
+  justify-content: center;
   justify-items: center;
   align-content: center;
   gap: 5px;
