@@ -9,5 +9,4 @@ export const breadFoodInfo = {
   canBeServed: false,
   canBeIngredient: true,
   difficulty: null,
-  modelId: 'bread',
 } as const satisfies FoodInfoData;
