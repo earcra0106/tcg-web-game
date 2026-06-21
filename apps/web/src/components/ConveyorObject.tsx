@@ -71,6 +71,8 @@ export function ConveyorObject({
         >
           <meshBasicMaterial
             color="#ffffff"
+            transparent
+            opacity={0.5}
             depthTest={false}
             depthWrite={false}
             side={THREE.DoubleSide}
