@@ -51,9 +51,15 @@ export function ConveyorObject({
       <mesh
         position={[model.midpoint.x, model.midpoint.y, model.midpoint.z]}
         rotation={[0, model.angleRad, 0]}
+        renderOrder={1}
       >
         <boxGeometry args={model.glowScale} />
-        <meshBasicMaterial color="#ffb25b" transparent opacity={0.34} />
+        <meshBasicMaterial
+          color="#ff9f2e"
+          transparent
+          opacity={0.5}
+          depthWrite={false}
+        />
       </mesh>
       {model.triangleMarkers.map((marker, index) => (
         <mesh
@@ -61,8 +67,13 @@ export function ConveyorObject({
           geometry={triangleGeometry}
           position={[marker.position.x, marker.position.y, marker.position.z]}
           rotation={[-Math.PI / 2, marker.angleRad, 0]}
+          renderOrder={2}
         >
-          <meshBasicMaterial color="#fffdf9" side={THREE.DoubleSide} />
+          <meshBasicMaterial
+            color="#fffdf9"
+            depthWrite={false}
+            side={THREE.DoubleSide}
+          />
         </mesh>
       ))}
     </group>

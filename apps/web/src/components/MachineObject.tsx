@@ -7,6 +7,8 @@ import { getMachineSpriteFrame } from '../game/machineSprites.ts';
 import type { PlacedMachine, PlacementId } from '../game/placement.ts';
 import { SpritePlane } from './SpritePlane.tsx';
 
+const MACHINE_RENDER_ORDER = 10;
+
 type MachineObjectProps = {
   machine: PlacedMachine;
   isSelected: boolean;
@@ -34,9 +36,17 @@ function FoodRing({
 
   return (
     <group>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.055, 0]}>
+      <mesh
+        rotation={[-Math.PI / 2, 0, 0]}
+        position={[0, 0.055, 0]}
+        renderOrder={MACHINE_RENDER_ORDER}
+      >
         <ringGeometry args={[0.46, 0.52, 64]} />
-        <meshBasicMaterial color={color} side={THREE.DoubleSide} />
+        <meshBasicMaterial
+          color={color}
+          depthTest={false}
+          side={THREE.DoubleSide}
+        />
       </mesh>
       {food ? (
         <SpritePlane
@@ -44,6 +54,8 @@ function FoodRing({
           id={food.spriteId}
           size={smallBadge ? 0.44 : 0.72}
           position={smallBadge ? [-0.34, 0.08, -0.34] : [0, 0.08, 0]}
+          billboard
+          renderOrder={MACHINE_RENDER_ORDER + 1}
         />
       ) : null}
     </group>
@@ -74,7 +86,7 @@ export function MachineObject({
       }}
       userData={{ label }}
     >
-      <mesh position={[0, 0.012, 0]}>
+      <mesh position={[0, 0.012, 0]} renderOrder={MACHINE_RENDER_ORDER}>
         <boxGeometry args={[0.92, 0.024, 0.92]} />
         <meshStandardMaterial color={isSelected ? '#fff5cc' : '#fffdf9'} />
       </mesh>
@@ -88,18 +100,25 @@ export function MachineObject({
           id={machine.machineId}
           size={0.78}
           position={[0, 0.08, 0]}
+          billboard
+          renderOrder={MACHINE_RENDER_ORDER + 1}
         />
       ) : (
-        <mesh position={[0, 0.12, 0]}>
+        <mesh position={[0, 0.12, 0]} renderOrder={MACHINE_RENDER_ORDER + 1}>
           <cylinderGeometry args={[0.28, 0.34, 0.22, 24]} />
           <meshStandardMaterial color="#7fa6a4" />
         </mesh>
       )}
       {isSelected || isConnectionSource ? (
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.09, 0]}>
+        <mesh
+          rotation={[-Math.PI / 2, 0, 0]}
+          position={[0, 0.09, 0]}
+          renderOrder={MACHINE_RENDER_ORDER + 2}
+        >
           <ringGeometry args={[0.56, 0.6, 64]} />
           <meshBasicMaterial
             color={isConnectionSource ? '#ff9f43' : '#597877'}
+            depthTest={false}
             side={THREE.DoubleSide}
           />
         </mesh>
