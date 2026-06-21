@@ -165,11 +165,23 @@ select {
   touch-action: manipulation;
 }
 
-.food-card__model {
+.food-card__sprite {
+  display: grid;
+  place-items: center;
   width: 100%;
   aspect-ratio: 4 / 3;
   border-bottom: 1px solid #eedcc8;
   background: #fffdf9;
+}
+
+.food-sprite {
+  display: block;
+  width: 128px;
+  height: 128px;
+  background-image: var(--food-sprite-image);
+  background-position: var(--food-sprite-x) var(--food-sprite-y);
+  background-repeat: no-repeat;
+  background-size: var(--food-sprite-sheet-size) var(--food-sprite-sheet-size);
 }
 
 .food-card__body {

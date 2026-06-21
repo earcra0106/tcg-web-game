@@ -1,6 +1,7 @@
 import { BookOpen, ChevronLeft, Plus } from 'lucide-react';
 import type { PointerEvent } from 'react';
 import { useRef, useState } from 'react';
+import { FoodSprite } from './components/FoodSprite.tsx';
 import { GameCanvas } from './components/GameCanvas.tsx';
 import {
   foodInfos,
@@ -29,7 +30,7 @@ export function App() {
 
   return (
     <main className="app-shell">
-      <GameCanvas />
+      <GameCanvas spriteId={selectedFood.spriteId} />
       <button
         className="icon-button encyclopedia-button"
         type="button"
@@ -142,6 +143,9 @@ function FoodCard({
       onPointerUp={clearLongPress}
       onPointerCancel={clearLongPress}
     >
+      <div className="food-card__sprite" aria-hidden="true">
+        <FoodSprite spriteId={food.spriteId} label={food.name} />
+      </div>
       <div className="food-card__body">
         <div className="food-card__summary">
           <h2>{food.name}</h2>

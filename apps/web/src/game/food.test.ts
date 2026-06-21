@@ -5,6 +5,7 @@ import {
   getIngredientNames,
   getProcessedIntoNames,
 } from './foods.ts';
+import { foodSpritesheetData, getFoodSpriteFrame } from './foodSprites.ts';
 
 describe('food data types', () => {
   it('describes food info data', () => {
@@ -24,12 +25,14 @@ describe('food data types', () => {
       canBeServed: true,
       canBeIngredient: false,
       difficulty: 3,
+      spriteId: 'hamburg',
     };
 
     expect(hamburg).toMatchObject({
       id: 'hamburg',
       process: 'heating',
       canBeServed: true,
+      spriteId: 'hamburg',
     });
   });
 
@@ -42,6 +45,7 @@ describe('food data types', () => {
       canSpawnFromStorage: true,
       canBeServed: false,
       canBeIngredient: true,
+      spriteId: 'bread',
     });
   });
 
@@ -64,6 +68,7 @@ describe('food data types', () => {
         canBeServed: false,
         canBeIngredient: true,
         difficulty: null,
+        spriteId: id,
       });
     });
   });
@@ -132,7 +137,51 @@ describe('food data types', () => {
         canBeServed: expected.canBeServed,
         canBeIngredient: expected.canBeIngredient,
         difficulty: expected.difficulty,
+        spriteId: expected.id,
       });
+    });
+  });
+
+  it('assigns sprites to all registered foods', () => {
+    foodInfos.forEach((food) => {
+      expect(getFoodSpriteFrame(food.spriteId)).toMatchObject({
+        id: food.spriteId,
+        width: 128,
+        height: 128,
+      });
+    });
+  });
+
+  it('maps current foods to the requirement-order sprite cells', () => {
+    expect(getFoodSpriteFrame('rice')).toMatchObject({ row: 0, column: 0 });
+    expect(getFoodSpriteFrame('egg')).toMatchObject({ row: 0, column: 1 });
+    expect(getFoodSpriteFrame('milk')).toMatchObject({ row: 0, column: 2 });
+    expect(getFoodSpriteFrame('bread')).toMatchObject({ row: 0, column: 3 });
+    expect(getFoodSpriteFrame('boiled-egg')).toMatchObject({
+      row: 2,
+      column: 7,
+    });
+    expect(getFoodSpriteFrame('cooked-rice')).toMatchObject({
+      row: 3,
+      column: 2,
+    });
+    expect(getFoodSpriteFrame('toast')).toMatchObject({ row: 3, column: 3 });
+    expect(getFoodSpriteFrame('fried-egg')).toMatchObject({
+      row: 3,
+      column: 4,
+    });
+  });
+
+  it('provides PixiJS spritesheet data for the food spritesheet', () => {
+    expect(foodSpritesheetData.meta).toMatchObject({
+      image: '/assets/sprites/foods.png',
+      size: { w: 1024, h: 1024 },
+    });
+    expect(foodSpritesheetData.frames['bread.png']?.frame).toEqual({
+      x: 384,
+      y: 0,
+      w: 128,
+      h: 128,
     });
   });
 });

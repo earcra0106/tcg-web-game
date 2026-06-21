@@ -9,4 +9,5 @@ export const boiledEggFoodInfo = {
   canBeServed: false,
   canBeIngredient: true,
   difficulty: null,
+  spriteId: 'boiled-egg',
 } as const satisfies FoodInfoData;

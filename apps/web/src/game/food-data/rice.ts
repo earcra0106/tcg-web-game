@@ -9,4 +9,5 @@ export const riceFoodInfo = {
   canBeServed: false,
   canBeIngredient: true,
   difficulty: null,
+  spriteId: 'rice',
 } as const satisfies FoodInfoData;

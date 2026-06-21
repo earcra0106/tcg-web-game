@@ -9,4 +9,5 @@ export const eggFoodInfo = {
   canBeServed: false,
   canBeIngredient: true,
   difficulty: null,
+  spriteId: 'egg',
 } as const satisfies FoodInfoData;
