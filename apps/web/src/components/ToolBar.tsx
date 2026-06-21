@@ -1,5 +1,5 @@
 import { Link2, MousePointer2, Trash2 } from 'lucide-react';
-import type { ReactNode } from 'react';
+import type { PointerEvent, ReactNode } from 'react';
 import { FoodSprite } from './FoodSprite.tsx';
 import { MachineSprite } from './MachineSprite.tsx';
 import { getFoodInfo } from '../game/foods.ts';
@@ -12,6 +12,10 @@ type ToolBarProps = {
   storageFoodIds: readonly FoodId[];
   shippingFoodId: FoodId;
   onSelectTool: (tool: EditorTool) => void;
+  onStartPlacementDrag: (
+    tool: Extract<EditorTool, { kind: 'place-machine' }>,
+    event: PointerEvent<HTMLButtonElement>,
+  ) => void;
 };
 
 const placeableMachineIds = machineInfos
@@ -34,18 +38,33 @@ function ToolButton({
   label,
   children,
   onSelectTool,
+  onStartPlacementDrag,
 }: {
   tool: EditorTool;
   selectedTool: EditorTool;
   label: string;
   children: ReactNode;
   onSelectTool: (tool: EditorTool) => void;
+  onStartPlacementDrag: (
+    tool: Extract<EditorTool, { kind: 'place-machine' }>,
+    event: PointerEvent<HTMLButtonElement>,
+  ) => void;
 }) {
   return (
     <button
       className="tool-button"
       type="button"
       aria-pressed={getToolKey(tool) === getToolKey(selectedTool)}
+      onPointerDown={(event) => {
+        if (
+          tool.kind === 'place-machine' &&
+          event.pointerType === 'mouse' &&
+          event.button === 0
+        ) {
+          onSelectTool(tool);
+          onStartPlacementDrag(tool, event);
+        }
+      }}
       onClick={() => onSelectTool(tool)}
     >
       {children}
@@ -59,6 +78,7 @@ export function ToolBar({
   storageFoodIds,
   shippingFoodId,
   onSelectTool,
+  onStartPlacementDrag,
 }: ToolBarProps) {
   const shippingFood = getFoodInfo(shippingFoodId);
 
@@ -69,6 +89,7 @@ export function ToolBar({
         selectedTool={selectedTool}
         label="選択"
         onSelectTool={onSelectTool}
+        onStartPlacementDrag={onStartPlacementDrag}
       >
         <MousePointer2 aria-hidden="true" size={20} />
       </ToolButton>
@@ -86,6 +107,7 @@ export function ToolBar({
             selectedTool={selectedTool}
             label="倉庫"
             onSelectTool={onSelectTool}
+            onStartPlacementDrag={onStartPlacementDrag}
           >
             <span className="tool-button__storage">
               <FoodSprite spriteId={food.spriteId} label={food.name} />
@@ -103,6 +125,7 @@ export function ToolBar({
           selectedTool={selectedTool}
           label="出荷口"
           onSelectTool={onSelectTool}
+          onStartPlacementDrag={onStartPlacementDrag}
         >
           <span className="tool-button__shipping">
             <FoodSprite
@@ -126,6 +149,7 @@ export function ToolBar({
             selectedTool={selectedTool}
             label={machine.name}
             onSelectTool={onSelectTool}
+            onStartPlacementDrag={onStartPlacementDrag}
           >
             <MachineSprite machineId={machine.id} label={machine.name} />
           </ToolButton>
@@ -136,6 +160,7 @@ export function ToolBar({
         selectedTool={selectedTool}
         label="コンベア"
         onSelectTool={onSelectTool}
+        onStartPlacementDrag={onStartPlacementDrag}
       >
         <Link2 aria-hidden="true" size={20} />
       </ToolButton>
@@ -144,6 +169,7 @@ export function ToolBar({
         selectedTool={selectedTool}
         label="削除"
         onSelectTool={onSelectTool}
+        onStartPlacementDrag={onStartPlacementDrag}
       >
         <Trash2 aria-hidden="true" size={20} />
       </ToolButton>
