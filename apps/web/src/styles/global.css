@@ -184,6 +184,50 @@ select {
   background-size: var(--food-sprite-sheet-size) var(--food-sprite-sheet-size);
 }
 
+.machine-preview {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(72px, 1fr));
+  gap: 8px;
+  width: min(420px, calc(100vw - 32px));
+  padding: 10px;
+  border: 1px solid rgb(190 150 111 / 0.26);
+  border-radius: 8px;
+  background: rgb(255 253 249 / 0.82);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 16px 40px rgb(92 64 42 / 0.14);
+}
+
+.machine-preview__item {
+  display: grid;
+  min-width: 0;
+  justify-items: center;
+  gap: 4px;
+  margin: 0;
+}
+
+.machine-preview__item figcaption {
+  overflow-wrap: anywhere;
+  color: #3b3028;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.machine-sprite {
+  display: block;
+  width: var(--machine-sprite-size);
+  height: var(--machine-sprite-size);
+  background-image: var(--machine-sprite-image);
+  background-position: var(--machine-sprite-x) var(--machine-sprite-y);
+  background-repeat: no-repeat;
+  background-size: var(--machine-sprite-sheet-width)
+    var(--machine-sprite-sheet-height);
+}
+
 .food-card__body {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 38px;
@@ -267,6 +311,13 @@ select {
   .hud {
     top: auto;
     bottom: 16px;
+  }
+
+  .machine-preview {
+    top: 68px;
+    bottom: auto;
+    left: 16px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .encyclopedia-button {
