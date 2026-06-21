@@ -84,7 +84,7 @@ export function ToolBar({
             key={`storage-${food.id}`}
             tool={{ kind: 'place-machine', machineId: 'storage', foodId }}
             selectedTool={selectedTool}
-            label={`${food.name}倉庫`}
+            label="倉庫"
             onSelectTool={onSelectTool}
           >
             <span className="tool-button__storage">
@@ -101,7 +101,7 @@ export function ToolBar({
             foodId: shippingFoodId,
           }}
           selectedTool={selectedTool}
-          label={`${shippingFood.name}出荷口`}
+          label="出荷口"
           onSelectTool={onSelectTool}
         >
           <span className="tool-button__shipping">
