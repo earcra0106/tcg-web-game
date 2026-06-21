@@ -1,0 +1,79 @@
+import {
+  findMachineById,
+  type PlacedMachine,
+  type PlacementId,
+} from './placement.ts';
+
+export type ConnectionId = string;
+
+export type MachineConnection = {
+  id: ConnectionId;
+  fromMachineId: PlacementId;
+  toMachineId: PlacementId;
+};
+
+export function findInputConnections(
+  connections: readonly MachineConnection[],
+  machineId: PlacementId,
+) {
+  return connections.filter(
+    (connection) => connection.toMachineId === machineId,
+  );
+}
+
+export function findOutputConnections(
+  connections: readonly MachineConnection[],
+  machineId: PlacementId,
+) {
+  return connections.filter(
+    (connection) => connection.fromMachineId === machineId,
+  );
+}
+
+export function createConnection(
+  connections: readonly MachineConnection[],
+  machines: readonly PlacedMachine[],
+  connection: MachineConnection,
+) {
+  if (!findMachineById(machines, connection.fromMachineId)) {
+    return connections;
+  }
+
+  if (!findMachineById(machines, connection.toMachineId)) {
+    return connections;
+  }
+
+  if (connections.some((current) => current.id === connection.id)) {
+    return connections;
+  }
+
+  if (
+    connections.some(
+      (current) =>
+        current.fromMachineId === connection.fromMachineId &&
+        current.toMachineId === connection.toMachineId,
+    )
+  ) {
+    return connections;
+  }
+
+  return [...connections, connection];
+}
+
+export function removeConnection(
+  connections: readonly MachineConnection[],
+  connectionId: ConnectionId,
+) {
+  return connections.filter((connection) => connection.id !== connectionId);
+}
+
+export function removeConnectionsForMachine(
+  connections: readonly MachineConnection[],
+  machineId: PlacementId,
+) {
+  return connections.filter(
+    (connection) =>
+      connection.fromMachineId !== machineId &&
+      connection.toMachineId !== machineId,
+  );
+}
