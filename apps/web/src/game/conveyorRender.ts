@@ -29,6 +29,8 @@ export type ConveyorRenderInput = {
   markerCount?: number;
 };
 
+const MARKER_SPEED_PER_SECOND = 5 / 3;
+
 function lerp(start: number, end: number, progress: number) {
   return start + (end - start) * progress;
 }
@@ -52,7 +54,10 @@ export function createConveyorRenderModel({
   const length = Math.hypot(dx, dz);
   const rawAngleRad = Math.atan2(-dz, dx);
   const angleRad = Object.is(rawAngleRad, -0) ? 0 : rawAngleRad;
-  const baseProgress = normalizeProgress(nowMs / 1_200);
+  const animatedDistance = (nowMs / 1_000) * MARKER_SPEED_PER_SECOND;
+  const baseProgress = normalizeProgress(
+    animatedDistance / Math.max(length, 0.001),
+  );
   const markerSpacing = markerCount > 0 ? 1 / markerCount : 1;
 
   return {
