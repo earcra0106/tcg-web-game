@@ -36,6 +36,33 @@ describe('conveyor render model', () => {
     expect(model.triangleMarkers[1].progress).toBe(0.75);
   });
 
+  it('calculates marker angles for cardinal directions', () => {
+    expect(
+      createConveyorRenderModel({
+        from: { x: 0, z: 0 },
+        to: { x: 1, z: 0 },
+      }).angleRad,
+    ).toBe(0);
+    expect(
+      createConveyorRenderModel({
+        from: { x: 0, z: 0 },
+        to: { x: -1, z: 0 },
+      }).angleRad,
+    ).toBeCloseTo(-Math.PI);
+    expect(
+      createConveyorRenderModel({
+        from: { x: 0, z: 0 },
+        to: { x: 0, z: 1 },
+      }).angleRad,
+    ).toBeCloseTo(-Math.PI / 2);
+    expect(
+      createConveyorRenderModel({
+        from: { x: 0, z: 0 },
+        to: { x: 0, z: -1 },
+      }).angleRad,
+    ).toBeCloseTo(Math.PI / 2);
+  });
+
   it('normalizes marker progress', () => {
     const model = createConveyorRenderModel({
       from: { x: 0, z: 0 },

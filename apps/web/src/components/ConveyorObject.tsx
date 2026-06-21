@@ -24,7 +24,10 @@ function createTriangleGeometry() {
   shape.lineTo(-0.1, -0.1);
   shape.lineTo(0.13, 0);
 
-  return new THREE.ShapeGeometry(shape);
+  const geometry = new THREE.ShapeGeometry(shape);
+  geometry.rotateX(-Math.PI / 2);
+
+  return geometry;
 }
 
 export function ConveyorObject({
@@ -75,7 +78,7 @@ export function ConveyorObject({
           key={`${connection.id}-${index}`}
           geometry={triangleGeometry}
           position={[marker.position.x, marker.position.y, marker.position.z]}
-          rotation={[-Math.PI / 2, marker.angleRad, 0]}
+          rotation={[0, marker.angleRad, 0]}
           renderOrder={5}
         >
           <meshBasicMaterial
