@@ -15,7 +15,7 @@ export class ThreeGame {
   private readonly scene = new THREE.Scene();
   private readonly camera = new THREE.PerspectiveCamera(60, 1, 0.1, 100);
   private readonly player: THREE.Mesh;
-  private readonly clock = new THREE.Clock();
+  private readonly timer = new THREE.Timer();
   private readonly resizeObserver: ResizeObserver;
   private inputState: InputState = createInitialInputState();
   private animationFrameId: number | null = null;
@@ -25,6 +25,7 @@ export class ThreeGame {
     this.renderer.setClearColor(0x0f172a);
     this.renderer.setAnimationLoop(null);
     this.host.append(this.renderer.domElement);
+    this.timer.connect(document);
 
     const playerGeometry = new THREE.BoxGeometry(1, 1, 1);
     const playerMaterial = new THREE.MeshStandardMaterial({ color: cubeColor });
@@ -47,6 +48,7 @@ export class ThreeGame {
     window.removeEventListener('keydown', this.handleKeyDown);
     window.removeEventListener('keyup', this.handleKeyUp);
     this.resizeObserver.disconnect();
+    this.timer.dispose();
 
     if (this.animationFrameId !== null) {
       window.cancelAnimationFrame(this.animationFrameId);
@@ -100,7 +102,8 @@ export class ThreeGame {
   }
 
   private tick = () => {
-    const delta = this.clock.getDelta();
+    this.timer.update();
+    const delta = this.timer.getDelta();
     const movement = getMovementVector(this.inputState);
     const movementLength = Math.hypot(movement.x, movement.z);
 

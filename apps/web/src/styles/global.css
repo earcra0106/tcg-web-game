@@ -53,6 +53,7 @@ select {
   display: block;
   width: 100%;
   height: 100%;
+  touch-action: none;
 }
 
 .hud {
@@ -184,37 +185,76 @@ select {
   background-size: var(--food-sprite-sheet-size) var(--food-sprite-sheet-size);
 }
 
-.machine-preview {
+.tool-bar {
   position: absolute;
-  right: 16px;
   bottom: 16px;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(72px, 1fr));
+  left: 50%;
+  display: flex;
   gap: 8px;
-  width: min(420px, calc(100vw - 32px));
+  width: min(900px, calc(100vw - 32px));
   padding: 10px;
   border: 1px solid rgb(190 150 111 / 0.26);
   border-radius: 8px;
   background: rgb(255 253 249 / 0.82);
   backdrop-filter: blur(12px);
   box-shadow: 0 16px 40px rgb(92 64 42 / 0.14);
+  overflow-x: auto;
+  transform: translateX(-50%);
 }
 
-.machine-preview__item {
+.tool-button {
   display: grid;
+  flex: 0 0 76px;
+  min-height: 78px;
+  padding: 6px;
+  border: 1px solid rgb(190 150 111 / 0.3);
+  border-radius: 8px;
+  color: #3b3028;
+  background: #fffdf9;
   min-width: 0;
   justify-items: center;
-  gap: 4px;
-  margin: 0;
+  align-content: center;
+  gap: 5px;
+  cursor: pointer;
 }
 
-.machine-preview__item figcaption {
+.tool-button[aria-pressed='true'] {
+  border-color: #597877;
+  background: #f0fbfa;
+}
+
+.tool-button__label {
   overflow-wrap: anywhere;
-  color: #3b3028;
   font-size: 0.72rem;
   font-weight: 700;
   line-height: 1.2;
   text-align: center;
+}
+
+.tool-button .food-sprite {
+  width: 38px;
+  height: 38px;
+  background-size: 304px 304px;
+}
+
+.tool-button__storage,
+.tool-button__shipping {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border: 2px solid #ff77b7;
+  border-radius: 50%;
+}
+
+.tool-button__shipping {
+  border-color: #50b86b;
+}
+
+.tool-button__shipping .food-sprite {
+  width: 38px;
+  height: 38px;
+  background-size: 304px 304px;
 }
 
 .machine-sprite {
@@ -229,10 +269,7 @@ select {
 }
 
 .food-card__body {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 38px;
-  align-items: center;
-  gap: 10px;
+  display: block;
   padding: 12px;
 }
 
@@ -289,35 +326,87 @@ select {
   line-height: 1.45;
 }
 
-.food-card__inspect-button {
-  display: inline-grid;
-  place-items: center;
-  width: 38px;
-  height: 38px;
-  padding: 0;
-  border: 1px solid rgb(89 120 119 / 0.34);
+.machine-inspector {
+  position: absolute;
+  top: 126px;
+  left: 16px;
+  display: grid;
+  gap: 8px;
+  width: min(280px, calc(100vw - 32px));
+  padding: 12px;
+  border: 1px solid rgb(190 150 111 / 0.26);
   border-radius: 8px;
-  color: #2f4948;
-  background: #f8ffff;
-  box-shadow: 0 8px 18px rgb(92 64 42 / 0.12);
-  cursor: pointer;
+  background: rgb(255 253 249 / 0.84);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 16px 40px rgb(92 64 42 / 0.14);
 }
 
-.food-card__inspect-button:hover {
-  background: #edfafa;
+.machine-inspector h2,
+.machine-inspector p {
+  margin: 0;
+}
+
+.machine-inspector__label {
+  color: #597877;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.machine-inspector__empty,
+.machine-inspector__position {
+  color: #745d4a;
+  font-size: 0.84rem;
+}
+
+.machine-inspector__food {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.machine-inspector__food .food-sprite {
+  width: 42px;
+  height: 42px;
+  background-size: 336px 336px;
+}
+
+.machine-inspector__field {
+  display: grid;
+  gap: 5px;
+  color: #3b3028;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.machine-inspector__field select {
+  min-width: 0;
+  min-height: 36px;
+  border: 1px solid rgb(89 120 119 / 0.3);
+  border-radius: 8px;
+  color: #3b3028;
+  background: #fffdf9;
 }
 
 @media (max-width: 560px) {
   .hud {
-    top: auto;
-    bottom: 16px;
-  }
-
-  .machine-preview {
     top: 68px;
     bottom: auto;
+  }
+
+  .machine-inspector {
+    top: 170px;
     left: 16px;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .tool-bar {
+    right: 12px;
+    bottom: 12px;
+    left: 12px;
+    width: auto;
+    transform: none;
   }
 
   .encyclopedia-button {
