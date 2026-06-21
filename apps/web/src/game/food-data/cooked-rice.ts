@@ -9,5 +9,5 @@ export const cookedRiceFoodInfo = {
   canBeServed: true,
   canBeIngredient: true,
   difficulty: 1,
-  modelId: 'cooked-rice',
+  spriteId: 'cooked-rice',
 } as const satisfies FoodInfoData;

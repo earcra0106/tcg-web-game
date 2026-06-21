@@ -1,12 +1,10 @@
-import { Canvas } from '@react-three/fiber';
 import { BookOpen, ChevronLeft, Plus } from 'lucide-react';
 import type { PointerEvent } from 'react';
 import { useRef, useState } from 'react';
+import { FoodSprite } from './components/FoodSprite.tsx';
 import { GameCanvas } from './components/GameCanvas.tsx';
-import { FoodModel } from './components/FoodModel.tsx';
 import {
   foodInfos,
-  getFoodModel,
   getIngredientNames,
   getProcessedIntoNames,
 } from './game/foods.ts';
@@ -17,8 +15,6 @@ export function App() {
   const [selectedFoodId, setSelectedFoodId] = useState<FoodId>('bread');
   const selectedFood =
     foodInfos.find((food) => food.id === selectedFoodId) ?? foodInfos[0];
-  const selectedModel =
-    getFoodModel(selectedFood.modelId) ?? getFoodModel('bread')!;
 
   if (screen === 'encyclopedia') {
     return (
@@ -34,7 +30,7 @@ export function App() {
 
   return (
     <main className="app-shell">
-      <GameCanvas model={selectedModel} />
+      <GameCanvas spriteId={selectedFood.spriteId} />
       <button
         className="icon-button encyclopedia-button"
         type="button"
@@ -48,7 +44,7 @@ export function App() {
         <p className="hud__label">Voxel Kitchen Automation</p>
         <dl className="hud__stats">
           <div>
-            <dt>Model</dt>
+            <dt>Food</dt>
             <dd>{selectedFood.name}</dd>
           </div>
           <div>
@@ -75,7 +71,7 @@ function FoodEncyclopedia({
           className="icon-button icon-button--quiet"
           type="button"
           onClick={onBack}
-          aria-label="3D確認画面に戻る"
+          aria-label="確認画面に戻る"
         >
           <ChevronLeft aria-hidden="true" size={20} />
           <span>戻る</span>
@@ -83,11 +79,9 @@ function FoodEncyclopedia({
         <h1>食べもの図鑑</h1>
       </header>
       <section className="food-grid" aria-label="食べもの一覧">
-        {foodInfos
-          .filter((food) => getFoodModel(food.modelId))
-          .map((food) => (
-            <FoodCard key={food.id} foodId={food.id} onInspect={onInspect} />
-          ))}
+        {foodInfos.map((food) => (
+          <FoodCard key={food.id} foodId={food.id} onInspect={onInspect} />
+        ))}
       </section>
     </main>
   );
@@ -101,12 +95,11 @@ function FoodCard({
   onInspect: (foodId: FoodId) => void;
 }) {
   const food = foodInfos.find((item) => item.id === foodId);
-  const model = food ? getFoodModel(food.modelId) : null;
   const [isDetailVisible, setIsDetailVisible] = useState(false);
   const [detailPosition, setDetailPosition] = useState({ x: 0, y: 0 });
   const longPressTimerRef = useRef<number | null>(null);
 
-  if (!food || !model) {
+  if (!food) {
     return null;
   }
 
@@ -150,13 +143,8 @@ function FoodCard({
       onPointerUp={clearLongPress}
       onPointerCancel={clearLongPress}
     >
-      <div className="food-card__model" aria-hidden="true">
-        <Canvas camera={{ position: [2.2, 1.8, 2.8], fov: 34 }}>
-          <color attach="background" args={['#FFFDF9']} />
-          <ambientLight intensity={1.6} />
-          <directionalLight position={[3, 4, 4]} intensity={2} />
-          <FoodModel model={model} scale={1.1} />
-        </Canvas>
+      <div className="food-card__sprite" aria-hidden="true">
+        <FoodSprite spriteId={food.spriteId} label={food.name} />
       </div>
       <div className="food-card__body">
         <div className="food-card__summary">

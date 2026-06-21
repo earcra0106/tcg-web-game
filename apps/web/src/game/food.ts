@@ -1,6 +1,6 @@
 export type FoodId = string;
 
-export type FoodModelId = string;
+export type FoodSpriteId = string;
 
 export type CookingProcess = 'cutting' | 'heating' | 'mixing' | 'combining';
 
@@ -15,66 +15,7 @@ export type FoodInfoData = {
   canBeServed: boolean;
   canBeIngredient: boolean;
   difficulty: FoodDifficulty | null;
-  modelId: FoodModelId;
+  spriteId: FoodSpriteId;
 };
 
 export type FoodGameData = FoodInfoData;
-
-export type Vector3Tuple = readonly [number, number, number];
-
-export type FoodModelCategory =
-  | 'ingredient'
-  | 'cut-ingredient'
-  | 'intermediate'
-  | 'dish';
-
-export type FoodModelShape =
-  | 'roundedBox'
-  | 'box'
-  | 'cylinder'
-  | 'cone'
-  | 'hemisphere'
-  | 'sphere'
-  | 'capsule'
-  | 'wedge'
-  | 'fanWedge';
-
-export type FoodModelMaterial = {
-  roughness?: number;
-  metalness?: 0;
-  opacity?: number;
-};
-
-export type FoodModelAppearance = {
-  radius?: number;
-  bevel?: number;
-  segments?: number;
-  flatShading?: boolean;
-};
-
-export type FoodModelPart = {
-  id: string;
-  shape: FoodModelShape;
-  position: Vector3Tuple;
-  size: Vector3Tuple;
-  rotation: Vector3Tuple;
-  color: `#${string}`;
-  material?: FoodModelMaterial;
-  appearance?: FoodModelAppearance;
-};
-
-export type FoodModelData = {
-  id: FoodModelId;
-  schemaVersion: 'food-model-v1';
-  displayName: string;
-  category: FoodModelCategory;
-  frontDirection: '-Z';
-  unitScale: number;
-  pivot: Vector3Tuple;
-  bounds: {
-    size: Vector3Tuple;
-    center: Vector3Tuple;
-  };
-  parts: readonly FoodModelPart[];
-  designNotes: readonly string[];
-};
