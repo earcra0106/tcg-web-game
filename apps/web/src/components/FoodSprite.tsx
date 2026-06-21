@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 import {
-  FOOD_SPRITESHEET_SIZE,
+  FOOD_SPRITESHEET_COLUMNS,
   FOOD_SPRITESHEET_URL,
   getFoodSpriteFrame,
 } from '../game/foodSprites.ts';
@@ -26,9 +26,13 @@ export function FoodSprite({ spriteId, label }: FoodSpriteProps) {
       style={
         {
           '--food-sprite-image': `url("${FOOD_SPRITESHEET_URL}")`,
-          '--food-sprite-x': `-${sprite.x}px`,
-          '--food-sprite-y': `-${sprite.y}px`,
-          '--food-sprite-sheet-size': `${FOOD_SPRITESHEET_SIZE}px`,
+          '--food-sprite-position-x': `${
+            (sprite.column / (FOOD_SPRITESHEET_COLUMNS - 1)) * 100
+          }%`,
+          '--food-sprite-position-y': `${
+            (sprite.row / (FOOD_SPRITESHEET_COLUMNS - 1)) * 100
+          }%`,
+          '--food-sprite-sheet-scale': `${FOOD_SPRITESHEET_COLUMNS * 100}%`,
         } as CSSProperties
       }
     />

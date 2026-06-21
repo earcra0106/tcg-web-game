@@ -180,9 +180,10 @@ select {
   width: 128px;
   height: 128px;
   background-image: var(--food-sprite-image);
-  background-position: var(--food-sprite-x) var(--food-sprite-y);
+  background-position: var(--food-sprite-position-x)
+    var(--food-sprite-position-y);
   background-repeat: no-repeat;
-  background-size: var(--food-sprite-sheet-size) var(--food-sprite-sheet-size);
+  background-size: var(--food-sprite-sheet-scale) var(--food-sprite-sheet-scale);
 }
 
 .tool-bar {
@@ -234,7 +235,6 @@ select {
 .tool-button .food-sprite {
   width: 38px;
   height: 38px;
-  background-size: 304px 304px;
 }
 
 .tool-button__storage,
@@ -254,7 +254,6 @@ select {
 .tool-button__shipping .food-sprite {
   width: 38px;
   height: 38px;
-  background-size: 304px 304px;
 }
 
 .machine-sprite {
@@ -370,7 +369,6 @@ select {
 .machine-inspector__food .food-sprite {
   width: 42px;
   height: 42px;
-  background-size: 336px 336px;
 }
 
 .machine-inspector__field {
