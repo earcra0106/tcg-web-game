@@ -3,12 +3,14 @@ import type { PointerEvent } from 'react';
 import { useRef, useState } from 'react';
 import { FoodSprite } from './components/FoodSprite.tsx';
 import { GameCanvas } from './components/GameCanvas.tsx';
+import { MachineSprite } from './components/MachineSprite.tsx';
 import {
   foodInfos,
   getIngredientNames,
   getProcessedIntoNames,
 } from './game/foods.ts';
 import type { FoodId } from './game/food.ts';
+import { machineInfos } from './game/machine.ts';
 
 export function App() {
   const [screen, setScreen] = useState<'game' | 'encyclopedia'>('game');
@@ -52,6 +54,14 @@ export function App() {
             <dd>Drag / Pinch</dd>
           </div>
         </dl>
+      </section>
+      <section className="machine-preview" aria-label="マシン一覧">
+        {machineInfos.map((machine) => (
+          <figure className="machine-preview__item" key={machine.id}>
+            <MachineSprite machineId={machine.id} label={machine.name} />
+            <figcaption>{machine.name}</figcaption>
+          </figure>
+        ))}
       </section>
     </main>
   );
