@@ -10,7 +10,11 @@ type ConveyorObjectProps = {
   connection: MachineConnection;
   fromMachine: PlacedMachine;
   toMachine: PlacedMachine;
-  onClick: (connectionId: string, event: ThreeEvent<PointerEvent>) => void;
+  onPointerDown: (
+    connectionId: string,
+    event: ThreeEvent<PointerEvent>,
+  ) => void;
+  onPointerUp: (connectionId: string, event: ThreeEvent<PointerEvent>) => void;
 };
 
 function createTriangleGeometry() {
@@ -27,7 +31,8 @@ export function ConveyorObject({
   connection,
   fromMachine,
   toMachine,
-  onClick,
+  onPointerDown,
+  onPointerUp,
 }: ConveyorObjectProps) {
   const [nowMs, setNowMs] = useState(0);
   const triangleGeometry = useMemo(() => createTriangleGeometry(), []);
@@ -45,7 +50,11 @@ export function ConveyorObject({
     <group
       onPointerDown={(event) => {
         event.stopPropagation();
-        onClick(connection.id, event);
+        onPointerDown(connection.id, event);
+      }}
+      onPointerUp={(event) => {
+        event.stopPropagation();
+        onPointerUp(connection.id, event);
       }}
     >
       <mesh

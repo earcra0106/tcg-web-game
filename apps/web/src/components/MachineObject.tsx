@@ -17,6 +17,8 @@ type MachineObjectProps = {
   machine: PlacedMachine;
   isSelected: boolean;
   isConnectionSource: boolean;
+  opacity?: number;
+  isInteractive?: boolean;
   onPointerDown: (
     machineId: PlacementId,
     event: ThreeEvent<PointerEvent>,
@@ -31,10 +33,12 @@ function FoodRing({
   foodId,
   color,
   smallBadge,
+  opacity,
 }: {
   foodId: string | undefined;
   color: string;
   smallBadge?: boolean;
+  opacity: number;
 }) {
   const food = foodId !== undefined ? getFoodInfo(foodId) : null;
 
@@ -48,6 +52,8 @@ function FoodRing({
         <ringGeometry args={[0.46, 0.52, 64]} />
         <meshBasicMaterial
           color={color}
+          transparent={opacity < 1}
+          opacity={opacity}
           depthTest={false}
           side={THREE.DoubleSide}
         />
@@ -64,6 +70,7 @@ function FoodRing({
           }
           billboard
           renderOrder={MACHINE_RENDER_ORDER + 1}
+          opacity={opacity}
         />
       ) : null}
     </group>
@@ -74,6 +81,8 @@ export function MachineObject({
   machine,
   isSelected,
   isConnectionSource,
+  opacity = 1,
+  isInteractive = true,
   onPointerDown,
   onPointerUp,
 }: MachineObjectProps) {
@@ -84,14 +93,22 @@ export function MachineObject({
   return (
     <group
       position={[position.x, position.y, position.z]}
-      onPointerDown={(event) => {
-        event.stopPropagation();
-        onPointerDown(machine.id, event);
-      }}
-      onPointerUp={(event) => {
-        event.stopPropagation();
-        onPointerUp(machine.id, event);
-      }}
+      onPointerDown={
+        isInteractive
+          ? (event) => {
+              event.stopPropagation();
+              onPointerDown(machine.id, event);
+            }
+          : undefined
+      }
+      onPointerUp={
+        isInteractive
+          ? (event) => {
+              event.stopPropagation();
+              onPointerUp(machine.id, event);
+            }
+          : undefined
+      }
       userData={{ label }}
     >
       <mesh
@@ -99,12 +116,21 @@ export function MachineObject({
         renderOrder={MACHINE_RENDER_ORDER}
       >
         <cylinderGeometry args={[0.48, 0.48, MACHINE_BASE_HEIGHT, 48]} />
-        <meshStandardMaterial color={isSelected ? '#fff5cc' : '#fffdf9'} />
+        <meshStandardMaterial
+          color={isSelected ? '#fff5cc' : '#fffdf9'}
+          transparent={opacity < 1}
+          opacity={opacity}
+        />
       </mesh>
       {machine.machineId === 'storage' ? (
-        <FoodRing foodId={machine.foodId} color="#ff77b7" />
+        <FoodRing foodId={machine.foodId} color="#ff77b7" opacity={opacity} />
       ) : machine.machineId === 'shipping' ? (
-        <FoodRing foodId={machine.foodId} color="#50b86b" smallBadge />
+        <FoodRing
+          foodId={machine.foodId}
+          color="#50b86b"
+          smallBadge
+          opacity={opacity}
+        />
       ) : hasSprite ? (
         <SpritePlane
           kind="machine"
@@ -113,6 +139,7 @@ export function MachineObject({
           position={[0, MACHINE_SPRITE_Y, 0]}
           billboard
           renderOrder={MACHINE_RENDER_ORDER + 1}
+          opacity={opacity}
         />
       ) : (
         <mesh
@@ -120,7 +147,11 @@ export function MachineObject({
           renderOrder={MACHINE_RENDER_ORDER + 1}
         >
           <cylinderGeometry args={[0.28, 0.34, 0.22, 24]} />
-          <meshStandardMaterial color="#7fa6a4" />
+          <meshStandardMaterial
+            color="#7fa6a4"
+            transparent={opacity < 1}
+            opacity={opacity}
+          />
         </mesh>
       )}
       {isSelected || isConnectionSource ? (

@@ -1,6 +1,6 @@
 import { BookOpen, ChevronLeft } from 'lucide-react';
 import type { PointerEvent } from 'react';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { FoodSprite } from './components/FoodSprite.tsx';
 import { GameCanvas } from './components/GameCanvas.tsx';
 import { MachineInspector } from './components/MachineInspector.tsx';
@@ -9,7 +9,7 @@ import {
   createInitialEditorModel,
   setMachineRecipe,
 } from './game/editorActions.ts';
-import { selectEditorTool } from './game/editorState.ts';
+import { selectEditorTool, type EditorTool } from './game/editorState.ts';
 import {
   foodInfos,
   getIngredientNames,
@@ -20,9 +20,23 @@ import type { FoodId } from './game/food.ts';
 import { findMachineById } from './game/placement.ts';
 import { getStageGoal } from './game/stageGoals.ts';
 
+const TOOL_DRAG_THRESHOLD_PX = 6;
+
+type PlaceMachineTool = Extract<EditorTool, { kind: 'place-machine' }>;
+type PlacementDragState = {
+  tool: PlaceMachineTool;
+  pointerId: number;
+  startClientX: number;
+  startClientY: number;
+  isDragging: boolean;
+};
+
 export function App() {
   const [screen, setScreen] = useState<'game' | 'encyclopedia'>('game');
   const [model, setModel] = useState(() => createInitialEditorModel());
+  const [placementDrag, setPlacementDrag] = useState<PlacementDragState | null>(
+    null,
+  );
   const stageGoal = useMemo(
     () => getStageGoal({ seed: 'daily', stageNumber: 1 }),
     [],
@@ -45,6 +59,54 @@ export function App() {
         )
       : null;
 
+  useEffect(() => {
+    if (placementDrag === null) {
+      return;
+    }
+
+    const handlePointerMove = (event: globalThis.PointerEvent) => {
+      if (event.pointerId !== placementDrag.pointerId) {
+        return;
+      }
+
+      const dx = event.clientX - placementDrag.startClientX;
+      const dy = event.clientY - placementDrag.startClientY;
+
+      if (
+        !placementDrag.isDragging &&
+        dx * dx + dy * dy > TOOL_DRAG_THRESHOLD_PX * TOOL_DRAG_THRESHOLD_PX
+      ) {
+        setPlacementDrag((current) =>
+          current !== null && current.pointerId === event.pointerId
+            ? { ...current, isDragging: true }
+            : current,
+        );
+      }
+    };
+
+    const handlePointerUp = (event: globalThis.PointerEvent) => {
+      if (event.pointerId === placementDrag.pointerId) {
+        setPlacementDrag(null);
+      }
+    };
+
+    const handlePointerCancel = (event: globalThis.PointerEvent) => {
+      if (event.pointerId === placementDrag.pointerId) {
+        setPlacementDrag(null);
+      }
+    };
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+    window.addEventListener('pointercancel', handlePointerCancel);
+
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener('pointercancel', handlePointerCancel);
+    };
+  }, [placementDrag]);
+
   if (screen === 'encyclopedia') {
     return <FoodEncyclopedia onBack={() => setScreen('game')} />;
   }
@@ -53,8 +115,13 @@ export function App() {
     <main className="app-shell">
       <GameCanvas
         model={model}
+        dragPlacementTool={placementDrag?.tool ?? null}
+        isDraggingPlacement={placementDrag?.isDragging === true}
         onModelChange={(updater) => {
           setModel((current) => updater(current));
+        }}
+        onPlacementDrop={() => {
+          setPlacementDrag(null);
         }}
       />
       <button
@@ -105,6 +172,15 @@ export function App() {
             ...current,
             editorState: selectEditorTool(current.editorState, tool),
           }));
+        }}
+        onStartPlacementDrag={(tool, event) => {
+          setPlacementDrag({
+            tool,
+            pointerId: event.pointerId,
+            startClientX: event.clientX,
+            startClientY: event.clientY,
+            isDragging: false,
+          });
         }}
       />
     </main>

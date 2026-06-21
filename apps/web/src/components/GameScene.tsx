@@ -1,20 +1,41 @@
 import type { ThreeEvent } from '@react-three/fiber';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import {
-  finishConnectionDrag,
   handleConnectionClick,
   handleGridClick,
   handleMachineClick,
-  startConnectionDrag,
   type EditorModel,
 } from '../game/editorActions.ts';
+import type { ConnectionId } from '../game/connections.ts';
+import type { EditorTool } from '../game/editorState.ts';
+import type { GridPosition } from '../game/grid.ts';
 import { findMachineById, type PlacementId } from '../game/placement.ts';
 import { ConveyorObject } from './ConveyorObject.tsx';
 import { MachineObject } from './MachineObject.tsx';
 
+const CLICK_MOVE_THRESHOLD_PX = 6;
+const PLACEMENT_PREVIEW_ID = '__placement-preview__';
+
+type PlaceMachineTool = Extract<EditorTool, { kind: 'place-machine' }>;
+type PressTarget =
+  | { kind: 'grid' }
+  | { kind: 'machine'; machineId: PlacementId }
+  | { kind: 'connection'; connectionId: ConnectionId };
+
+type PressState = {
+  pointerId: number;
+  target: PressTarget;
+  startClientX: number;
+  startClientY: number;
+  isClickCandidate: boolean;
+};
+
 type GameSceneProps = {
   model: EditorModel;
+  dragPlacementTool: PlaceMachineTool | null;
+  isDraggingPlacement: boolean;
   onModelChange: (updater: (model: EditorModel) => EditorModel) => void;
+  onPlacementDrop: () => void;
 };
 
 function toGridPosition(event: ThreeEvent<PointerEvent>) {
@@ -24,24 +45,173 @@ function toGridPosition(event: ThreeEvent<PointerEvent>) {
   };
 }
 
-export function GameScene({ model, onModelChange }: GameSceneProps) {
-  const pressedMachineIdRef = useRef<PlacementId | null>(null);
+function isPrimaryActionPointer(event: ThreeEvent<PointerEvent>) {
+  if (event.pointerType === 'mouse') {
+    return event.button === 0;
+  }
+
+  return event.isPrimary;
+}
+
+function isSameTarget(first: PressTarget, second: PressTarget) {
+  if (first.kind !== second.kind) {
+    return false;
+  }
+
+  switch (first.kind) {
+    case 'grid':
+      return true;
+    case 'machine':
+      return second.kind === 'machine' && first.machineId === second.machineId;
+    case 'connection':
+      return (
+        second.kind === 'connection' &&
+        first.connectionId === second.connectionId
+      );
+  }
+}
+
+export function GameScene({
+  model,
+  dragPlacementTool,
+  isDraggingPlacement,
+  onModelChange,
+  onPlacementDrop,
+}: GameSceneProps) {
+  const activePointerIdsRef = useRef(new Set<number>());
+  const pressStateRef = useRef<PressState | null>(null);
+  const [previewPosition, setPreviewPosition] = useState<GridPosition | null>(
+    null,
+  );
   const selectedMachineId = model.gameState.selection.selectedMachineId;
   const connectionSourceMachineId =
     model.editorState.connectionSourceMachineId ??
     model.editorState.dragConnectionSourceMachineId;
+  const previewMachine =
+    dragPlacementTool !== null &&
+    isDraggingPlacement &&
+    previewPosition !== null
+      ? {
+          id: PLACEMENT_PREVIEW_ID,
+          machineId: dragPlacementTool.machineId,
+          position: previewPosition,
+          foodId: dragPlacementTool.foodId,
+        }
+      : null;
+
+  const beginPress = (event: ThreeEvent<PointerEvent>, target: PressTarget) => {
+    activePointerIdsRef.current.add(event.pointerId);
+
+    if (!isPrimaryActionPointer(event)) {
+      pressStateRef.current = null;
+      return;
+    }
+
+    if (activePointerIdsRef.current.size > 1) {
+      pressStateRef.current = null;
+      return;
+    }
+
+    pressStateRef.current = {
+      pointerId: event.pointerId,
+      target,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      isClickCandidate: true,
+    };
+  };
+
+  const updatePress = (event: ThreeEvent<PointerEvent>) => {
+    const pressState = pressStateRef.current;
+
+    if (pressState === null || pressState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const dx = event.clientX - pressState.startClientX;
+    const dy = event.clientY - pressState.startClientY;
+
+    if (dx * dx + dy * dy > CLICK_MOVE_THRESHOLD_PX * CLICK_MOVE_THRESHOLD_PX) {
+      pressState.isClickCandidate = false;
+    }
+  };
+
+  const finishPress = (
+    event: ThreeEvent<PointerEvent>,
+    target: PressTarget,
+  ) => {
+    activePointerIdsRef.current.delete(event.pointerId);
+
+    const pressState = pressStateRef.current;
+    pressStateRef.current = null;
+
+    return (
+      pressState !== null &&
+      pressState.pointerId === event.pointerId &&
+      pressState.isClickCandidate &&
+      isSameTarget(pressState.target, target)
+    );
+  };
+
+  const cancelPress = (event: ThreeEvent<PointerEvent>) => {
+    activePointerIdsRef.current.delete(event.pointerId);
+    pressStateRef.current = null;
+  };
 
   return (
-    <group>
+    <group
+      onPointerMove={(event) => {
+        updatePress(event);
+      }}
+      onPointerCancel={cancelPress}
+    >
       <mesh
         rotation={[-Math.PI / 2, 0, 0]}
         position={[0, -0.01, 0]}
+        onPointerDown={(event) => {
+          event.stopPropagation();
+          beginPress(event, { kind: 'grid' });
+        }}
+        onPointerMove={(event) => {
+          if (isDraggingPlacement) {
+            setPreviewPosition(toGridPosition(event));
+          }
+          updatePress(event);
+        }}
         onPointerUp={(event) => {
           event.stopPropagation();
-          pressedMachineIdRef.current = null;
+
+          if (dragPlacementTool !== null && isDraggingPlacement) {
+            onModelChange((current) =>
+              handleGridClick(
+                {
+                  ...current,
+                  editorState: {
+                    ...current.editorState,
+                    selectedTool: dragPlacementTool,
+                    connectionSourceMachineId: null,
+                    dragConnectionSourceMachineId: null,
+                  },
+                },
+                toGridPosition(event),
+              ),
+            );
+            onPlacementDrop();
+            return;
+          }
+
+          if (!finishPress(event, { kind: 'grid' })) {
+            return;
+          }
+
           onModelChange((current) =>
             handleGridClick(current, toGridPosition(event)),
           );
+        }}
+        onPointerLeave={() => {
+          if (isDraggingPlacement) {
+            setPreviewPosition(null);
+          }
         }}
       >
         <planeGeometry args={[14, 14]} />
@@ -68,7 +238,19 @@ export function GameScene({ model, onModelChange }: GameSceneProps) {
             connection={connection}
             fromMachine={fromMachine}
             toMachine={toMachine}
-            onClick={(connectionId) => {
+            onPointerDown={(connectionId, event) => {
+              beginPress(event, { kind: 'connection', connectionId });
+            }}
+            onPointerUp={(connectionId, event) => {
+              if (
+                !finishPress(event, {
+                  kind: 'connection',
+                  connectionId,
+                })
+              ) {
+                return;
+              }
+
               onModelChange((current) =>
                 handleConnectionClick(current, connectionId),
               );
@@ -82,30 +264,34 @@ export function GameScene({ model, onModelChange }: GameSceneProps) {
           machine={machine}
           isSelected={selectedMachineId === machine.id}
           isConnectionSource={connectionSourceMachineId === machine.id}
-          onPointerDown={(machineId) => {
-            pressedMachineIdRef.current = machineId;
+          onPointerDown={(machineId, event) => {
+            beginPress(event, { kind: 'machine', machineId });
           }}
-          onPointerUp={(machineId) => {
-            const pressedMachineId = pressedMachineIdRef.current;
-            pressedMachineIdRef.current = null;
+          onPointerUp={(machineId, event) => {
+            if (
+              !finishPress(event, {
+                kind: 'machine',
+                machineId,
+              })
+            ) {
+              return;
+            }
 
-            onModelChange((current) => {
-              if (
-                current.editorState.selectedTool.kind === 'connect' &&
-                pressedMachineId !== null &&
-                pressedMachineId !== machineId
-              ) {
-                return finishConnectionDrag(
-                  startConnectionDrag(current, pressedMachineId),
-                  machineId,
-                );
-              }
-
-              return handleMachineClick(current, machineId);
-            });
+            onModelChange((current) => handleMachineClick(current, machineId));
           }}
         />
       ))}
+      {previewMachine !== null ? (
+        <MachineObject
+          machine={previewMachine}
+          isSelected={false}
+          isConnectionSource={false}
+          opacity={0.45}
+          isInteractive={false}
+          onPointerDown={() => undefined}
+          onPointerUp={() => undefined}
+        />
+      ) : null}
     </group>
   );
 }

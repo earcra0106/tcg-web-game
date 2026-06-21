@@ -24,6 +24,7 @@ type SpritePlaneProps = {
   position?: [number, number, number];
   billboard?: boolean;
   renderOrder?: number;
+  opacity?: number;
 };
 
 export function SpritePlane({
@@ -33,6 +34,7 @@ export function SpritePlane({
   position = [0, 0, 0],
   billboard = false,
   renderOrder = 10,
+  opacity = 1,
 }: SpritePlaneProps) {
   const url = kind === 'food' ? FOOD_SPRITESHEET_URL : MACHINE_SPRITESHEET_URL;
   const sourceTexture = useLoader(THREE.TextureLoader, url);
@@ -86,6 +88,7 @@ export function SpritePlane({
       <meshBasicMaterial
         map={texture}
         transparent
+        opacity={opacity}
         alphaTest={0.08}
         depthTest={false}
         side={THREE.DoubleSide}
