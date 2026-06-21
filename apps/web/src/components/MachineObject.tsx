@@ -8,6 +8,10 @@ import type { PlacedMachine, PlacementId } from '../game/placement.ts';
 import { SpritePlane } from './SpritePlane.tsx';
 
 const MACHINE_RENDER_ORDER = 10;
+const MACHINE_BASE_Y = 0.105;
+const MACHINE_BASE_HEIGHT = 0.034;
+const MACHINE_RING_Y = 0.13;
+const MACHINE_SPRITE_Y = 0.2;
 
 type MachineObjectProps = {
   machine: PlacedMachine;
@@ -38,7 +42,7 @@ function FoodRing({
     <group>
       <mesh
         rotation={[-Math.PI / 2, 0, 0]}
-        position={[0, 0.055, 0]}
+        position={[0, MACHINE_RING_Y, 0]}
         renderOrder={MACHINE_RENDER_ORDER}
       >
         <ringGeometry args={[0.46, 0.52, 64]} />
@@ -53,7 +57,11 @@ function FoodRing({
           kind="food"
           id={food.spriteId}
           size={smallBadge ? 0.44 : 0.72}
-          position={smallBadge ? [-0.34, 0.08, -0.34] : [0, 0.08, 0]}
+          position={
+            smallBadge
+              ? [-0.34, MACHINE_SPRITE_Y, -0.34]
+              : [0, MACHINE_SPRITE_Y, 0]
+          }
           billboard
           renderOrder={MACHINE_RENDER_ORDER + 1}
         />
@@ -86,8 +94,11 @@ export function MachineObject({
       }}
       userData={{ label }}
     >
-      <mesh position={[0, 0.012, 0]} renderOrder={MACHINE_RENDER_ORDER}>
-        <boxGeometry args={[0.92, 0.024, 0.92]} />
+      <mesh
+        position={[0, MACHINE_BASE_Y, 0]}
+        renderOrder={MACHINE_RENDER_ORDER}
+      >
+        <cylinderGeometry args={[0.48, 0.48, MACHINE_BASE_HEIGHT, 48]} />
         <meshStandardMaterial color={isSelected ? '#fff5cc' : '#fffdf9'} />
       </mesh>
       {machine.machineId === 'storage' ? (
@@ -99,12 +110,15 @@ export function MachineObject({
           kind="machine"
           id={machine.machineId}
           size={0.78}
-          position={[0, 0.08, 0]}
+          position={[0, MACHINE_SPRITE_Y, 0]}
           billboard
           renderOrder={MACHINE_RENDER_ORDER + 1}
         />
       ) : (
-        <mesh position={[0, 0.12, 0]} renderOrder={MACHINE_RENDER_ORDER + 1}>
+        <mesh
+          position={[0, MACHINE_SPRITE_Y, 0]}
+          renderOrder={MACHINE_RENDER_ORDER + 1}
+        >
           <cylinderGeometry args={[0.28, 0.34, 0.22, 24]} />
           <meshStandardMaterial color="#7fa6a4" />
         </mesh>
@@ -112,7 +126,7 @@ export function MachineObject({
       {isSelected || isConnectionSource ? (
         <mesh
           rotation={[-Math.PI / 2, 0, 0]}
-          position={[0, 0.09, 0]}
+          position={[0, MACHINE_RING_Y + 0.015, 0]}
           renderOrder={MACHINE_RENDER_ORDER + 2}
         >
           <ringGeometry args={[0.56, 0.6, 64]} />

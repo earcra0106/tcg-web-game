@@ -74,7 +74,7 @@ export function createConveyorRenderModel({
         angleRad,
         position: {
           x: lerp(start.x, end.x, progress),
-          y: height + 0.018,
+          y: height + 0.075,
           z: lerp(start.z, end.z, progress),
         },
       };

@@ -49,7 +49,7 @@ function ToolButton({
       onClick={() => onSelectTool(tool)}
     >
       {children}
-      <span>{label}</span>
+      <span className="tool-button__label">{label}</span>
     </button>
   );
 }

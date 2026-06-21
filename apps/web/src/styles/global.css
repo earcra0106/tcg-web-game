@@ -223,7 +223,7 @@ select {
   background: #f0fbfa;
 }
 
-.tool-button span {
+.tool-button__label {
   overflow-wrap: anywhere;
   font-size: 0.72rem;
   font-weight: 700;

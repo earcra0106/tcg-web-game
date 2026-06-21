@@ -31,7 +31,7 @@ describe('conveyor render model', () => {
     expect(model.triangleMarkers).toHaveLength(2);
     expect(model.triangleMarkers[0].progress).toBe(0.25);
     expect(model.triangleMarkers[0].position.x).toBe(0);
-    expect(model.triangleMarkers[0].position.y).toBeCloseTo(0.058);
+    expect(model.triangleMarkers[0].position.y).toBeCloseTo(0.115);
     expect(model.triangleMarkers[0].position.z).toBe(0.5);
     expect(model.triangleMarkers[1].progress).toBe(0.75);
   });

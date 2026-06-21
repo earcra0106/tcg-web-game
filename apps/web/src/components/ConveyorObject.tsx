@@ -37,8 +37,8 @@ export function ConveyorObject({
     nowMs,
   });
 
-  useFrame(({ clock }) => {
-    setNowMs(clock.elapsedTime * 1000);
+  useFrame(() => {
+    setNowMs(performance.now());
   });
 
   return (
@@ -67,10 +67,11 @@ export function ConveyorObject({
           geometry={triangleGeometry}
           position={[marker.position.x, marker.position.y, marker.position.z]}
           rotation={[-Math.PI / 2, marker.angleRad, 0]}
-          renderOrder={2}
+          renderOrder={5}
         >
           <meshBasicMaterial
-            color="#fffdf9"
+            color="#ffffff"
+            depthTest={false}
             depthWrite={false}
             side={THREE.DoubleSide}
           />
