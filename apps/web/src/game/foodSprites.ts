@@ -1,5 +1,6 @@
 import type { SpritesheetData } from 'pixi.js';
 import type { FoodSpriteId } from './food.ts';
+import { foodInfos } from './foods.ts';
 
 export const FOOD_SPRITESHEET_URL = '/assets/sprites/foods.png';
 export const FOOD_SPRITESHEET_SIZE = 1024;
@@ -7,16 +8,9 @@ export const FOOD_SPRITE_SIZE = 128;
 export const FOOD_SPRITESHEET_COLUMNS =
   FOOD_SPRITESHEET_SIZE / FOOD_SPRITE_SIZE;
 
-const foodSpriteIndexes = {
-  rice: 0,
-  egg: 1,
-  milk: 2,
-  bread: 3,
-  'boiled-egg': 23,
-  'cooked-rice': 26,
-  toast: 27,
-  'fried-egg': 28,
-} as const satisfies Record<string, number>;
+const foodSpriteIndexes = Object.fromEntries(
+  foodInfos.map((food, index) => [food.spriteId, index]),
+) satisfies Record<string, number>;
 
 export type FoodSpriteFrame = {
   id: FoodSpriteId;

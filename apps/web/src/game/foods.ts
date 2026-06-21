@@ -1,23 +1,7 @@
 import type { FoodId, FoodInfoData } from './food.ts';
-import { boiledEggFoodInfo } from './food-data/boiled-egg.ts';
-import { breadFoodInfo } from './food-data/bread.ts';
-import { cookedRiceFoodInfo } from './food-data/cooked-rice.ts';
-import { eggFoodInfo } from './food-data/egg.ts';
-import { friedEggFoodInfo } from './food-data/fried-egg.ts';
-import { milkFoodInfo } from './food-data/milk.ts';
-import { riceFoodInfo } from './food-data/rice.ts';
-import { toastFoodInfo } from './food-data/toast.ts';
+import { allFoodInfos } from './food-data/all-foods.ts';
 
-export const foodInfos = [
-  breadFoodInfo,
-  riceFoodInfo,
-  eggFoodInfo,
-  milkFoodInfo,
-  cookedRiceFoodInfo,
-  toastFoodInfo,
-  friedEggFoodInfo,
-  boiledEggFoodInfo,
-] as const satisfies readonly FoodInfoData[];
+export const foodInfos = allFoodInfos;
 
 export function getFoodInfo(id: FoodId) {
   return foodInfos.find((food) => food.id === id) ?? null;

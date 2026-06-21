@@ -7,6 +7,340 @@ import {
 } from './foods.ts';
 import { foodSpritesheetData, getFoodSpriteFrame } from './foodSprites.ts';
 
+const expectedFoods = [
+  ['rice', '米', [], null, true, false, true, null],
+  ['egg', '卵', [], null, true, false, true, null],
+  ['milk', '牛乳', [], null, true, false, true, null],
+  ['bread', '食パン', [], null, true, false, true, null],
+  ['beef', '牛肉', [], null, true, false, true, null],
+  ['chicken', '鶏肉', [], null, true, false, true, null],
+  ['shrimp', 'エビ', [], null, true, false, true, null],
+  ['potato', 'ジャガイモ', [], null, true, false, true, null],
+  ['carrot', 'ニンジン', [], null, true, false, true, null],
+  ['onion', '玉ねぎ', [], null, true, false, true, null],
+  ['tomato', 'トマト', [], null, true, false, true, null],
+  ['lettuce', 'レタス', [], null, true, false, true, null],
+  ['cheese', 'チーズ', [], null, true, false, true, null],
+  ['curry-powder', 'カレー粉', [], null, true, false, true, null],
+  [
+    'sliced-tomato',
+    'スライストマト',
+    ['tomato'],
+    'cutting',
+    false,
+    false,
+    true,
+    null,
+  ],
+  [
+    'chopped-onion',
+    '刻み玉ねぎ',
+    ['onion'],
+    'cutting',
+    false,
+    false,
+    true,
+    null,
+  ],
+  [
+    'chopped-lettuce',
+    '刻みレタス',
+    ['lettuce'],
+    'cutting',
+    false,
+    false,
+    true,
+    null,
+  ],
+  ['cut-potato', 'ポテト', ['potato'], 'cutting', false, false, true, null],
+  ['cooked-beef', '炒め肉', ['beef'], 'heating', false, false, true, null],
+  [
+    'grilled-chicken',
+    'グリルチキン',
+    ['chicken'],
+    'heating',
+    false,
+    false,
+    true,
+    null,
+  ],
+  [
+    'prepared-shrimp',
+    '下処理エビ',
+    ['shrimp'],
+    'cutting',
+    false,
+    false,
+    true,
+    null,
+  ],
+  [
+    'chopped-carrot',
+    '刻みニンジン',
+    ['carrot'],
+    'cutting',
+    false,
+    false,
+    true,
+    null,
+  ],
+  [
+    'tomato-sauce',
+    'トマトソース',
+    ['sliced-tomato'],
+    'mixing',
+    false,
+    false,
+    true,
+    null,
+  ],
+  ['boiled-egg', 'ゆで卵', ['egg'], 'heating', false, false, true, null],
+  [
+    'curry-sauce',
+    'カレーソース',
+    ['curry-powder', 'chopped-onion', 'chopped-carrot'],
+    'mixing',
+    false,
+    false,
+    true,
+    null,
+  ],
+  [
+    'omelet-base',
+    'オムレツのもと',
+    ['egg', 'milk', 'cheese'],
+    'mixing',
+    false,
+    false,
+    true,
+    null,
+  ],
+  ['cooked-rice', 'ごはん', ['rice'], 'heating', false, true, true, 1],
+  ['toast', 'トースト', ['bread'], 'heating', false, true, true, 1],
+  ['fried-egg', '目玉焼き', ['egg'], 'heating', false, true, true, 1],
+  [
+    'french-fries',
+    'ポテトフライ',
+    ['cut-potato'],
+    'heating',
+    false,
+    true,
+    true,
+    1,
+  ],
+  [
+    'salad',
+    'サラダ',
+    ['chopped-lettuce', 'sliced-tomato'],
+    'combining',
+    false,
+    true,
+    true,
+    1,
+  ],
+  [
+    'beef-steak',
+    'ビーフステーキ',
+    ['cooked-beef'],
+    'cutting',
+    false,
+    true,
+    true,
+    1,
+  ],
+  [
+    'chicken-saute',
+    'チキンソテー',
+    ['grilled-chicken', 'french-fries'],
+    'combining',
+    false,
+    true,
+    true,
+    1,
+  ],
+  [
+    'cheese-toast',
+    'チーズトースト',
+    ['toast', 'cheese'],
+    'combining',
+    false,
+    true,
+    false,
+    1,
+  ],
+  [
+    'potato-salad',
+    'ポテトサラダ',
+    ['cut-potato', 'chopped-carrot'],
+    'mixing',
+    false,
+    true,
+    false,
+    1,
+  ],
+  [
+    'fried-egg-toast',
+    '目玉焼きトースト',
+    ['toast', 'lettuce', 'fried-egg'],
+    'combining',
+    false,
+    true,
+    false,
+    2,
+  ],
+  [
+    'egg-sandwich',
+    '卵サンド',
+    ['bread', 'boiled-egg', 'chopped-lettuce'],
+    'combining',
+    false,
+    true,
+    false,
+    2,
+  ],
+  ['omelet', 'オムレツ', ['omelet-base'], 'heating', false, true, true, 2],
+  [
+    'chicken-salad',
+    'チキンサラダ',
+    ['grilled-chicken', 'salad'],
+    'combining',
+    false,
+    true,
+    false,
+    2,
+  ],
+  [
+    'shrimp-salad',
+    'エビサラダ',
+    ['prepared-shrimp', 'salad'],
+    'combining',
+    false,
+    true,
+    false,
+    2,
+  ],
+  [
+    'beef-tomato-stew',
+    '牛肉のトマト煮',
+    ['cooked-beef', 'tomato-sauce', 'chopped-onion'],
+    'heating',
+    false,
+    true,
+    false,
+    2,
+  ],
+  [
+    'chicken-tomato-stew',
+    'チキントマト煮',
+    ['grilled-chicken', 'tomato-sauce', 'chopped-onion'],
+    'heating',
+    false,
+    true,
+    false,
+    2,
+  ],
+  [
+    'mixed-grill',
+    'ミックスグリル',
+    ['beef-steak', 'chicken-saute'],
+    'combining',
+    false,
+    true,
+    false,
+    2,
+  ],
+  [
+    'tomato-cheese-sandwich',
+    'トマトチーズサンド',
+    ['bread', 'sliced-tomato', 'cheese'],
+    'combining',
+    false,
+    true,
+    false,
+    2,
+  ],
+  [
+    'shrimp-omelet',
+    'エビオムレツ',
+    ['prepared-shrimp', 'omelet-base'],
+    'heating',
+    false,
+    true,
+    false,
+    3,
+  ],
+  [
+    'hamburg',
+    'ハンバーグ',
+    ['beef', 'chopped-onion', 'egg', 'bread', 'tomato-sauce', 'milk'],
+    'heating',
+    false,
+    true,
+    false,
+    3,
+  ],
+  [
+    'curry-rice',
+    'カレーライス',
+    ['cooked-rice', 'cooked-beef', 'curry-sauce'],
+    'combining',
+    false,
+    true,
+    false,
+    3,
+  ],
+  [
+    'omurice',
+    'オムライス',
+    ['cooked-rice', 'grilled-chicken', 'tomato-sauce', 'omelet'],
+    'combining',
+    false,
+    true,
+    false,
+    3,
+  ],
+  [
+    'fried-rice',
+    'チャーハン',
+    ['cooked-rice', 'egg', 'chopped-onion', 'chopped-carrot'],
+    'mixing',
+    false,
+    true,
+    false,
+    3,
+  ],
+  [
+    'shrimp-pilaf',
+    'エビピラフ',
+    ['cooked-rice', 'prepared-shrimp', 'chopped-onion', 'chopped-carrot'],
+    'mixing',
+    false,
+    true,
+    false,
+    3,
+  ],
+  [
+    'cheese-curry',
+    'チーズカレー',
+    ['cooked-rice', 'cut-potato', 'cheese', 'curry-sauce'],
+    'combining',
+    false,
+    true,
+    false,
+    3,
+  ],
+  [
+    'chicken-curry',
+    'チキンカレー',
+    ['cooked-rice', 'grilled-chicken', 'curry-sauce'],
+    'combining',
+    false,
+    true,
+    false,
+    3,
+  ],
+] as const;
+
 describe('food data types', () => {
   it('describes food info data', () => {
     const hamburg: FoodInfoData = {
@@ -36,139 +370,78 @@ describe('food data types', () => {
     });
   });
 
-  it('registers bread as a basic ingredient', () => {
-    const bread = foodInfos.find((food) => food.id === 'bread');
-
-    expect(bread).toMatchObject({
-      name: '食パン',
-      ingredientIds: [],
-      canSpawnFromStorage: true,
-      canBeServed: false,
-      canBeIngredient: true,
-      spriteId: 'bread',
-    });
+  it('registers every food from the food requirements in order', () => {
+    expect(foodInfos.map((food) => food.id)).toEqual(
+      expectedFoods.map(([id]) => id),
+    );
   });
 
-  it('registers rice, egg, and milk as basic ingredients', () => {
-    const basicIngredients = [
-      { id: 'rice', name: '米' },
-      { id: 'egg', name: '卵' },
-      { id: 'milk', name: '牛乳' },
-    ] as const;
-
-    basicIngredients.forEach(({ id, name }) => {
-      const food = foodInfos.find((item) => item.id === id);
-
-      expect(food).toMatchObject({
+  it('matches the food requirement attributes', () => {
+    expectedFoods.forEach(
+      ([
         id,
         name,
-        ingredientIds: [],
-        process: null,
-        canSpawnFromStorage: true,
-        canBeServed: false,
-        canBeIngredient: true,
-        difficulty: null,
-        spriteId: id,
-      });
-    });
+        ingredientIds,
+        process,
+        canSpawnFromStorage,
+        canBeServed,
+        canBeIngredient,
+        difficulty,
+      ]) => {
+        expect(foodInfos.find((food) => food.id === id)).toMatchObject({
+          id,
+          name,
+          ingredientIds,
+          process,
+          canSpawnFromStorage,
+          canBeServed,
+          canBeIngredient,
+          difficulty,
+          spriteId: id,
+        });
+      },
+    );
   });
 
-  it('resolves bread processing sources and targets', () => {
-    const bread = foodInfos.find((food) => food.id === 'bread');
+  it('references only registered ingredient foods', () => {
+    const foodIds = new Set(foodInfos.map((food) => food.id));
 
-    expect(bread).toBeDefined();
-    expect(getIngredientNames(bread!)).toEqual([]);
-    expect(getProcessedIntoNames('bread')).toEqual(['トースト']);
-  });
-
-  it('registers all foods craftable from the current basic ingredients', () => {
-    const craftableFoods = [
-      {
-        id: 'cooked-rice',
-        name: 'ごはん',
-        ingredientIds: ['rice'],
-        process: 'heating',
-        canBeServed: true,
-        canBeIngredient: true,
-        difficulty: 1,
-        category: 'dish',
-      },
-      {
-        id: 'toast',
-        name: 'トースト',
-        ingredientIds: ['bread'],
-        process: 'heating',
-        canBeServed: true,
-        canBeIngredient: true,
-        difficulty: 1,
-        category: 'dish',
-      },
-      {
-        id: 'fried-egg',
-        name: '目玉焼き',
-        ingredientIds: ['egg'],
-        process: 'heating',
-        canBeServed: true,
-        canBeIngredient: true,
-        difficulty: 1,
-        category: 'dish',
-      },
-      {
-        id: 'boiled-egg',
-        name: 'ゆで卵',
-        ingredientIds: ['egg'],
-        process: 'heating',
-        canBeServed: false,
-        canBeIngredient: true,
-        difficulty: null,
-        category: 'intermediate',
-      },
-    ] as const;
-
-    craftableFoods.forEach((expected) => {
-      const food = foodInfos.find((item) => item.id === expected.id);
-
-      expect(food).toMatchObject({
-        id: expected.id,
-        name: expected.name,
-        ingredientIds: expected.ingredientIds,
-        process: expected.process,
-        canSpawnFromStorage: false,
-        canBeServed: expected.canBeServed,
-        canBeIngredient: expected.canBeIngredient,
-        difficulty: expected.difficulty,
-        spriteId: expected.id,
-      });
-    });
-  });
-
-  it('assigns sprites to all registered foods', () => {
     foodInfos.forEach((food) => {
+      food.ingredientIds.forEach((ingredientId) => {
+        expect(foodIds.has(ingredientId)).toBe(true);
+      });
+    });
+  });
+
+  it('resolves processing sources and targets', () => {
+    const curryRice = foodInfos.find((food) => food.id === 'curry-rice');
+
+    expect(curryRice).toBeDefined();
+    expect(getIngredientNames(curryRice!)).toEqual([
+      'ごはん',
+      '炒め肉',
+      'カレーソース',
+    ]);
+    expect(getProcessedIntoNames('cooked-rice')).toEqual([
+      'カレーライス',
+      'オムライス',
+      'チャーハン',
+      'エビピラフ',
+      'チーズカレー',
+      'チキンカレー',
+    ]);
+  });
+
+  it('assigns requirement-order sprite cells to all registered foods', () => {
+    foodInfos.forEach((food, index) => {
       expect(getFoodSpriteFrame(food.spriteId)).toMatchObject({
         id: food.spriteId,
+        index,
+        row: Math.floor(index / 8),
+        column: index % 8,
         width: 128,
         height: 128,
       });
-    });
-  });
-
-  it('maps current foods to the requirement-order sprite cells', () => {
-    expect(getFoodSpriteFrame('rice')).toMatchObject({ row: 0, column: 0 });
-    expect(getFoodSpriteFrame('egg')).toMatchObject({ row: 0, column: 1 });
-    expect(getFoodSpriteFrame('milk')).toMatchObject({ row: 0, column: 2 });
-    expect(getFoodSpriteFrame('bread')).toMatchObject({ row: 0, column: 3 });
-    expect(getFoodSpriteFrame('boiled-egg')).toMatchObject({
-      row: 2,
-      column: 7,
-    });
-    expect(getFoodSpriteFrame('cooked-rice')).toMatchObject({
-      row: 3,
-      column: 2,
-    });
-    expect(getFoodSpriteFrame('toast')).toMatchObject({ row: 3, column: 3 });
-    expect(getFoodSpriteFrame('fried-egg')).toMatchObject({
-      row: 3,
-      column: 4,
     });
   });
 
@@ -180,6 +453,12 @@ describe('food data types', () => {
     expect(foodSpritesheetData.frames['bread.png']?.frame).toEqual({
       x: 384,
       y: 0,
+      w: 128,
+      h: 128,
+    });
+    expect(foodSpritesheetData.frames['chicken-curry.png']?.frame).toEqual({
+      x: 384,
+      y: 768,
       w: 128,
       h: 128,
     });
