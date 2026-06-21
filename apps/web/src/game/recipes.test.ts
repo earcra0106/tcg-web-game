@@ -29,6 +29,8 @@ describe('recipes', () => {
     expect(getProcessForMachine('heater')).toBe('heating');
     expect(getProcessForMachine('mixer')).toBe('mixing');
     expect(getProcessForMachine('combiner')).toBe('combining');
+    expect(getProcessForMachine('storage')).toBeNull();
+    expect(getProcessForMachine('shipping')).toBeNull();
     expect(getProcessForMachine('splitter')).toBeNull();
     expect(getProcessForMachine('trash-bin')).toBeNull();
   });

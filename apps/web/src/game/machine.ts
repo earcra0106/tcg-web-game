@@ -1,4 +1,6 @@
 export type MachineId =
+  | 'storage'
+  | 'shipping'
   | 'splitter'
   | 'merger'
   | 'cutter'
@@ -13,6 +15,8 @@ export type MachineInfoData = {
 };
 
 export const machineInfos = [
+  { id: 'storage', name: '倉庫' },
+  { id: 'shipping', name: '出荷口' },
   { id: 'splitter', name: '分岐器' },
   { id: 'merger', name: '合流機' },
   { id: 'cutter', name: '切断機' },

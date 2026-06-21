@@ -21,6 +21,8 @@ export type RecipeSearchInput = {
 };
 
 export const machineProcessMap = {
+  storage: null,
+  shipping: null,
   splitter: null,
   merger: null,
   cutter: 'cutting',

@@ -6,6 +6,11 @@ import {
 } from './machineSprites.ts';
 
 const expectedMachines = [
+  ['storage', '倉庫'],
+  ['shipping', '出荷口'],
+] as const;
+
+const expectedSpriteMachines = [
   ['splitter', '分岐器', 0, 0],
   ['merger', '合流機', 0, 1],
   ['cutter', '切断機', 0, 2],
@@ -30,12 +35,12 @@ describe('machine sprites', () => {
 
   it('registers machines in spritesheet order', () => {
     expect(machineInfos.map((machine) => machine.id)).toEqual(
-      expectedMachines.map(([id]) => id),
+      [...expectedMachines, ...expectedSpriteMachines].map(([id]) => id),
     );
   });
 
   it('matches machine names', () => {
-    expectedMachines.forEach(([id, name]) => {
+    [...expectedMachines, ...expectedSpriteMachines].forEach(([id, name]) => {
       expect(machineInfos.find((machine) => machine.id === id)).toMatchObject({
         id,
         name,
@@ -44,7 +49,7 @@ describe('machine sprites', () => {
   });
 
   it('assigns 256px cells to all registered machines', () => {
-    expectedMachines.forEach(([id, , row, column], index) => {
+    expectedSpriteMachines.forEach(([id, , row, column], index) => {
       expect(getMachineSpriteFrame(id)).toMatchObject({
         id,
         index,
@@ -63,5 +68,10 @@ describe('machine sprites', () => {
     expect(machineSpriteFrames).not.toContainEqual(
       expect.objectContaining({ row: 1, column: 3 }),
     );
+  });
+
+  it('does not create sprite frames for machines without sprite assets', () => {
+    expect(getMachineSpriteFrame('storage')).toBeNull();
+    expect(getMachineSpriteFrame('shipping')).toBeNull();
   });
 });

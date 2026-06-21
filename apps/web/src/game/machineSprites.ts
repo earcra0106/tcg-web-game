@@ -1,5 +1,4 @@
 import type { MachineId } from './machine.ts';
-import { machineInfos } from './machine.ts';
 
 export const MACHINE_SPRITESHEET_URL = '/assets/sprites/machines.png';
 export const MACHINE_SPRITESHEET_WIDTH = 1024;
@@ -21,13 +20,23 @@ export type MachineSpriteFrame = {
   height: number;
 };
 
-export const machineSpriteFrames = machineInfos.map((machine, index) => {
+const machineSpriteIds = [
+  'splitter',
+  'merger',
+  'cutter',
+  'heater',
+  'mixer',
+  'combiner',
+  'trash-bin',
+] as const satisfies readonly MachineId[];
+
+export const machineSpriteFrames = machineSpriteIds.map((machineId, index) => {
   const column = index % MACHINE_SPRITESHEET_COLUMNS;
   const row = Math.floor(index / MACHINE_SPRITESHEET_COLUMNS);
 
   return {
-    id: machine.id,
-    key: `${machine.id}.png`,
+    id: machineId,
+    key: `${machineId}.png`,
     index,
     column,
     row,
