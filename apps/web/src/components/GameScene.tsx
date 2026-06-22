@@ -1,5 +1,6 @@
 import type { ThreeEvent } from '@react-three/fiber';
 import { useRef, useState } from 'react';
+import type { GameSoundId } from '../game/audio.ts';
 import {
   handleConnectionClick,
   handleGridClick,
@@ -10,7 +11,9 @@ import type { ConnectionId } from '../game/connections.ts';
 import type { EditorTool } from '../game/editorState.ts';
 import type { GridPosition } from '../game/grid.ts';
 import { findMachineById, type PlacementId } from '../game/placement.ts';
+import type { RenderView } from '../game/renderView.ts';
 import { ConveyorObject } from './ConveyorObject.tsx';
+import { FoodItemObject } from './FoodItemObject.tsx';
 import { MachineObject } from './MachineObject.tsx';
 
 const CLICK_MOVE_THRESHOLD_PX = 6;
@@ -32,10 +35,12 @@ type PressState = {
 
 type GameSceneProps = {
   model: EditorModel;
+  renderView: RenderView;
   dragPlacementTool: PlaceMachineTool | null;
   isDraggingPlacement: boolean;
   onModelChange: (updater: (model: EditorModel) => EditorModel) => void;
   onPlacementDrop: () => void;
+  onPlaySound: (soundId: GameSoundId) => void;
 };
 
 function toGridPosition(event: ThreeEvent<PointerEvent>) {
@@ -73,10 +78,12 @@ function isSameTarget(first: PressTarget, second: PressTarget) {
 
 export function GameScene({
   model,
+  renderView,
   dragPlacementTool,
   isDraggingPlacement,
   onModelChange,
   onPlacementDrop,
+  onPlaySound,
 }: GameSceneProps) {
   const activePointerIdsRef = useRef(new Set<number>());
   const pressStateRef = useRef<PressState | null>(null);
@@ -98,6 +105,20 @@ export function GameScene({
           foodId: dragPlacementTool.foodId,
         }
       : null;
+
+  const updateModelWithSound = (
+    updater: (current: EditorModel) => EditorModel,
+    getSound: (current: EditorModel, next: EditorModel) => GameSoundId | null,
+  ) => {
+    const next = updater(model);
+    const sound = getSound(model, next);
+
+    if (sound !== null) {
+      onPlaySound(sound);
+    }
+
+    onModelChange(() => next);
+  };
 
   const beginPress = (event: ThreeEvent<PointerEvent>, target: PressTarget) => {
     activePointerIdsRef.current.add(event.pointerId);
@@ -182,19 +203,25 @@ export function GameScene({
           event.stopPropagation();
 
           if (dragPlacementTool !== null && isDraggingPlacement) {
-            onModelChange((current) =>
-              handleGridClick(
-                {
-                  ...current,
-                  editorState: {
-                    ...current.editorState,
-                    selectedTool: dragPlacementTool,
-                    connectionSourceMachineId: null,
-                    dragConnectionSourceMachineId: null,
+            updateModelWithSound(
+              (current) =>
+                handleGridClick(
+                  {
+                    ...current,
+                    editorState: {
+                      ...current.editorState,
+                      selectedTool: dragPlacementTool,
+                      connectionSourceMachineId: null,
+                      dragConnectionSourceMachineId: null,
+                    },
                   },
-                },
-                toGridPosition(event),
-              ),
+                  toGridPosition(event),
+                ),
+              (current, next) =>
+                next.gameState.machines.length >
+                current.gameState.machines.length
+                  ? 'confirm'
+                  : 'reject',
             );
             onPlacementDrop();
             return;
@@ -204,8 +231,13 @@ export function GameScene({
             return;
           }
 
-          onModelChange((current) =>
-            handleGridClick(current, toGridPosition(event)),
+          updateModelWithSound(
+            (current) => handleGridClick(current, toGridPosition(event)),
+            (current, next) =>
+              current.gameState.selection.selectedMachineId !==
+              next.gameState.selection.selectedMachineId
+                ? 'select'
+                : null,
           );
         }}
         onPointerLeave={() => {
@@ -218,7 +250,7 @@ export function GameScene({
         <meshStandardMaterial color="#fff8ef" />
       </mesh>
       <gridHelper args={[14, 14, '#e6c8a8', '#f0dcc4']} position={[0, 0, 0]} />
-      {model.gameState.connections.map((connection) => {
+      {renderView.connections.map((connection) => {
         const fromMachine = findMachineById(
           model.gameState.machines,
           connection.fromMachineId,
@@ -251,19 +283,33 @@ export function GameScene({
                 return;
               }
 
-              onModelChange((current) =>
-                handleConnectionClick(current, connectionId),
+              updateModelWithSound(
+                (current) => handleConnectionClick(current, connectionId),
+                (current, next) =>
+                  next.gameState.connections.length <
+                  current.gameState.connections.length
+                    ? 'cancel'
+                    : null,
               );
             }}
           />
         );
       })}
-      {model.gameState.machines.map((machine) => (
+      {renderView.items.map((item) => (
+        <FoodItemObject
+          key={item.id}
+          spriteId={item.spriteId}
+          position={item.position}
+        />
+      ))}
+      {renderView.machines.map(({ machine, isProcessing, hasOutput }) => (
         <MachineObject
           key={machine.id}
           machine={machine}
           isSelected={selectedMachineId === machine.id}
           isConnectionSource={connectionSourceMachineId === machine.id}
+          isProcessing={isProcessing}
+          hasOutput={hasOutput}
           onPointerDown={(machineId, event) => {
             beginPress(event, { kind: 'machine', machineId });
           }}
@@ -277,7 +323,29 @@ export function GameScene({
               return;
             }
 
-            onModelChange((current) => handleMachineClick(current, machineId));
+            updateModelWithSound(
+              (current) => handleMachineClick(current, machineId),
+              (current, next) => {
+                if (
+                  next.gameState.machines.length <
+                  current.gameState.machines.length
+                ) {
+                  return 'cancel';
+                }
+
+                if (
+                  next.gameState.connections.length >
+                  current.gameState.connections.length
+                ) {
+                  return 'confirm';
+                }
+
+                return current.gameState.selection.selectedMachineId !==
+                  next.gameState.selection.selectedMachineId
+                  ? 'select'
+                  : null;
+              },
+            );
           }}
         />
       ))}
@@ -291,6 +359,12 @@ export function GameScene({
           onPointerDown={() => undefined}
           onPointerUp={() => undefined}
         />
+      ) : null}
+      {renderView.hud.isCleared ? (
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.16, 0]}>
+          <ringGeometry args={[1.15, 1.24, 96]} />
+          <meshBasicMaterial color="#50b86b" transparent opacity={0.42} />
+        </mesh>
       ) : null}
     </group>
   );

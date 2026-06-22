@@ -17,6 +17,8 @@ type MachineObjectProps = {
   machine: PlacedMachine;
   isSelected: boolean;
   isConnectionSource: boolean;
+  isProcessing?: boolean;
+  hasOutput?: boolean;
   opacity?: number;
   isInteractive?: boolean;
   onPointerDown: (
@@ -81,6 +83,8 @@ export function MachineObject({
   machine,
   isSelected,
   isConnectionSource,
+  isProcessing = false,
+  hasOutput = false,
   opacity = 1,
   isInteractive = true,
   onPointerDown,
@@ -163,6 +167,22 @@ export function MachineObject({
           <ringGeometry args={[0.56, 0.6, 64]} />
           <meshBasicMaterial
             color={isConnectionSource ? '#ff9f43' : '#597877'}
+            depthTest={false}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+      ) : null}
+      {isProcessing || hasOutput ? (
+        <mesh
+          rotation={[-Math.PI / 2, 0, 0]}
+          position={[0, MACHINE_RING_Y + 0.03, 0]}
+          renderOrder={MACHINE_RENDER_ORDER + 3}
+        >
+          <ringGeometry args={[0.62, 0.66, 64]} />
+          <meshBasicMaterial
+            color={hasOutput ? '#50b86b' : '#ffcf5a'}
+            transparent
+            opacity={0.82}
             depthTest={false}
             side={THREE.DoubleSide}
           />

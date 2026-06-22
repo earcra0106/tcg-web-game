@@ -3,18 +3,22 @@ import { Canvas, useLoader } from '@react-three/fiber';
 import { MOUSE, TOUCH, TextureLoader } from 'three';
 import type { EditorModel } from '../game/editorActions.ts';
 import type { EditorTool } from '../game/editorState.ts';
+import type { GameSoundId } from '../game/audio.ts';
 import { FOOD_SPRITESHEET_URL } from '../game/foodSprites.ts';
 import { MACHINE_SPRITESHEET_URL } from '../game/machineSprites.ts';
+import type { RenderView } from '../game/renderView.ts';
 import { GameScene } from './GameScene.tsx';
 
 type PlaceMachineTool = Extract<EditorTool, { kind: 'place-machine' }>;
 
 type GameCanvasProps = {
   model: EditorModel;
+  renderView: RenderView;
   dragPlacementTool: PlaceMachineTool | null;
   isDraggingPlacement: boolean;
   onModelChange: (updater: (model: EditorModel) => EditorModel) => void;
   onPlacementDrop: () => void;
+  onPlaySound: (soundId: GameSoundId) => void;
 };
 
 useLoader.preload(TextureLoader, MACHINE_SPRITESHEET_URL);
@@ -22,10 +26,12 @@ useLoader.preload(TextureLoader, FOOD_SPRITESHEET_URL);
 
 export function GameCanvas({
   model,
+  renderView,
   dragPlacementTool,
   isDraggingPlacement,
   onModelChange,
   onPlacementDrop,
+  onPlaySound,
 }: GameCanvasProps) {
   return (
     <div className="game-canvas" aria-label="Game viewport">
@@ -35,10 +41,12 @@ export function GameCanvas({
         <directionalLight position={[3, 5, 4]} intensity={2.2} />
         <GameScene
           model={model}
+          renderView={renderView}
           dragPlacementTool={dragPlacementTool}
           isDraggingPlacement={isDraggingPlacement}
           onModelChange={onModelChange}
           onPlacementDrop={onPlacementDrop}
+          onPlaySound={onPlaySound}
         />
         <OrbitControls
           enablePan

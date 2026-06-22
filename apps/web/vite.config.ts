@@ -7,7 +7,12 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'pwa-192.svg', 'pwa-512.svg'],
+      includeAssets: [
+        'favicon.svg',
+        'pwa-192.svg',
+        'pwa-512.svg',
+        'assets/sounds/*.mp3',
+      ],
       manifest: {
         name: 'Voxel Kitchen Automation',
         short_name: 'VoxelKitchen',
@@ -34,7 +39,7 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,ico,webmanifest}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,mp3,ico,webmanifest}'],
       },
     }),
   ],
