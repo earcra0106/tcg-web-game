@@ -264,7 +264,7 @@ select {
   bottom: 16px;
   left: 50%;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   width: min(900px, calc(100vw - 32px));
   height: 112px;
@@ -351,7 +351,7 @@ select {
   min-width: 0;
   justify-content: center;
   justify-items: center;
-  align-content: center;
+  align-content: flex-start;
   gap: 5px;
   cursor: pointer;
 }
