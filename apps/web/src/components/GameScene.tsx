@@ -340,6 +340,13 @@ export function GameScene({
                   return 'confirm';
                 }
 
+                if (
+                  current.editorState.selectedTool.kind === 'connect' &&
+                  current.editorState.connectionSourceMachineId !== null
+                ) {
+                  return 'reject';
+                }
+
                 return current.gameState.selection.selectedMachineId !==
                   next.gameState.selection.selectedMachineId
                   ? 'select'
