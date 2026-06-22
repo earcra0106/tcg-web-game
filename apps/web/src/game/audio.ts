@@ -13,6 +13,9 @@ type AudioElementLike = {
   muted: boolean;
   preload: string;
   volume: number;
+  pause?: () => void;
+  load?: () => void;
+  removeAttribute?: (qualifiedName: string) => void;
   play: () => Promise<unknown> | unknown;
 };
 
@@ -26,15 +29,23 @@ export function createGameAudioController(
   createAudioElement: AudioElementFactory = createDefaultAudioElement,
 ) {
   let muted = false;
-  const elements = Object.fromEntries(
-    Object.entries(GAME_SOUND_URLS).map(([id, url]) => {
-      const element = createAudioElement(url);
-      element.preload = 'auto';
-      element.volume = id === 'success' ? 0.72 : 0.52;
+  const elements = new Map<GameSoundId, AudioElementLike>();
 
-      return [id, element];
-    }),
-  ) as Record<GameSoundId, AudioElementLike>;
+  const getElement = (soundId: GameSoundId) => {
+    const current = elements.get(soundId);
+
+    if (current !== undefined) {
+      return current;
+    }
+
+    const element = createAudioElement(GAME_SOUND_URLS[soundId]);
+    element.preload = 'auto';
+    element.volume = soundId === 'success' ? 0.72 : 0.52;
+    element.muted = muted;
+    elements.set(soundId, element);
+
+    return element;
+  };
 
   return {
     play(soundId: GameSoundId) {
@@ -42,7 +53,7 @@ export function createGameAudioController(
         return;
       }
 
-      const element = elements[soundId];
+      const element = getElement(soundId);
       element.currentTime = 0;
       element.muted = false;
 
@@ -52,12 +63,20 @@ export function createGameAudioController(
     },
     setMuted(nextMuted: boolean) {
       muted = nextMuted;
-      Object.values(elements).forEach((element) => {
+      elements.forEach((element) => {
         element.muted = nextMuted;
       });
     },
     isMuted() {
       return muted;
+    },
+    dispose() {
+      elements.forEach((element) => {
+        element.pause?.();
+        element.removeAttribute?.('src');
+        element.load?.();
+      });
+      elements.clear();
     },
   };
 }

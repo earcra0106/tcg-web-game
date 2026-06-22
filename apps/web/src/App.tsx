@@ -48,7 +48,9 @@ export function App() {
   const [placementDrag, setPlacementDrag] = useState<PlacementDragState | null>(
     null,
   );
-  const audioRef = useRef(createGameAudioController());
+  const audioRef = useRef<ReturnType<typeof createGameAudioController> | null>(
+    null,
+  );
   const lastSimulationFrameMsRef = useRef<number | null>(null);
   const lastClearedStageRef = useRef<number | null>(null);
   const stageGoal = useMemo(
@@ -86,8 +88,12 @@ export function App() {
         )
       : null;
 
+  if (audioRef.current === null) {
+    audioRef.current = createGameAudioController();
+  }
+
   const playSound = useCallback((soundId: GameSoundId) => {
-    audioRef.current.play(soundId);
+    audioRef.current?.play(soundId);
   }, []);
 
   useEffect(() => {
@@ -174,6 +180,14 @@ export function App() {
   ]);
 
   useEffect(() => {
+    const audio = audioRef.current;
+
+    return () => {
+      audio?.dispose();
+    };
+  }, []);
+
+  useEffect(() => {
     if (!renderView.hud.isCleared) {
       lastClearedStageRef.current = null;
       return;
@@ -227,7 +241,7 @@ export function App() {
         isMuted={isMuted}
         onToggleMuted={() => {
           const nextMuted = !isMuted;
-          audioRef.current.setMuted(nextMuted);
+          audioRef.current?.setMuted(nextMuted);
           setIsMuted(nextMuted);
         }}
       />
