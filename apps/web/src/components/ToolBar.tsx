@@ -1,6 +1,6 @@
 import { Link2, MousePointer2, Trash2 } from 'lucide-react';
 import type { PointerEvent, ReactNode, WheelEvent } from 'react';
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FoodSprite } from './FoodSprite.tsx';
 import { MachineSprite } from './MachineSprite.tsx';
 import { getFoodInfo } from '../game/foods.ts';
@@ -146,6 +146,9 @@ export function ToolBar({
   onStartPlacementDrag,
 }: ToolBarProps) {
   const toolbarRef = useRef<HTMLElement | null>(null);
+  const [hasHorizontalScrollbar, setHasHorizontalScrollbar] = useState(false);
+  const toolCount =
+    storageFoodIds.length + shippingFoodIds.length + placeableMachineIds.length;
 
   const handleWheel = (event: WheelEvent<HTMLElement>) => {
     const toolbar = toolbarRef.current;
@@ -162,10 +165,33 @@ export function ToolBar({
     toolbar.scrollLeft += event.deltaY;
   };
 
+  useEffect(() => {
+    const toolbar = toolbarRef.current;
+
+    if (toolbar === null) {
+      return;
+    }
+
+    const updateScrollbarState = () => {
+      setHasHorizontalScrollbar(toolbar.scrollWidth > toolbar.clientWidth);
+    };
+
+    updateScrollbarState();
+
+    const resizeObserver = new ResizeObserver(updateScrollbarState);
+    resizeObserver.observe(toolbar);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [toolCount]);
+
   return (
     <section
       ref={toolbarRef}
-      className="tool-bar"
+      className={
+        hasHorizontalScrollbar ? 'tool-bar tool-bar--scrollable' : 'tool-bar'
+      }
       aria-label="編集ツール"
       onWheel={handleWheel}
     >
@@ -185,7 +211,7 @@ export function ToolBar({
             onSelectTool={onSelectTool}
             onStartPlacementDrag={onStartPlacementDrag}
           >
-            <span className="tool-button__storage">
+            <span className="tool-button__icon tool-button__storage">
               <FoodSprite spriteId={food.spriteId} label={food.name} />
             </span>
           </ToolButton>
@@ -211,7 +237,7 @@ export function ToolBar({
             onSelectTool={onSelectTool}
             onStartPlacementDrag={onStartPlacementDrag}
           >
-            <span className="tool-button__shipping">
+            <span className="tool-button__icon tool-button__shipping">
               <FoodSprite spriteId={food.spriteId} label={food.name} />
             </span>
           </ToolButton>
@@ -233,7 +259,9 @@ export function ToolBar({
             onSelectTool={onSelectTool}
             onStartPlacementDrag={onStartPlacementDrag}
           >
-            <MachineSprite machineId={machine.id} label={machine.name} />
+            <span className="tool-button__icon tool-button__machine">
+              <MachineSprite machineId={machine.id} label={machine.name} />
+            </span>
           </ToolButton>
         );
       })}
