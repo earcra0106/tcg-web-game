@@ -51,6 +51,8 @@ function ToolButton({
     event: PointerEvent<HTMLButtonElement>,
   ) => void;
 }) {
+  const shouldSuppressClickRef = useRef(false);
+
   return (
     <button
       className="tool-button"
@@ -62,11 +64,18 @@ function ToolButton({
           event.pointerType === 'mouse' &&
           event.button === 0
         ) {
-          onSelectTool(tool);
+          shouldSuppressClickRef.current = true;
           onStartPlacementDrag(tool, event);
         }
       }}
-      onClick={() => onSelectTool(tool)}
+      onClick={() => {
+        if (shouldSuppressClickRef.current) {
+          shouldSuppressClickRef.current = false;
+          return;
+        }
+
+        onSelectTool(tool);
+      }}
     >
       {children}
       <span className="tool-button__label">{label}</span>

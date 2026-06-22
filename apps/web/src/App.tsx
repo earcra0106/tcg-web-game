@@ -252,6 +252,10 @@ export function App() {
         }}
         onStartPlacementDrag={(tool, event) => {
           playSound('select');
+          setModel((current) => ({
+            ...current,
+            editorState: selectEditorTool(current.editorState, tool),
+          }));
           setPlacementDrag({
             tool,
             pointerId: event.pointerId,
