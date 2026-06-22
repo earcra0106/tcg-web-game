@@ -175,11 +175,13 @@ function extractOutputs({
   machines,
   connections,
   items,
+  nowMs,
 }: {
   runtimes: Record<PlacementId, MachineRuntime>;
   machines: readonly PlacedMachine[];
   connections: readonly MachineConnection[];
   items: readonly TransportingFoodItem[];
+  nowMs: number;
 }) {
   const nextItems = [...items];
   const occupiedConnectionIds = new Set(
@@ -193,26 +195,44 @@ function extractOutputs({
       return;
     }
 
-    const output = extractMachineOutput({
-      runtime,
-      outputConnections: findOutputConnections(connections, machine.id),
-      occupiedConnectionIds,
-    });
+    const outputConnections = findOutputConnections(connections, machine.id);
+    let nextRuntime = runtime;
 
-    if (output === null) {
-      return;
+    while (true) {
+      const output = extractMachineOutput({
+        runtime: nextRuntime,
+        outputConnections,
+        occupiedConnectionIds,
+      });
+
+      if (output === null) {
+        runtimes[machine.id] = nextRuntime;
+        return;
+      }
+
+      nextRuntime = output.runtime;
+      runtimes[machine.id] = nextRuntime;
+      occupiedConnectionIds.add(output.connection.id);
+      nextItems.push(
+        createTransportingFoodItem(
+          output.item,
+          output.connection.id,
+          output.connection.fromMachineId,
+          output.connection.toMachineId,
+        ),
+      );
+
+      if (machine.machineId !== 'splitter' && machine.machineId !== 'merger') {
+        return;
+      }
+
+      nextRuntime = advanceMachineRuntime({
+        runtime: nextRuntime,
+        deltaMs: 0,
+        nowMs,
+        createItemId: () => '',
+      });
     }
-
-    runtimes[machine.id] = output.runtime;
-    occupiedConnectionIds.add(output.connection.id);
-    nextItems.push(
-      createTransportingFoodItem(
-        output.item,
-        output.connection.id,
-        output.connection.fromMachineId,
-        output.connection.toMachineId,
-      ),
-    );
   });
 
   return nextItems;
@@ -259,6 +279,7 @@ export function stepSimulation(
     machines: input.machines,
     connections: input.connections,
     items: delivery.waitingItems,
+    nowMs,
   });
 
   return {

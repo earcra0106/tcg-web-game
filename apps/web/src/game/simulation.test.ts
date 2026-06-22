@@ -240,4 +240,53 @@ describe('simulation', () => {
       }),
     ]);
   });
+
+  it('passes splitter inputs through all branches immediately in round-robin order', () => {
+    const splitter = machine('splitter-1', 'splitter', 0);
+    const machines = [
+      splitter,
+      machine('shipping-1', 'shipping', 1),
+      machine('shipping-2', 'shipping', 2),
+      machine('shipping-3', 'shipping', 3),
+      machine('shipping-4', 'shipping', 4),
+    ];
+    const connections = [
+      connection('connection-1', 'splitter-1', 'shipping-1'),
+      connection('connection-2', 'splitter-1', 'shipping-2'),
+      connection('connection-3', 'splitter-1', 'shipping-3'),
+      connection('connection-4', 'splitter-1', 'shipping-4'),
+    ];
+    const state: SimulationState = {
+      ...createInitialSimulationState(),
+      machineRuntimes: {
+        'splitter-1': {
+          ...createMachineRuntime(splitter),
+          inputBuffer: [
+            createFoodItem({ id: 'item-1', foodId: 'rice', createdAtMs: 0 }),
+            createFoodItem({ id: 'item-2', foodId: 'rice', createdAtMs: 0 }),
+            createFoodItem({ id: 'item-3', foodId: 'rice', createdAtMs: 0 }),
+            createFoodItem({ id: 'item-4', foodId: 'rice', createdAtMs: 0 }),
+          ],
+        },
+      },
+    };
+
+    const nextState = stepSimulation(state, {
+      machines,
+      connections,
+      deltaMs: 0,
+    });
+
+    expect(nextState.items.map((item) => item.connectionId)).toEqual([
+      'connection-1',
+      'connection-2',
+      'connection-3',
+      'connection-4',
+    ]);
+    expect(nextState.machineRuntimes['splitter-1']).toMatchObject({
+      inputBuffer: [],
+      outputBuffer: null,
+      roundRobinIndex: 4,
+    });
+  });
 });

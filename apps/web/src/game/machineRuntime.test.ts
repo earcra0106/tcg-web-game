@@ -121,6 +121,16 @@ describe('machine runtime', () => {
         fromMachineId: 'splitter-1',
         toMachineId: 'cutter-1',
       },
+      {
+        id: 'connection-3',
+        fromMachineId: 'splitter-1',
+        toMachineId: 'combiner-1',
+      },
+      {
+        id: 'connection-4',
+        fromMachineId: 'splitter-1',
+        toMachineId: 'shipping-1',
+      },
     ];
     const runtime: MachineRuntime = {
       ...createMachineRuntime(machine('splitter-1', 'splitter')),
@@ -145,6 +155,39 @@ describe('machine runtime', () => {
     });
 
     expect(secondOutput?.connection.id).toBe('connection-2');
+
+    const thirdOutput = extractMachineOutput({
+      runtime: {
+        ...(secondOutput?.runtime ?? runtime),
+        outputBuffer: item('item-3', 'rice'),
+      },
+      outputConnections: connections,
+      occupiedConnectionIds: new Set(),
+    });
+
+    expect(thirdOutput?.connection.id).toBe('connection-3');
+
+    const fourthOutput = extractMachineOutput({
+      runtime: {
+        ...(thirdOutput?.runtime ?? runtime),
+        outputBuffer: item('item-4', 'rice'),
+      },
+      outputConnections: connections,
+      occupiedConnectionIds: new Set(),
+    });
+
+    expect(fourthOutput?.connection.id).toBe('connection-4');
+
+    const fifthOutput = extractMachineOutput({
+      runtime: {
+        ...(fourthOutput?.runtime ?? runtime),
+        outputBuffer: item('item-5', 'rice'),
+      },
+      outputConnections: connections,
+      occupiedConnectionIds: new Set(),
+    });
+
+    expect(fifthOutput?.connection.id).toBe('connection-1');
   });
 
   it('passes merger inputs through in received order', () => {
