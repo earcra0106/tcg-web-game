@@ -264,8 +264,10 @@ select {
   bottom: 16px;
   left: 50%;
   display: flex;
+  align-items: center;
   gap: 8px;
   width: min(900px, calc(100vw - 32px));
+  height: 108px;
   padding: 10px;
   border: 1px solid rgb(190 150 111 / 0.26);
   border-radius: 8px;
@@ -273,17 +275,19 @@ select {
   backdrop-filter: blur(12px);
   box-shadow: 0 16px 40px rgb(92 64 42 / 0.14);
   overflow-x: auto;
+  overflow-y: hidden;
   transform: translateX(-50%);
 }
 
 .mode-tool-bar {
   position: absolute;
-  bottom: 112px;
+  bottom: 132px;
   left: 50%;
   display: flex;
   justify-content: flex-end;
   gap: 8px;
   width: min(900px, calc(100vw - 32px));
+  z-index: 2;
   pointer-events: none;
   transform: translateX(-50%);
 }
@@ -445,12 +449,13 @@ select {
     bottom: 12px;
     left: 12px;
     width: auto;
+    height: 108px;
     transform: none;
   }
 
   .mode-tool-bar {
     right: 12px;
-    bottom: 108px;
+    bottom: 128px;
     left: 12px;
     width: auto;
     transform: none;

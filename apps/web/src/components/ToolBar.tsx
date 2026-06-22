@@ -1,5 +1,6 @@
 import { Link2, MousePointer2, Trash2 } from 'lucide-react';
-import type { PointerEvent, ReactNode } from 'react';
+import type { PointerEvent, ReactNode, WheelEvent } from 'react';
+import { useRef } from 'react';
 import { FoodSprite } from './FoodSprite.tsx';
 import { MachineSprite } from './MachineSprite.tsx';
 import { getFoodInfo } from '../game/foods.ts';
@@ -144,8 +145,30 @@ export function ToolBar({
   onSelectTool,
   onStartPlacementDrag,
 }: ToolBarProps) {
+  const toolbarRef = useRef<HTMLElement | null>(null);
+
+  const handleWheel = (event: WheelEvent<HTMLElement>) => {
+    const toolbar = toolbarRef.current;
+
+    if (toolbar === null || event.deltaY === 0) {
+      return;
+    }
+
+    if (toolbar.scrollWidth <= toolbar.clientWidth) {
+      return;
+    }
+
+    event.preventDefault();
+    toolbar.scrollLeft += event.deltaY;
+  };
+
   return (
-    <section className="tool-bar" aria-label="編集ツール">
+    <section
+      ref={toolbarRef}
+      className="tool-bar"
+      aria-label="編集ツール"
+      onWheel={handleWheel}
+    >
       {storageFoodIds.map((foodId) => {
         const food = getFoodInfo(foodId);
 

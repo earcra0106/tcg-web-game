@@ -239,16 +239,6 @@ export function App() {
           setIsMuted(nextMuted);
         }}
       />
-      <ModeToolBar
-        selectedTool={model.editorState.selectedTool}
-        onSelectTool={(tool) => {
-          playSound('select');
-          setModel((current) => ({
-            ...current,
-            editorState: selectEditorTool(current.editorState, tool),
-          }));
-        }}
-      />
       <ToolBar
         selectedTool={model.editorState.selectedTool}
         storageFoodIds={storageFoodIds}
@@ -269,6 +259,16 @@ export function App() {
             startClientY: event.clientY,
             isDragging: false,
           });
+        }}
+      />
+      <ModeToolBar
+        selectedTool={model.editorState.selectedTool}
+        onSelectTool={(tool) => {
+          playSound('select');
+          setModel((current) => ({
+            ...current,
+            editorState: selectEditorTool(current.editorState, tool),
+          }));
         }}
       />
     </main>
