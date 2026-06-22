@@ -2,6 +2,7 @@ import {
   findOutputConnections,
   type MachineConnection,
 } from './connections.ts';
+import { CONVEYOR_SPEED_CELLS_PER_SECOND } from './conveyorRender.ts';
 import type { StageGoal } from './stageGoals.ts';
 import type { TransportingFoodItem } from './items.ts';
 import {
@@ -18,9 +19,10 @@ import {
   type MachineRuntimeConfig,
 } from './machineRuntime.ts';
 import type { PlacedMachine, PlacementId } from './placement.ts';
+import { findMachineById } from './placement.ts';
 import { recordShipment, type ShipmentRecord } from './shipping.ts';
 
-export const CONVEYOR_TRAVEL_TIME_MS = 500;
+export const CONVEYOR_TRAVEL_TIME_MS = 600;
 
 export type SimulationState = {
   nowMs: number;
@@ -50,6 +52,29 @@ export function createInitialSimulationState(nowMs = 0): SimulationState {
 
 function createItemId(nextItemIndex: number) {
   return `item-${nextItemIndex}`;
+}
+
+function calculateConnectionLength({
+  item,
+  machines,
+}: {
+  item: TransportingFoodItem;
+  machines: readonly PlacedMachine[];
+}) {
+  const fromMachine = findMachineById(machines, item.fromMachineId);
+  const toMachine = findMachineById(machines, item.toMachineId);
+
+  if (fromMachine === null || toMachine === null) {
+    return 1;
+  }
+
+  return Math.max(
+    0.001,
+    Math.hypot(
+      toMachine.position.x - fromMachine.position.x,
+      toMachine.position.z - fromMachine.position.z,
+    ),
+  );
 }
 
 function deliverArrivedItems({
@@ -206,8 +231,14 @@ export function stepSimulation(
     input.machines,
     state.machineRuntimes,
   );
+  const traveledCells =
+    (input.deltaMs / 1_000) * CONVEYOR_SPEED_CELLS_PER_SECOND;
   const advancedItems = state.items.map((item) =>
-    advanceTransportingFoodItem(item, input.deltaMs / CONVEYOR_TRAVEL_TIME_MS),
+    advanceTransportingFoodItem(
+      item,
+      traveledCells /
+        calculateConnectionLength({ item, machines: input.machines }),
+    ),
   );
   const delivery = deliverArrivedItems({
     items: advancedItems,

@@ -3,28 +3,26 @@ import type { PointerEvent } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FoodSprite } from './components/FoodSprite.tsx';
 import { GameCanvas } from './components/GameCanvas.tsx';
-import { MachineInspector } from './components/MachineInspector.tsx';
 import { StageHud } from './components/StageHud.tsx';
-import { ToolBar } from './components/ToolBar.tsx';
+import { ModeToolBar, ToolBar } from './components/ToolBar.tsx';
 import { createGameAudioController, type GameSoundId } from './game/audio.ts';
-import {
-  createInitialEditorModel,
-  setMachineRecipe,
-} from './game/editorActions.ts';
+import { createInitialEditorModel } from './game/editorActions.ts';
 import { selectEditorTool, type EditorTool } from './game/editorState.ts';
 import {
   foodInfos,
   getIngredientNames,
   getProcessedIntoNames,
-  getFoodInfo,
 } from './game/foods.ts';
 import type { FoodId } from './game/food.ts';
-import { findMachineById } from './game/placement.ts';
 import { createRenderView } from './game/renderView.ts';
 import {
   createInitialSimulationState,
   stepSimulation,
 } from './game/simulation.ts';
+import {
+  getShippingFoodIdsForGoals,
+  getStorageFoodIdsForGoals,
+} from './game/stageTools.ts';
 import { getStageGoal } from './game/stageGoals.ts';
 
 const TOOL_DRAG_THRESHOLD_PX = 6;
@@ -53,13 +51,17 @@ export function App() {
   );
   const lastSimulationFrameMsRef = useRef<number | null>(null);
   const lastClearedStageRef = useRef<number | null>(null);
+  const stageNumber = model.gameState.stageIndex + 1;
   const stageGoal = useMemo(
+    () => getStageGoal({ seed: 'daily', stageNumber }),
+    [stageNumber],
+  );
+  const cumulativeStageGoals = useMemo(
     () =>
-      getStageGoal({
-        seed: 'daily',
-        stageNumber: model.gameState.stageIndex + 1,
-      }),
-    [model.gameState.stageIndex],
+      Array.from({ length: stageNumber }, (_, index) =>
+        getStageGoal({ seed: 'daily', stageNumber: index + 1 }),
+      ),
+    [stageNumber],
   );
   const renderView = useMemo(
     () =>
@@ -71,22 +73,14 @@ export function App() {
       }),
     [model.gameState, model.machineConfigs, simulationState],
   );
-  const storageFoodIds = useMemo(() => {
-    const targetFood = getFoodInfo(stageGoal.targetFoodId);
-
-    return (
-      targetFood?.ingredientIds.filter(
-        (foodId) => getFoodInfo(foodId)?.canSpawnFromStorage === true,
-      ) ?? []
-    );
-  }, [stageGoal.targetFoodId]);
-  const selectedMachine =
-    model.gameState.selection.selectedMachineId !== null
-      ? findMachineById(
-          model.gameState.machines,
-          model.gameState.selection.selectedMachineId,
-        )
-      : null;
+  const storageFoodIds = useMemo(
+    () => getStorageFoodIdsForGoals(cumulativeStageGoals),
+    [cumulativeStageGoals],
+  );
+  const shippingFoodIds = useMemo(
+    () => getShippingFoodIdsForGoals(cumulativeStageGoals),
+    [cumulativeStageGoals],
+  );
 
   if (audioRef.current === null) {
     audioRef.current = createGameAudioController();
@@ -245,28 +239,20 @@ export function App() {
           setIsMuted(nextMuted);
         }}
       />
-      <MachineInspector
-        machine={selectedMachine}
-        config={
-          selectedMachine !== null
-            ? model.machineConfigs[selectedMachine.id]
-            : undefined
-        }
-        onRecipeChange={(recipeId) => {
-          if (selectedMachine === null) {
-            return;
-          }
-
-          playSound('confirm');
-          setModel((current) =>
-            setMachineRecipe(current, selectedMachine.id, recipeId),
-          );
+      <ModeToolBar
+        selectedTool={model.editorState.selectedTool}
+        onSelectTool={(tool) => {
+          playSound('select');
+          setModel((current) => ({
+            ...current,
+            editorState: selectEditorTool(current.editorState, tool),
+          }));
         }}
       />
       <ToolBar
         selectedTool={model.editorState.selectedTool}
         storageFoodIds={storageFoodIds}
-        shippingFoodId={stageGoal.targetFoodId}
+        shippingFoodIds={shippingFoodIds}
         onSelectTool={(tool) => {
           playSound('select');
           setModel((current) => ({

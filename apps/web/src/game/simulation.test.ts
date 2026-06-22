@@ -59,7 +59,7 @@ describe('simulation', () => {
     const nextState = stepSimulation(state, {
       machines,
       connections,
-      deltaMs: 500,
+      deltaMs: 600,
     });
 
     expect(nextState.items).toEqual([]);
@@ -102,13 +102,60 @@ describe('simulation', () => {
     const nextState = stepSimulation(state, {
       machines: [machine('storage-1', 'storage', 0), heater],
       connections: [connection('connection-1', 'storage-1', 'heater-1')],
-      deltaMs: 500,
+      deltaMs: 600,
     });
 
     expect(nextState.items).toEqual([
       expect.objectContaining({
         id: 'item-1',
         progress: 1,
+      }),
+    ]);
+  });
+
+  it('moves conveyor items at a constant speed regardless of distance', () => {
+    const machines = [
+      machine('storage-1', 'storage', 0),
+      machine('shipping-1', 'shipping', 2),
+    ];
+    const connections = [connection('connection-1', 'storage-1', 'shipping-1')];
+    const state: SimulationState = {
+      ...createInitialSimulationState(),
+      items: [
+        createTransportingFoodItem(
+          createFoodItem({
+            id: 'item-1',
+            foodId: 'rice',
+            createdAtMs: 0,
+          }),
+          'connection-1',
+          'storage-1',
+          'shipping-1',
+        ),
+      ],
+    };
+
+    const halfway = stepSimulation(state, {
+      machines,
+      connections,
+      deltaMs: 600,
+    });
+    const arrived = stepSimulation(halfway, {
+      machines,
+      connections,
+      deltaMs: 600,
+    });
+
+    expect(halfway.items).toEqual([
+      expect.objectContaining({
+        id: 'item-1',
+        progress: 0.5,
+      }),
+    ]);
+    expect(arrived.shippingHistory).toEqual([
+      expect.objectContaining({
+        itemId: 'item-1',
+        shippedAtMs: 1_200,
       }),
     ]);
   });
@@ -138,7 +185,7 @@ describe('simulation', () => {
     const shipped = stepSimulation(spawned, {
       machines,
       connections,
-      deltaMs: 500,
+      deltaMs: 600,
       machineConfigs: {
         'storage-1': { spawnFoodId: 'rice' },
       },
@@ -147,7 +194,7 @@ describe('simulation', () => {
     expect(shipped.shippingHistory).toEqual([
       expect.objectContaining({
         foodId: 'rice',
-        shippedAtMs: 1_500,
+        shippedAtMs: 1_600,
       }),
     ]);
   });
@@ -175,7 +222,7 @@ describe('simulation', () => {
     });
     const received = stepSimulation(spawned, {
       ...input,
-      deltaMs: 500,
+      deltaMs: 600,
     });
     const cooked = stepSimulation(received, {
       ...input,
@@ -183,13 +230,13 @@ describe('simulation', () => {
     });
     const shipped = stepSimulation(cooked, {
       ...input,
-      deltaMs: 500,
+      deltaMs: 600,
     });
 
     expect(shipped.shippingHistory).toEqual([
       expect.objectContaining({
         foodId: 'cooked-rice',
-        shippedAtMs: 3_000,
+        shippedAtMs: 3_200,
       }),
     ]);
   });

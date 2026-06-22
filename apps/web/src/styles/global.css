@@ -276,6 +276,41 @@ select {
   transform: translateX(-50%);
 }
 
+.mode-tool-bar {
+  position: absolute;
+  bottom: 112px;
+  left: 50%;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  width: min(900px, calc(100vw - 32px));
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+
+.mode-tool-button {
+  display: inline-grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgb(89 120 119 / 0.32);
+  border-radius: 50%;
+  color: #2f4948;
+  background: rgb(255 253 249 / 0.9);
+  box-shadow: 0 10px 24px rgb(92 64 42 / 0.12);
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.mode-tool-button:hover {
+  background: #f8ffff;
+}
+
+.mode-tool-button[aria-pressed='true'] {
+  border-color: #597877;
+  background: #f0fbfa;
+}
+
 .tool-button {
   display: grid;
   flex: 0 0 76px;
@@ -399,83 +434,23 @@ select {
   line-height: 1.45;
 }
 
-.machine-inspector {
-  position: absolute;
-  top: 126px;
-  left: 16px;
-  display: grid;
-  gap: 8px;
-  width: min(280px, calc(100vw - 32px));
-  padding: 12px;
-  border: 1px solid rgb(190 150 111 / 0.26);
-  border-radius: 8px;
-  background: rgb(255 253 249 / 0.84);
-  backdrop-filter: blur(12px);
-  box-shadow: 0 16px 40px rgb(92 64 42 / 0.14);
-}
-
-.machine-inspector h2,
-.machine-inspector p {
-  margin: 0;
-}
-
-.machine-inspector__label {
-  color: #597877;
-  font-size: 0.72rem;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-
-.machine-inspector__empty,
-.machine-inspector__position {
-  color: #745d4a;
-  font-size: 0.84rem;
-}
-
-.machine-inspector__food {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.88rem;
-  font-weight: 700;
-}
-
-.machine-inspector__food .food-sprite {
-  width: 42px;
-  height: 42px;
-}
-
-.machine-inspector__field {
-  display: grid;
-  gap: 5px;
-  color: #3b3028;
-  font-size: 0.86rem;
-  font-weight: 700;
-}
-
-.machine-inspector__field select {
-  min-width: 0;
-  min-height: 36px;
-  border: 1px solid rgb(89 120 119 / 0.3);
-  border-radius: 8px;
-  color: #3b3028;
-  background: #fffdf9;
-}
-
 @media (max-width: 560px) {
   .hud {
     top: 68px;
     bottom: auto;
   }
 
-  .machine-inspector {
-    top: 170px;
-    left: 16px;
-  }
-
   .tool-bar {
     right: 12px;
     bottom: 12px;
+    left: 12px;
+    width: auto;
+    transform: none;
+  }
+
+  .mode-tool-bar {
+    right: 12px;
+    bottom: 108px;
     left: 12px;
     width: auto;
     transform: none;
