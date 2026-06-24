@@ -13,6 +13,10 @@ const machines: readonly PlacedMachine[] = [
   { id: 'machine-1', machineId: 'cutter', position: { x: 0, z: 0 } },
   { id: 'machine-2', machineId: 'heater', position: { x: 1, z: 0 } },
   { id: 'machine-3', machineId: 'mixer', position: { x: 2, z: 0 } },
+  { id: 'machine-4', machineId: 'splitter', position: { x: 3, z: 0 } },
+  { id: 'machine-5', machineId: 'storage', position: { x: 4, z: 0 } },
+  { id: 'machine-6', machineId: 'shipping', position: { x: 5, z: 0 } },
+  { id: 'machine-7', machineId: 'trash-bin', position: { x: 6, z: 0 } },
 ];
 
 const connection: MachineConnection = {
@@ -46,6 +50,68 @@ describe('machine connections', () => {
     });
 
     expect(nextConnections).toBe(connections);
+  });
+
+  it('allows only splitters to have multiple output connections', () => {
+    const connections = [connection];
+
+    expect(
+      createConnection(connections, machines, {
+        id: 'connection-2',
+        fromMachineId: 'machine-1',
+        toMachineId: 'machine-3',
+      }),
+    ).toBe(connections);
+
+    expect(
+      createConnection(
+        [
+          {
+            id: 'connection-3',
+            fromMachineId: 'machine-4',
+            toMachineId: 'machine-1',
+          },
+        ],
+        machines,
+        {
+          id: 'connection-4',
+          fromMachineId: 'machine-4',
+          toMachineId: 'machine-2',
+        },
+      ),
+    ).toHaveLength(2);
+  });
+
+  it('rejects connections into storage', () => {
+    const connections: readonly MachineConnection[] = [];
+
+    expect(
+      createConnection(connections, machines, {
+        id: 'connection-2',
+        fromMachineId: 'machine-1',
+        toMachineId: 'machine-5',
+      }),
+    ).toBe(connections);
+  });
+
+  it('rejects connections from shipping and trash machines', () => {
+    const connections: readonly MachineConnection[] = [];
+
+    expect(
+      createConnection(connections, machines, {
+        id: 'connection-2',
+        fromMachineId: 'machine-6',
+        toMachineId: 'machine-1',
+      }),
+    ).toBe(connections);
+
+    expect(
+      createConnection(connections, machines, {
+        id: 'connection-3',
+        fromMachineId: 'machine-7',
+        toMachineId: 'machine-1',
+      }),
+    ).toBe(connections);
   });
 
   it('rejects connections with missing machines', () => {

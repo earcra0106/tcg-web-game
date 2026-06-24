@@ -1,5 +1,6 @@
 import { Link2, MousePointer2, Trash2 } from 'lucide-react';
-import type { PointerEvent, ReactNode } from 'react';
+import type { PointerEvent, ReactNode, WheelEvent } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FoodSprite } from './FoodSprite.tsx';
 import { MachineSprite } from './MachineSprite.tsx';
 import { getFoodInfo } from '../game/foods.ts';
@@ -10,7 +11,7 @@ import type { EditorTool } from '../game/editorState.ts';
 type ToolBarProps = {
   selectedTool: EditorTool;
   storageFoodIds: readonly FoodId[];
-  shippingFoodId: FoodId;
+  shippingFoodIds: readonly FoodId[];
   onSelectTool: (tool: EditorTool) => void;
   onStartPlacementDrag: (
     tool: Extract<EditorTool, { kind: 'place-machine' }>,
@@ -50,6 +51,8 @@ function ToolButton({
     event: PointerEvent<HTMLButtonElement>,
   ) => void;
 }) {
+  const shouldSuppressClickRef = useRef(false);
+
   return (
     <button
       className="tool-button"
@@ -61,11 +64,18 @@ function ToolButton({
           event.pointerType === 'mouse' &&
           event.button === 0
         ) {
-          onSelectTool(tool);
+          shouldSuppressClickRef.current = true;
           onStartPlacementDrag(tool, event);
         }
       }}
-      onClick={() => onSelectTool(tool)}
+      onClick={() => {
+        if (shouldSuppressClickRef.current) {
+          shouldSuppressClickRef.current = false;
+          return;
+        }
+
+        onSelectTool(tool);
+      }}
     >
       {children}
       <span className="tool-button__label">{label}</span>
@@ -73,26 +83,127 @@ function ToolButton({
   );
 }
 
-export function ToolBar({
+function ModeToolButton({
+  tool,
   selectedTool,
-  storageFoodIds,
-  shippingFoodId,
+  label,
+  children,
   onSelectTool,
-  onStartPlacementDrag,
-}: ToolBarProps) {
-  const shippingFood = getFoodInfo(shippingFoodId);
-
+}: {
+  tool: Extract<EditorTool, { kind: 'select' | 'connect' | 'delete' }>;
+  selectedTool: EditorTool;
+  label: string;
+  children: ReactNode;
+  onSelectTool: (tool: EditorTool) => void;
+}) {
   return (
-    <section className="tool-bar" aria-label="編集ツール">
-      <ToolButton
+    <button
+      className="mode-tool-button"
+      type="button"
+      aria-label={label}
+      aria-pressed={getToolKey(tool) === getToolKey(selectedTool)}
+      onClick={() => onSelectTool(tool)}
+      title={label}
+    >
+      {children}
+    </button>
+  );
+}
+
+export function ModeToolBar({
+  selectedTool,
+  onSelectTool,
+}: {
+  selectedTool: EditorTool;
+  onSelectTool: (tool: EditorTool) => void;
+}) {
+  return (
+    <section className="mode-tool-bar" aria-label="編集モード">
+      <ModeToolButton
         tool={{ kind: 'select' }}
         selectedTool={selectedTool}
         label="選択"
         onSelectTool={onSelectTool}
-        onStartPlacementDrag={onStartPlacementDrag}
       >
-        <MousePointer2 aria-hidden="true" size={20} />
-      </ToolButton>
+        <MousePointer2 aria-hidden="true" size={18} />
+      </ModeToolButton>
+      <ModeToolButton
+        tool={{ kind: 'connect' }}
+        selectedTool={selectedTool}
+        label="コンベア"
+        onSelectTool={onSelectTool}
+      >
+        <Link2 aria-hidden="true" size={18} />
+      </ModeToolButton>
+      <ModeToolButton
+        tool={{ kind: 'delete' }}
+        selectedTool={selectedTool}
+        label="削除"
+        onSelectTool={onSelectTool}
+      >
+        <Trash2 aria-hidden="true" size={18} />
+      </ModeToolButton>
+    </section>
+  );
+}
+
+export function ToolBar({
+  selectedTool,
+  storageFoodIds,
+  shippingFoodIds,
+  onSelectTool,
+  onStartPlacementDrag,
+}: ToolBarProps) {
+  const toolbarRef = useRef<HTMLElement | null>(null);
+  const [hasHorizontalScrollbar, setHasHorizontalScrollbar] = useState(false);
+  const toolCount =
+    storageFoodIds.length + shippingFoodIds.length + placeableMachineIds.length;
+
+  const handleWheel = (event: WheelEvent<HTMLElement>) => {
+    const toolbar = toolbarRef.current;
+
+    if (toolbar === null || event.deltaY === 0) {
+      return;
+    }
+
+    if (toolbar.scrollWidth <= toolbar.clientWidth) {
+      return;
+    }
+
+    event.preventDefault();
+    toolbar.scrollLeft += event.deltaY;
+  };
+
+  useEffect(() => {
+    const toolbar = toolbarRef.current;
+
+    if (toolbar === null) {
+      return;
+    }
+
+    const updateScrollbarState = () => {
+      setHasHorizontalScrollbar(toolbar.scrollWidth > toolbar.clientWidth);
+    };
+
+    updateScrollbarState();
+
+    const resizeObserver = new ResizeObserver(updateScrollbarState);
+    resizeObserver.observe(toolbar);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [toolCount]);
+
+  return (
+    <section
+      ref={toolbarRef}
+      className={
+        hasHorizontalScrollbar ? 'tool-bar tool-bar--scrollable' : 'tool-bar'
+      }
+      aria-label="編集ツール"
+      onWheel={handleWheel}
+    >
       {storageFoodIds.map((foodId) => {
         const food = getFoodInfo(foodId);
 
@@ -109,32 +220,38 @@ export function ToolBar({
             onSelectTool={onSelectTool}
             onStartPlacementDrag={onStartPlacementDrag}
           >
-            <span className="tool-button__storage">
+            <span className="tool-button__icon tool-button__storage">
               <FoodSprite spriteId={food.spriteId} label={food.name} />
             </span>
           </ToolButton>
         );
       })}
-      {shippingFood ? (
-        <ToolButton
-          tool={{
-            kind: 'place-machine',
-            machineId: 'shipping',
-            foodId: shippingFoodId,
-          }}
-          selectedTool={selectedTool}
-          label="出荷口"
-          onSelectTool={onSelectTool}
-          onStartPlacementDrag={onStartPlacementDrag}
-        >
-          <span className="tool-button__shipping">
-            <FoodSprite
-              spriteId={shippingFood.spriteId}
-              label={shippingFood.name}
-            />
-          </span>
-        </ToolButton>
-      ) : null}
+      {shippingFoodIds.map((foodId) => {
+        const food = getFoodInfo(foodId);
+
+        if (!food) {
+          return null;
+        }
+
+        return (
+          <ToolButton
+            key={`shipping-${food.id}`}
+            tool={{
+              kind: 'place-machine',
+              machineId: 'shipping',
+              foodId,
+            }}
+            selectedTool={selectedTool}
+            label="出荷口"
+            onSelectTool={onSelectTool}
+            onStartPlacementDrag={onStartPlacementDrag}
+          >
+            <span className="tool-button__icon tool-button__shipping">
+              <FoodSprite spriteId={food.spriteId} label={food.name} />
+            </span>
+          </ToolButton>
+        );
+      })}
       {placeableMachineIds.map((machineId) => {
         const machine = machineInfos.find((item) => item.id === machineId);
 
@@ -151,28 +268,12 @@ export function ToolBar({
             onSelectTool={onSelectTool}
             onStartPlacementDrag={onStartPlacementDrag}
           >
-            <MachineSprite machineId={machine.id} label={machine.name} />
+            <span className="tool-button__icon tool-button__machine">
+              <MachineSprite machineId={machine.id} label={machine.name} />
+            </span>
           </ToolButton>
         );
       })}
-      <ToolButton
-        tool={{ kind: 'connect' }}
-        selectedTool={selectedTool}
-        label="コンベア"
-        onSelectTool={onSelectTool}
-        onStartPlacementDrag={onStartPlacementDrag}
-      >
-        <Link2 aria-hidden="true" size={20} />
-      </ToolButton>
-      <ToolButton
-        tool={{ kind: 'delete' }}
-        selectedTool={selectedTool}
-        label="削除"
-        onSelectTool={onSelectTool}
-        onStartPlacementDrag={onStartPlacementDrag}
-      >
-        <Trash2 aria-hidden="true" size={20} />
-      </ToolButton>
     </section>
   );
 }

@@ -35,11 +35,28 @@ export function createConnection(
   machines: readonly PlacedMachine[],
   connection: MachineConnection,
 ) {
-  if (!findMachineById(machines, connection.fromMachineId)) {
+  const fromMachine = findMachineById(machines, connection.fromMachineId);
+  const toMachine = findMachineById(machines, connection.toMachineId);
+
+  if (fromMachine === null || toMachine === null) {
     return connections;
   }
 
-  if (!findMachineById(machines, connection.toMachineId)) {
+  if (
+    fromMachine.machineId !== 'splitter' &&
+    findOutputConnections(connections, fromMachine.id).length >= 1
+  ) {
+    return connections;
+  }
+
+  if (
+    fromMachine.machineId === 'shipping' ||
+    fromMachine.machineId === 'trash-bin'
+  ) {
+    return connections;
+  }
+
+  if (toMachine.machineId === 'storage') {
     return connections;
   }
 

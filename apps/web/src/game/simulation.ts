@@ -2,6 +2,7 @@ import {
   findOutputConnections,
   type MachineConnection,
 } from './connections.ts';
+import { CONVEYOR_SPEED_CELLS_PER_SECOND } from './conveyorRender.ts';
 import type { StageGoal } from './stageGoals.ts';
 import type { TransportingFoodItem } from './items.ts';
 import {
@@ -18,9 +19,10 @@ import {
   type MachineRuntimeConfig,
 } from './machineRuntime.ts';
 import type { PlacedMachine, PlacementId } from './placement.ts';
+import { findMachineById } from './placement.ts';
 import { recordShipment, type ShipmentRecord } from './shipping.ts';
 
-export const CONVEYOR_TRAVEL_TIME_MS = 500;
+export const CONVEYOR_TRAVEL_TIME_MS = 600;
 
 export type SimulationState = {
   nowMs: number;
@@ -52,14 +54,41 @@ function createItemId(nextItemIndex: number) {
   return `item-${nextItemIndex}`;
 }
 
+function calculateConnectionLength({
+  item,
+  machines,
+}: {
+  item: TransportingFoodItem;
+  machines: readonly PlacedMachine[];
+}) {
+  const fromMachine = findMachineById(machines, item.fromMachineId);
+  const toMachine = findMachineById(machines, item.toMachineId);
+
+  if (fromMachine === null || toMachine === null) {
+    return 1;
+  }
+
+  return Math.max(
+    0.001,
+    Math.hypot(
+      toMachine.position.x - fromMachine.position.x,
+      toMachine.position.z - fromMachine.position.z,
+    ),
+  );
+}
+
 function deliverArrivedItems({
   items,
   runtimes,
+  machines,
+  connections,
   shippingHistory,
   nowMs,
 }: {
   items: readonly TransportingFoodItem[];
   runtimes: Record<PlacementId, MachineRuntime>;
+  machines: readonly PlacedMachine[];
+  connections: readonly MachineConnection[];
   shippingHistory: readonly ShipmentRecord[];
   nowMs: number;
 }) {
@@ -74,17 +103,35 @@ function deliverArrivedItems({
 
     const runtime = runtimes[item.toMachineId];
 
-    if (runtime === undefined || !canAcceptMachineInput(runtime)) {
+    if (runtime === undefined) {
+      return;
+    }
+
+    const targetMachine = findMachineById(machines, item.toMachineId);
+    const hasOutputConnection = connections.some(
+      (connection) => connection.fromMachineId === item.toMachineId,
+    );
+
+    if (
+      (runtime.machineId === 'splitter' || runtime.machineId === 'merger') &&
+      !hasOutputConnection
+    ) {
+      return;
+    }
+
+    if (!canAcceptMachineInput(runtime) && hasOutputConnection) {
       waitingItems.push(item);
       return;
     }
 
     if (runtime.machineId === 'shipping') {
-      nextShippingHistory = recordShipment(nextShippingHistory, {
-        itemId: item.id,
-        foodId: item.foodId,
-        shippedAtMs: nowMs,
-      });
+      if (targetMachine?.foodId === item.foodId) {
+        nextShippingHistory = recordShipment(nextShippingHistory, {
+          itemId: item.id,
+          foodId: item.foodId,
+          shippedAtMs: nowMs,
+        });
+      }
       return;
     }
 
@@ -150,11 +197,13 @@ function extractOutputs({
   machines,
   connections,
   items,
+  nowMs,
 }: {
   runtimes: Record<PlacementId, MachineRuntime>;
   machines: readonly PlacedMachine[];
   connections: readonly MachineConnection[];
   items: readonly TransportingFoodItem[];
+  nowMs: number;
 }) {
   const nextItems = [...items];
   const occupiedConnectionIds = new Set(
@@ -168,26 +217,57 @@ function extractOutputs({
       return;
     }
 
-    const output = extractMachineOutput({
-      runtime,
-      outputConnections: findOutputConnections(connections, machine.id),
-      occupiedConnectionIds,
-    });
+    const outputConnections = findOutputConnections(connections, machine.id);
 
-    if (output === null) {
+    if (
+      outputConnections.length === 0 &&
+      (machine.machineId === 'splitter' || machine.machineId === 'merger')
+    ) {
+      runtimes[machine.id] = {
+        ...runtime,
+        inputBuffer: [],
+        outputBuffer: [],
+      };
       return;
     }
 
-    runtimes[machine.id] = output.runtime;
-    occupiedConnectionIds.add(output.connection.id);
-    nextItems.push(
-      createTransportingFoodItem(
-        output.item,
-        output.connection.id,
-        output.connection.fromMachineId,
-        output.connection.toMachineId,
-      ),
-    );
+    let nextRuntime = runtime;
+
+    while (true) {
+      const output = extractMachineOutput({
+        runtime: nextRuntime,
+        outputConnections,
+        occupiedConnectionIds,
+      });
+
+      if (output === null) {
+        runtimes[machine.id] = nextRuntime;
+        return;
+      }
+
+      nextRuntime = output.runtime;
+      runtimes[machine.id] = nextRuntime;
+      occupiedConnectionIds.add(output.connection.id);
+      nextItems.push(
+        createTransportingFoodItem(
+          output.item,
+          output.connection.id,
+          output.connection.fromMachineId,
+          output.connection.toMachineId,
+        ),
+      );
+
+      if (machine.machineId !== 'splitter' && machine.machineId !== 'merger') {
+        return;
+      }
+
+      nextRuntime = advanceMachineRuntime({
+        runtime: nextRuntime,
+        deltaMs: 0,
+        nowMs,
+        createItemId: () => '',
+      });
+    }
   });
 
   return nextItems;
@@ -202,16 +282,30 @@ export function stepSimulation(
   }
 
   const nowMs = state.nowMs + input.deltaMs;
+  const connectionIds = new Set(
+    input.connections.map((connection) => connection.id),
+  );
+  const existingItems = state.items.filter((item) =>
+    connectionIds.has(item.connectionId),
+  );
   const syncedRuntimes = syncMachineRuntimes(
     input.machines,
     state.machineRuntimes,
   );
-  const advancedItems = state.items.map((item) =>
-    advanceTransportingFoodItem(item, input.deltaMs / CONVEYOR_TRAVEL_TIME_MS),
+  const traveledCells =
+    (input.deltaMs / 1_000) * CONVEYOR_SPEED_CELLS_PER_SECOND;
+  const advancedItems = existingItems.map((item) =>
+    advanceTransportingFoodItem(
+      item,
+      traveledCells /
+        calculateConnectionLength({ item, machines: input.machines }),
+    ),
   );
   const delivery = deliverArrivedItems({
     items: advancedItems,
     runtimes: syncedRuntimes,
+    machines: input.machines,
+    connections: input.connections,
     shippingHistory: state.shippingHistory,
     nowMs,
   });
@@ -228,6 +322,7 @@ export function stepSimulation(
     machines: input.machines,
     connections: input.connections,
     items: delivery.waitingItems,
+    nowMs,
   });
 
   return {

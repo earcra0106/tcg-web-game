@@ -11,7 +11,7 @@ const expectedMachines = [
 ] as const;
 
 const expectedSpriteMachines = [
-  ['splitter', '分岐器', 0, 0],
+  ['splitter', '分岐機', 0, 0],
   ['merger', '合流機', 0, 1],
   ['cutter', '切断機', 0, 2],
   ['heater', '加熱機', 0, 3],

@@ -11,6 +11,7 @@ import type { PlacedMachine, PlacementId } from './placement.ts';
 export const STORAGE_SPAWN_INTERVAL_MS = 1_000;
 export const MACHINE_PROCESS_TIME_MS = 1_000;
 export const MACHINE_INPUT_CAPACITY = 6;
+export const MACHINE_OUTPUT_CAPACITY = 6;
 
 export type MachineRuntimeConfig = {
   spawnFoodId?: FoodId;
@@ -27,7 +28,7 @@ export type MachineRuntime = {
   placementId: PlacementId;
   machineId: MachineId;
   inputBuffer: readonly FoodItem[];
-  outputBuffer: FoodItem | null;
+  outputBuffer: readonly FoodItem[];
   process: MachineProcessRuntime | null;
   storageElapsedMs: number;
   roundRobinIndex: number;
@@ -53,7 +54,7 @@ export function createMachineRuntime(machine: PlacedMachine): MachineRuntime {
     placementId: machine.id,
     machineId: machine.machineId,
     inputBuffer: [],
-    outputBuffer: null,
+    outputBuffer: [],
     process: null,
     storageElapsedMs: 0,
     roundRobinIndex: 0,
@@ -98,13 +99,9 @@ export function receiveMachineInput(
     return runtime;
   }
 
-  if (!canAcceptMachineInput(runtime)) {
-    return runtime;
-  }
-
   return {
     ...runtime,
-    inputBuffer: [...runtime.inputBuffer, item],
+    inputBuffer: [...runtime.inputBuffer, item].slice(-MACHINE_INPUT_CAPACITY),
   };
 }
 
@@ -192,7 +189,7 @@ function startProcessIfReady(
   config: MachineRuntimeConfig | undefined,
   recipes: readonly FoodRecipe[] | undefined,
 ) {
-  if (runtime.process !== null || runtime.outputBuffer !== null) {
+  if (runtime.process !== null) {
     return runtime;
   }
 
@@ -237,10 +234,6 @@ function advanceStorage({
     };
   }
 
-  if (runtime.outputBuffer !== null) {
-    return runtime;
-  }
-
   const storageElapsedMs = runtime.storageElapsedMs + deltaMs;
 
   if (storageElapsedMs < STORAGE_SPAWN_INTERVAL_MS) {
@@ -253,29 +246,32 @@ function advanceStorage({
   return {
     ...runtime,
     storageElapsedMs: storageElapsedMs - STORAGE_SPAWN_INTERVAL_MS,
-    outputBuffer: createFoodItem({
-      id: createItemId(),
-      foodId: config.spawnFoodId,
-      createdAtMs: nowMs,
-    }),
+    outputBuffer: [
+      ...runtime.outputBuffer,
+      createFoodItem({
+        id: createItemId(),
+        foodId: config.spawnFoodId,
+        createdAtMs: nowMs,
+      }),
+    ].slice(-MACHINE_OUTPUT_CAPACITY),
   };
 }
 
 function advancePassThrough(runtime: MachineRuntime) {
   if (
-    runtime.outputBuffer !== null ||
+    runtime.outputBuffer.length > 0 ||
     (runtime.machineId !== 'splitter' && runtime.machineId !== 'merger') ||
     runtime.inputBuffer.length === 0
   ) {
     return runtime;
   }
 
-  const [outputBuffer, ...inputBuffer] = runtime.inputBuffer;
+  const [outputItem, ...inputBuffer] = runtime.inputBuffer;
 
   return {
     ...runtime,
     inputBuffer,
-    outputBuffer: outputBuffer ?? null,
+    outputBuffer: outputItem ? [...runtime.outputBuffer, outputItem] : [],
   };
 }
 
@@ -292,14 +288,17 @@ function advanceProcessor({
   if (nextRuntime.process !== null) {
     const remainingMs = nextRuntime.process.remainingMs - deltaMs;
 
-    if (remainingMs <= 0 && nextRuntime.outputBuffer === null) {
+    if (remainingMs <= 0) {
       nextRuntime = {
         ...nextRuntime,
-        outputBuffer: createFoodItem({
-          id: createItemId(),
-          foodId: nextRuntime.process.outputFoodId,
-          createdAtMs: nowMs,
-        }),
+        outputBuffer: [
+          ...nextRuntime.outputBuffer,
+          createFoodItem({
+            id: createItemId(),
+            foodId: nextRuntime.process.outputFoodId,
+            createdAtMs: nowMs,
+          }),
+        ].slice(-MACHINE_OUTPUT_CAPACITY),
         process: null,
       };
     } else {
@@ -363,9 +362,9 @@ function selectOutputConnection({
 }
 
 export function extractMachineOutput(input: ExtractMachineOutputInput) {
-  const item = input.runtime.outputBuffer;
+  const [item, ...outputBuffer] = input.runtime.outputBuffer;
 
-  if (item === null) {
+  if (item === undefined) {
     return null;
   }
 
@@ -384,7 +383,7 @@ export function extractMachineOutput(input: ExtractMachineOutputInput) {
     connection,
     runtime: {
       ...input.runtime,
-      outputBuffer: null,
+      outputBuffer,
       roundRobinIndex:
         input.runtime.machineId === 'splitter'
           ? connectionIndex + 1

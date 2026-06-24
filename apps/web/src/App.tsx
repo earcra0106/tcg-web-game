@@ -1,23 +1,28 @@
 import { BookOpen, ChevronLeft } from 'lucide-react';
 import type { PointerEvent } from 'react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FoodSprite } from './components/FoodSprite.tsx';
 import { GameCanvas } from './components/GameCanvas.tsx';
-import { MachineInspector } from './components/MachineInspector.tsx';
-import { ToolBar } from './components/ToolBar.tsx';
-import {
-  createInitialEditorModel,
-  setMachineRecipe,
-} from './game/editorActions.ts';
+import { StageHud } from './components/StageHud.tsx';
+import { ModeToolBar, ToolBar } from './components/ToolBar.tsx';
+import { createGameAudioController, type GameSoundId } from './game/audio.ts';
+import { createInitialEditorModel } from './game/editorActions.ts';
 import { selectEditorTool, type EditorTool } from './game/editorState.ts';
 import {
   foodInfos,
   getIngredientNames,
   getProcessedIntoNames,
-  getFoodInfo,
 } from './game/foods.ts';
 import type { FoodId } from './game/food.ts';
-import { findMachineById } from './game/placement.ts';
+import { createRenderView } from './game/renderView.ts';
+import {
+  createInitialSimulationState,
+  stepSimulation,
+} from './game/simulation.ts';
+import {
+  getShippingFoodIdsForGoals,
+  getStorageFoodIdsForGoals,
+} from './game/stageTools.ts';
 import { getStageGoal } from './game/stageGoals.ts';
 
 const TOOL_DRAG_THRESHOLD_PX = 6;
@@ -34,30 +39,56 @@ type PlacementDragState = {
 export function App() {
   const [screen, setScreen] = useState<'game' | 'encyclopedia'>('game');
   const [model, setModel] = useState(() => createInitialEditorModel());
+  const [simulationState, setSimulationState] = useState(() =>
+    createInitialSimulationState(),
+  );
+  const [isMuted, setIsMuted] = useState(false);
   const [placementDrag, setPlacementDrag] = useState<PlacementDragState | null>(
     null,
   );
-  const stageGoal = useMemo(
-    () => getStageGoal({ seed: 'daily', stageNumber: 1 }),
-    [],
+  const audioRef = useRef<ReturnType<typeof createGameAudioController> | null>(
+    null,
   );
-  const stageFood = getFoodInfo(stageGoal.targetFoodId);
-  const storageFoodIds = useMemo(() => {
-    const targetFood = getFoodInfo(stageGoal.targetFoodId);
+  const lastSimulationFrameMsRef = useRef<number | null>(null);
+  const lastClearedStageRef = useRef<number | null>(null);
+  const stageNumber = model.gameState.stageIndex + 1;
+  const stageGoal = useMemo(
+    () => getStageGoal({ seed: 'daily', stageNumber }),
+    [stageNumber],
+  );
+  const cumulativeStageGoals = useMemo(
+    () =>
+      Array.from({ length: stageNumber }, (_, index) =>
+        getStageGoal({ seed: 'daily', stageNumber: index + 1 }),
+      ),
+    [stageNumber],
+  );
+  const renderView = useMemo(
+    () =>
+      createRenderView({
+        gameState: model.gameState,
+        simulationState,
+        machineConfigs: model.machineConfigs,
+        seed: 'daily',
+      }),
+    [model.gameState, model.machineConfigs, simulationState],
+  );
+  const storageFoodIds = useMemo(
+    () => getStorageFoodIdsForGoals(cumulativeStageGoals),
+    [cumulativeStageGoals],
+  );
+  const shippingFoodIds = useMemo(
+    () => getShippingFoodIdsForGoals(cumulativeStageGoals),
+    [cumulativeStageGoals],
+  );
 
-    return (
-      targetFood?.ingredientIds.filter(
-        (foodId) => getFoodInfo(foodId)?.canSpawnFromStorage === true,
-      ) ?? []
-    );
-  }, [stageGoal.targetFoodId]);
-  const selectedMachine =
-    model.gameState.selection.selectedMachineId !== null
-      ? findMachineById(
-          model.gameState.machines,
-          model.gameState.selection.selectedMachineId,
-        )
-      : null;
+  if (audioRef.current === null) {
+    audioRef.current = createGameAudioController();
+  }
+
+  const playSound = useCallback((soundId: GameSoundId) => {
+    audioRef.current?.play(soundId);
+  }, []);
 
   useEffect(() => {
     if (placementDrag === null) {
@@ -107,6 +138,70 @@ export function App() {
     };
   }, [placementDrag]);
 
+  useEffect(() => {
+    let animationFrameId = 0;
+
+    const tick = (frameMs: number) => {
+      const previousFrameMs = lastSimulationFrameMsRef.current ?? frameMs;
+      const deltaMs = Math.min(100, Math.max(0, frameMs - previousFrameMs));
+      lastSimulationFrameMsRef.current = frameMs;
+
+      if (deltaMs > 0) {
+        setSimulationState((current) =>
+          stepSimulation(current, {
+            machines: model.gameState.machines,
+            connections: model.gameState.connections,
+            deltaMs,
+            machineConfigs: model.machineConfigs,
+            stageGoal,
+          }),
+        );
+      }
+
+      animationFrameId = window.requestAnimationFrame(tick);
+    };
+
+    animationFrameId = window.requestAnimationFrame(tick);
+
+    return () => {
+      window.cancelAnimationFrame(animationFrameId);
+    };
+  }, [
+    model.gameState.machines,
+    model.gameState.connections,
+    model.machineConfigs,
+    stageGoal,
+  ]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+
+    return () => {
+      audio?.dispose();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!renderView.hud.isCleared) {
+      lastClearedStageRef.current = null;
+      return;
+    }
+
+    if (lastClearedStageRef.current === renderView.hud.stageNumber) {
+      return;
+    }
+
+    lastClearedStageRef.current = renderView.hud.stageNumber;
+    playSound('success');
+    setModel((current) => ({
+      ...current,
+      gameState: {
+        ...current.gameState,
+        stageIndex: current.gameState.stageIndex + 1,
+      },
+    }));
+  }, [playSound, renderView.hud.isCleared, renderView.hud.stageNumber]);
+
   if (screen === 'encyclopedia') {
     return <FoodEncyclopedia onBack={() => setScreen('game')} />;
   }
@@ -115,6 +210,7 @@ export function App() {
     <main className="app-shell">
       <GameCanvas
         model={model}
+        renderView={renderView}
         dragPlacementTool={placementDrag?.tool ?? null}
         isDraggingPlacement={placementDrag?.isDragging === true}
         onModelChange={(updater) => {
@@ -123,6 +219,7 @@ export function App() {
         onPlacementDrop={() => {
           setPlacementDrag(null);
         }}
+        onPlaySound={playSound}
       />
       <button
         className="icon-button encyclopedia-button"
@@ -133,47 +230,32 @@ export function App() {
         <BookOpen aria-hidden="true" size={20} />
         <span>食べもの図鑑</span>
       </button>
-      <section className="hud" aria-label="Game status">
-        <p className="hud__label">Stage {stageGoal.stageNumber}</p>
-        <dl className="hud__stats">
-          <div>
-            <dt>Target</dt>
-            <dd>{stageFood?.name ?? stageGoal.targetFoodName}</dd>
-          </div>
-          <div>
-            <dt>Efficiency</dt>
-            <dd>{stageGoal.requiredEfficiency}/min</dd>
-          </div>
-        </dl>
-      </section>
-      <MachineInspector
-        machine={selectedMachine}
-        config={
-          selectedMachine !== null
-            ? model.machineConfigs[selectedMachine.id]
-            : undefined
-        }
-        onRecipeChange={(recipeId) => {
-          if (selectedMachine === null) {
-            return;
-          }
-
-          setModel((current) =>
-            setMachineRecipe(current, selectedMachine.id, recipeId),
-          );
+      <StageHud
+        hud={renderView.hud}
+        isMuted={isMuted}
+        onToggleMuted={() => {
+          const nextMuted = !isMuted;
+          audioRef.current?.setMuted(nextMuted);
+          setIsMuted(nextMuted);
         }}
       />
       <ToolBar
         selectedTool={model.editorState.selectedTool}
         storageFoodIds={storageFoodIds}
-        shippingFoodId={stageGoal.targetFoodId}
+        shippingFoodIds={shippingFoodIds}
         onSelectTool={(tool) => {
+          playSound('select');
           setModel((current) => ({
             ...current,
             editorState: selectEditorTool(current.editorState, tool),
           }));
         }}
         onStartPlacementDrag={(tool, event) => {
+          playSound('select');
+          setModel((current) => ({
+            ...current,
+            editorState: selectEditorTool(current.editorState, tool),
+          }));
           setPlacementDrag({
             tool,
             pointerId: event.pointerId,
@@ -181,6 +263,16 @@ export function App() {
             startClientY: event.clientY,
             isDragging: false,
           });
+        }}
+      />
+      <ModeToolBar
+        selectedTool={model.editorState.selectedTool}
+        onSelectTool={(tool) => {
+          playSound('select');
+          setModel((current) => ({
+            ...current,
+            editorState: selectEditorTool(current.editorState, tool),
+          }));
         }}
       />
     </main>
