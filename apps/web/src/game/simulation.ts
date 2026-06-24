@@ -80,11 +80,15 @@ function calculateConnectionLength({
 function deliverArrivedItems({
   items,
   runtimes,
+  machines,
+  connections,
   shippingHistory,
   nowMs,
 }: {
   items: readonly TransportingFoodItem[];
   runtimes: Record<PlacementId, MachineRuntime>;
+  machines: readonly PlacedMachine[];
+  connections: readonly MachineConnection[];
   shippingHistory: readonly ShipmentRecord[];
   nowMs: number;
 }) {
@@ -99,17 +103,35 @@ function deliverArrivedItems({
 
     const runtime = runtimes[item.toMachineId];
 
-    if (runtime === undefined || !canAcceptMachineInput(runtime)) {
+    if (runtime === undefined) {
+      return;
+    }
+
+    const targetMachine = findMachineById(machines, item.toMachineId);
+    const hasOutputConnection = connections.some(
+      (connection) => connection.fromMachineId === item.toMachineId,
+    );
+
+    if (
+      (runtime.machineId === 'splitter' || runtime.machineId === 'merger') &&
+      !hasOutputConnection
+    ) {
+      return;
+    }
+
+    if (!canAcceptMachineInput(runtime) && hasOutputConnection) {
       waitingItems.push(item);
       return;
     }
 
     if (runtime.machineId === 'shipping') {
-      nextShippingHistory = recordShipment(nextShippingHistory, {
-        itemId: item.id,
-        foodId: item.foodId,
-        shippedAtMs: nowMs,
-      });
+      if (targetMachine?.foodId === item.foodId) {
+        nextShippingHistory = recordShipment(nextShippingHistory, {
+          itemId: item.id,
+          foodId: item.foodId,
+          shippedAtMs: nowMs,
+        });
+      }
       return;
     }
 
@@ -196,6 +218,19 @@ function extractOutputs({
     }
 
     const outputConnections = findOutputConnections(connections, machine.id);
+
+    if (
+      outputConnections.length === 0 &&
+      (machine.machineId === 'splitter' || machine.machineId === 'merger')
+    ) {
+      runtimes[machine.id] = {
+        ...runtime,
+        inputBuffer: [],
+        outputBuffer: [],
+      };
+      return;
+    }
+
     let nextRuntime = runtime;
 
     while (true) {
@@ -247,13 +282,19 @@ export function stepSimulation(
   }
 
   const nowMs = state.nowMs + input.deltaMs;
+  const connectionIds = new Set(
+    input.connections.map((connection) => connection.id),
+  );
+  const existingItems = state.items.filter((item) =>
+    connectionIds.has(item.connectionId),
+  );
   const syncedRuntimes = syncMachineRuntimes(
     input.machines,
     state.machineRuntimes,
   );
   const traveledCells =
     (input.deltaMs / 1_000) * CONVEYOR_SPEED_CELLS_PER_SECOND;
-  const advancedItems = state.items.map((item) =>
+  const advancedItems = existingItems.map((item) =>
     advanceTransportingFoodItem(
       item,
       traveledCells /
@@ -263,6 +304,8 @@ export function stepSimulation(
   const delivery = deliverArrivedItems({
     items: advancedItems,
     runtimes: syncedRuntimes,
+    machines: input.machines,
+    connections: input.connections,
     shippingHistory: state.shippingHistory,
     nowMs,
   });

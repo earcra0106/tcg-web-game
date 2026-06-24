@@ -88,11 +88,13 @@ describe('render view', () => {
       machineRuntimes: {
         from: {
           ...createMachineRuntime(machines[0]!),
-          outputBuffer: createFoodItem({
-            id: 'held',
-            foodId: 'rice',
-            createdAtMs: 0,
-          }),
+          outputBuffer: [
+            createFoodItem({
+              id: 'held',
+              foodId: 'rice',
+              createdAtMs: 0,
+            }),
+          ],
         },
       },
     };

@@ -6,6 +6,7 @@ import {
   canAcceptMachineInput,
   createMachineRuntime,
   extractMachineOutput,
+  MACHINE_OUTPUT_CAPACITY,
   receiveMachineInput,
   type MachineRuntime,
 } from './machineRuntime.ts';
@@ -42,11 +43,37 @@ describe('machine runtime', () => {
       createItemId,
     });
 
-    expect(runtime.outputBuffer).toMatchObject({
-      id: 'created-item',
-      foodId: 'rice',
-      createdAtMs: 1_000,
-    });
+    expect(runtime.outputBuffer).toEqual([
+      expect.objectContaining({
+        id: 'created-item',
+        foodId: 'rice',
+        createdAtMs: 1_000,
+      }),
+    ]);
+  });
+
+  it('keeps the newest six outputs and removes the oldest output', () => {
+    let nextItemIndex = 1;
+    let runtime = createMachineRuntime(machine('storage-1', 'storage'));
+
+    for (let index = 0; index < MACHINE_OUTPUT_CAPACITY + 1; index += 1) {
+      runtime = advanceMachineRuntime({
+        runtime,
+        deltaMs: 1_000,
+        nowMs: (index + 1) * 1_000,
+        config: { spawnFoodId: 'rice' },
+        createItemId: () => `item-${nextItemIndex++}`,
+      });
+    }
+
+    expect(runtime.outputBuffer.map((output) => output.id)).toEqual([
+      'item-2',
+      'item-3',
+      'item-4',
+      'item-5',
+      'item-6',
+      'item-7',
+    ]);
   });
 
   it('processes matching recipes for production machines', () => {
@@ -73,9 +100,11 @@ describe('machine runtime', () => {
       createItemId,
     });
 
-    expect(completed.outputBuffer).toMatchObject({
-      foodId: 'cooked-rice',
-    });
+    expect(completed.outputBuffer).toEqual([
+      expect.objectContaining({
+        foodId: 'cooked-rice',
+      }),
+    ]);
   });
 
   it('does not start processing until required ingredients are available', () => {
@@ -134,7 +163,7 @@ describe('machine runtime', () => {
     ];
     const runtime: MachineRuntime = {
       ...createMachineRuntime(machine('splitter-1', 'splitter')),
-      outputBuffer: item('item-1', 'rice'),
+      outputBuffer: [item('item-1', 'rice')],
     };
 
     const firstOutput = extractMachineOutput({
@@ -148,7 +177,7 @@ describe('machine runtime', () => {
     const secondOutput = extractMachineOutput({
       runtime: {
         ...(firstOutput?.runtime ?? runtime),
-        outputBuffer: item('item-2', 'rice'),
+        outputBuffer: [item('item-2', 'rice')],
       },
       outputConnections: connections,
       occupiedConnectionIds: new Set(),
@@ -159,7 +188,7 @@ describe('machine runtime', () => {
     const thirdOutput = extractMachineOutput({
       runtime: {
         ...(secondOutput?.runtime ?? runtime),
-        outputBuffer: item('item-3', 'rice'),
+        outputBuffer: [item('item-3', 'rice')],
       },
       outputConnections: connections,
       occupiedConnectionIds: new Set(),
@@ -170,7 +199,7 @@ describe('machine runtime', () => {
     const fourthOutput = extractMachineOutput({
       runtime: {
         ...(thirdOutput?.runtime ?? runtime),
-        outputBuffer: item('item-4', 'rice'),
+        outputBuffer: [item('item-4', 'rice')],
       },
       outputConnections: connections,
       occupiedConnectionIds: new Set(),
@@ -181,7 +210,7 @@ describe('machine runtime', () => {
     const fifthOutput = extractMachineOutput({
       runtime: {
         ...(fourthOutput?.runtime ?? runtime),
-        outputBuffer: item('item-5', 'rice'),
+        outputBuffer: [item('item-5', 'rice')],
       },
       outputConnections: connections,
       occupiedConnectionIds: new Set(),
@@ -201,8 +230,34 @@ describe('machine runtime', () => {
       createItemId,
     });
 
-    expect(runtime.outputBuffer).toMatchObject({ id: 'item-1' });
+    expect(runtime.outputBuffer).toEqual([
+      expect.objectContaining({ id: 'item-1' }),
+    ]);
     expect(runtime.inputBuffer).toEqual([item('item-2', 'egg')]);
+  });
+
+  it('uses the oldest matching ingredients first', () => {
+    const runtime = advanceMachineRuntime({
+      runtime: {
+        ...createMachineRuntime(machine('combiner-1', 'combiner')),
+        inputBuffer: [
+          item('old-toast', 'toast'),
+          item('old-cheese', 'cheese'),
+          item('new-toast', 'toast'),
+          item('new-cheese', 'cheese'),
+        ],
+      },
+      deltaMs: 0,
+      nowMs: 0,
+      config: { recipeId: 'cheese-toast' },
+      createItemId,
+    });
+
+    expect(runtime.process?.recipeId).toBe('cheese-toast');
+    expect(runtime.inputBuffer.map((input) => input.id)).toEqual([
+      'new-toast',
+      'new-cheese',
+    ]);
   });
 
   it('accepts trash input without retaining it', () => {

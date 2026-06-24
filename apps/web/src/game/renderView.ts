@@ -165,8 +165,7 @@ export function createRenderView({
         machine,
         isProcessing:
           runtime?.process !== null && runtime?.process !== undefined,
-        hasOutput:
-          runtime?.outputBuffer !== null && runtime?.outputBuffer !== undefined,
+        hasOutput: (runtime?.outputBuffer.length ?? 0) > 0,
       };
     }),
     connections: gameState.connections,
