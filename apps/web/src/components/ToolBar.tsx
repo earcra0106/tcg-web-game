@@ -157,8 +157,11 @@ export function ToolBar({
 }: ToolBarProps) {
   const toolCount =
     storageFoodIds.length + shippingFoodIds.length + placeableMachineIds.length;
-  const { elementRef: toolbarRef, hasHorizontalScrollbar } =
-    useHorizontalScroll<HTMLElement>(toolCount);
+  const {
+    elementRef: toolbarRef,
+    handleWheel,
+    hasHorizontalScrollbar,
+  } = useHorizontalScroll<HTMLElement>(toolCount);
 
   return (
     <section
@@ -167,6 +170,7 @@ export function ToolBar({
         hasHorizontalScrollbar ? 'tool-bar tool-bar--scrollable' : 'tool-bar'
       }
       aria-label="編集ツール"
+      onWheel={handleWheel}
     >
       {storageFoodIds.map((foodId) => {
         const food = getFoodInfo(foodId);
