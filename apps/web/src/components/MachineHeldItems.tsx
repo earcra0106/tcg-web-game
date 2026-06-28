@@ -1,5 +1,6 @@
 import { Html } from '@react-three/drei';
 import { getFoodInfo } from '../game/foods.ts';
+import { MACHINE_INPUT_CAPACITY } from '../game/machineRuntime.ts';
 import type { RenderMachineHeldItemView } from '../game/renderView.ts';
 import { FoodSprite } from './FoodSprite.tsx';
 
@@ -28,10 +29,29 @@ function ProcessingBorder({ progress }: { progress: number }) {
   );
 }
 
-export function MachineHeldItems({ items }: MachineHeldItemsProps) {
-  if (items.length === 0) {
+function HeldItemCard({ item }: { item: RenderMachineHeldItemView }) {
+  const food = getFoodInfo(item.foodId);
+
+  if (food === null) {
     return null;
   }
+
+  return (
+    <div className="machine-held-item" data-status={item.status}>
+      <FoodSprite spriteId={item.spriteId} label={food.name} />
+      {item.progress !== null ? (
+        <ProcessingBorder progress={item.progress} />
+      ) : null}
+    </div>
+  );
+}
+
+export function MachineHeldItems({ items }: MachineHeldItemsProps) {
+  const inputItems = items
+    .filter((item) => item.status === 'input')
+    .slice(0, MACHINE_INPUT_CAPACITY);
+  const processingItem = items.find((item) => item.status === 'processing');
+  const emptySlotCount = MACHINE_INPUT_CAPACITY - inputItems.length;
 
   return (
     <Html
@@ -41,26 +61,22 @@ export function MachineHeldItems({ items }: MachineHeldItemsProps) {
       wrapperClass="machine-held-items-wrapper"
     >
       <div className="machine-held-items">
-        {items.map((item) => {
-          const food = getFoodInfo(item.foodId);
-
-          if (food === null) {
-            return null;
-          }
-
-          return (
+        <div className="machine-inventory machine-inventory--input">
+          {Array.from({ length: emptySlotCount }, (_, index) => (
             <div
-              key={item.id}
+              key={`empty-input-${index}`}
               className="machine-held-item"
-              data-status={item.status}
-            >
-              <FoodSprite spriteId={item.spriteId} label={food.name} />
-              {item.progress !== null ? (
-                <ProcessingBorder progress={item.progress} />
-              ) : null}
-            </div>
-          );
-        })}
+              data-empty="true"
+              aria-hidden="true"
+            />
+          ))}
+          {inputItems.map((item) => (
+            <HeldItemCard key={item.id} item={item} />
+          ))}
+        </div>
+        {processingItem !== undefined ? (
+          <HeldItemCard item={processingItem} />
+        ) : null}
       </div>
     </Html>
   );

@@ -420,8 +420,18 @@ select {
 .machine-held-items {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   user-select: none;
+}
+
+.machine-inventory {
+  display: grid;
+  grid-template-columns: repeat(6, 44px);
+  gap: 6px;
+  padding: 8px;
+  border-radius: 12px;
+  background: #8b5e3c;
+  box-shadow: 0 7px 16px rgb(67 40 24 / 0.28);
 }
 
 .machine-held-item {
@@ -432,10 +442,15 @@ select {
   width: 44px;
   height: 44px;
   overflow: hidden;
-  border: 1px solid rgb(190 150 111 / 0.42);
+  border: 1px solid rgb(91 55 34 / 0.42);
   border-radius: 8px;
-  background: rgb(255 253 249 / 0.94);
+  background: #aa7652;
   box-shadow: 0 6px 14px rgb(92 64 42 / 0.2);
+}
+
+.machine-held-item[data-empty='true'] {
+  background: #70462f;
+  box-shadow: inset 0 2px 5px rgb(49 27 15 / 0.24);
 }
 
 .machine-held-item .food-sprite {
