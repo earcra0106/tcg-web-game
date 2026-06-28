@@ -12,16 +12,17 @@
 
 ### void describe('machine runtime')
 
-次の11ケースを検証する。
+次の12ケースを検証する。
 
-1. storage/rice が1000msで created-item/rice/時刻1000を出力。
-2. output capacity+1 回生成しても item-1 のみ。
-3. heater に rice を与え delta0 で cooked-rice process・入力消費、次の1000msで出力。
-4. 既存 toast 出力中に cooked-rice 完成すると新出力を捨て process null。
-5. cooked-rice 完成と同時に config toast/入力bread なら旧出力を作り次の toast process を開始。
-6. combiner に sliced-tomato のみでは process なし・入力維持。
-7. heater config toast に rice は不一致で維持。
-8. splitter の4接続へ5 item を順に抽出すると接続1,2,3,4,1。
-9. merger 入力 rice,egg は rice だけ出力、egg を維持。
-10. cheese-toast 用に旧/新 toast・cheese があれば旧2件を消費し新2件を残す。
-11. trash-bin は受入可能で、receive は同一 runtime 参照。
+1. storage/rice は接続ありでも1999msでは出力せず、2000msで生成する。
+2. storage は2000ms到達時に接続がなければ生成せずelapsedを0へ戻し、接続後も次の2000msを待つ。
+3. output capacity+1 回生成しても item-1 のみ。
+4. heater に rice を与え delta0 で cooked-rice process・入力消費、次の500msで出力。
+5. 既存 toast 出力中に cooked-rice 完成すると新出力を捨て process null。
+6. cooked-rice 完成と同時に config toast/入力bread なら旧出力を作り次の toast process を開始。
+7. combiner に sliced-tomato のみでは process なし・入力維持。
+8. heater config toast に rice は不一致で維持。
+9. splitter の4接続へ5 item を順に抽出すると接続1,2,3,4,1。
+10. merger 入力 rice,egg は rice だけ出力、egg を維持。
+11. cheese-toast 用に旧/新 toast・cheese があれば旧2件を消費し新2件を残す。
+12. trash-bin は受入可能で、receive は同一 runtime 参照。

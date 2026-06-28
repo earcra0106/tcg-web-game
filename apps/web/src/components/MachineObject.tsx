@@ -7,6 +7,7 @@ import { getMachineInfo } from '../game/machine.ts';
 import { getMachineSpriteFrame } from '../game/machineSprites.ts';
 import type { PlacedMachine, PlacementId } from '../game/placement.ts';
 import type { RenderMachineHeldItemView } from '../game/renderView.ts';
+import type { RenderMachineProgressView } from '../game/renderView.ts';
 import { MachineHeldItems } from './MachineHeldItems.tsx';
 import { SpritePlane } from './SpritePlane.tsx';
 
@@ -20,7 +21,7 @@ type MachineObjectProps = {
   machine: PlacedMachine;
   isSelected: boolean;
   isConnectionSource: boolean;
-  isProcessing?: boolean;
+  operationProgress?: RenderMachineProgressView | null;
   hasOutput?: boolean;
   heldItems?: readonly RenderMachineHeldItemView[];
   craftableFoodIds: readonly FoodId[];
@@ -87,11 +88,42 @@ function FoodRing({
   );
 }
 
+function ProgressGauge({
+  progress,
+  opacity,
+}: {
+  progress: RenderMachineProgressView | null;
+  opacity: number;
+}) {
+  if (progress === null || progress.value <= 0) {
+    return null;
+  }
+
+  return (
+    <mesh
+      rotation={[-Math.PI / 2, 0, 0]}
+      position={[0, MACHINE_RING_Y + 0.03, 0]}
+      renderOrder={MACHINE_RENDER_ORDER + 0.5}
+    >
+      <circleGeometry
+        args={[0.6, 64, Math.PI / 2, progress.value * Math.PI * 2]}
+      />
+      <meshBasicMaterial
+        color={progress.kind === 'waiting' ? '#50b86b' : '#ffcf5a'}
+        transparent
+        opacity={0.82 * opacity}
+        depthTest={false}
+        side={THREE.DoubleSide}
+      />
+    </mesh>
+  );
+}
+
 export function MachineObject({
   machine,
   isSelected,
   isConnectionSource,
-  isProcessing = false,
+  operationProgress = null,
   hasOutput = false,
   heldItems = [],
   craftableFoodIds,
@@ -185,7 +217,8 @@ export function MachineObject({
           />
         </mesh>
       ) : null}
-      {isProcessing || hasOutput ? (
+      <ProgressGauge progress={operationProgress} opacity={opacity} />
+      {hasOutput ? (
         <mesh
           rotation={[-Math.PI / 2, 0, 0]}
           position={[0, MACHINE_RING_Y + 0.03, 0]}
@@ -193,7 +226,7 @@ export function MachineObject({
         >
           <ringGeometry args={[0.62, 0.66, 64]} />
           <meshBasicMaterial
-            color={hasOutput ? '#50b86b' : '#ffcf5a'}
+            color="#50b86b"
             transparent
             opacity={0.82}
             depthTest={false}

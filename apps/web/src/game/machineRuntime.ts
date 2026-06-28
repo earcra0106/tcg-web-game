@@ -8,8 +8,8 @@ import type { FoodItem } from './items.ts';
 import { createFoodItem } from './items.ts';
 import type { PlacedMachine, PlacementId } from './placement.ts';
 
-export const STORAGE_SPAWN_INTERVAL_MS = 1_000;
-export const MACHINE_PROCESS_TIME_MS = 1_000;
+export const STORAGE_SPAWN_INTERVAL_MS = 2_000;
+export const MACHINE_PROCESS_TIME_MS = 500;
 export const MACHINE_INPUT_CAPACITY = 6;
 export const MACHINE_OUTPUT_CAPACITY = 1;
 
@@ -38,6 +38,7 @@ export type AdvanceMachineRuntimeInput = {
   runtime: MachineRuntime;
   deltaMs: number;
   nowMs: number;
+  hasOutputConnection?: boolean;
   config?: MachineRuntimeConfig;
   recipes?: readonly FoodRecipe[];
   createItemId: () => string;
@@ -46,7 +47,6 @@ export type AdvanceMachineRuntimeInput = {
 export type ExtractMachineOutputInput = {
   runtime: MachineRuntime;
   outputConnections: readonly MachineConnection[];
-  occupiedConnectionIds: ReadonlySet<string>;
 };
 
 export function createMachineRuntime(machine: PlacedMachine): MachineRuntime {
@@ -221,6 +221,7 @@ function advanceStorage({
   runtime,
   deltaMs,
   nowMs,
+  hasOutputConnection,
   config,
   createItemId,
 }: AdvanceMachineRuntimeInput) {
@@ -243,6 +244,15 @@ function advanceStorage({
     };
   }
 
+  const nextStorageElapsedMs = storageElapsedMs - STORAGE_SPAWN_INTERVAL_MS;
+
+  if (hasOutputConnection !== true) {
+    return {
+      ...runtime,
+      storageElapsedMs: nextStorageElapsedMs,
+    };
+  }
+
   const outputItem = createFoodItem({
     id: createItemId(),
     foodId: config.spawnFoodId,
@@ -251,7 +261,7 @@ function advanceStorage({
 
   return {
     ...runtime,
-    storageElapsedMs: storageElapsedMs - STORAGE_SPAWN_INTERVAL_MS,
+    storageElapsedMs: nextStorageElapsedMs,
     outputBuffer:
       runtime.outputBuffer.length >= MACHINE_OUTPUT_CAPACITY
         ? runtime.outputBuffer
@@ -337,32 +347,17 @@ export function advanceMachineRuntime(input: AdvanceMachineRuntimeInput) {
 function selectOutputConnection({
   runtime,
   outputConnections,
-  occupiedConnectionIds,
 }: ExtractMachineOutputInput) {
-  const availableConnections = outputConnections.filter(
-    (connection) => !occupiedConnectionIds.has(connection.id),
-  );
-
-  if (availableConnections.length === 0) {
+  if (outputConnections.length === 0) {
     return null;
   }
 
   if (runtime.machineId !== 'splitter') {
-    return availableConnections[0] ?? null;
+    return outputConnections[0] ?? null;
   }
 
   const startIndex = runtime.roundRobinIndex % outputConnections.length;
-
-  for (let offset = 0; offset < outputConnections.length; offset += 1) {
-    const connection =
-      outputConnections[(startIndex + offset) % outputConnections.length];
-
-    if (connection !== undefined && !occupiedConnectionIds.has(connection.id)) {
-      return connection;
-    }
-  }
-
-  return null;
+  return outputConnections[startIndex] ?? null;
 }
 
 export function extractMachineOutput(input: ExtractMachineOutputInput) {

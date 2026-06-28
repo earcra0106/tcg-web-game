@@ -35,10 +35,22 @@ function createItemId() {
 
 describe('machine runtime', () => {
   it('spawns configured storage food at fixed intervals', () => {
-    const runtime = advanceMachineRuntime({
+    const waiting = advanceMachineRuntime({
       runtime: createMachineRuntime(machine('storage-1', 'storage')),
-      deltaMs: 1_000,
-      nowMs: 1_000,
+      deltaMs: 1_999,
+      nowMs: 1_999,
+      hasOutputConnection: true,
+      config: { spawnFoodId: 'rice' },
+      createItemId,
+    });
+
+    expect(waiting.outputBuffer).toEqual([]);
+
+    const runtime = advanceMachineRuntime({
+      runtime: waiting,
+      deltaMs: 1,
+      nowMs: 2_000,
+      hasOutputConnection: true,
       config: { spawnFoodId: 'rice' },
       createItemId,
     });
@@ -47,9 +59,33 @@ describe('machine runtime', () => {
       expect.objectContaining({
         id: 'created-item',
         foodId: 'rice',
-        createdAtMs: 1_000,
+        createdAtMs: 2_000,
       }),
     ]);
+  });
+
+  it('waits for another interval when storage has no output connection', () => {
+    const disconnected = advanceMachineRuntime({
+      runtime: createMachineRuntime(machine('storage-1', 'storage')),
+      deltaMs: 2_000,
+      nowMs: 2_000,
+      config: { spawnFoodId: 'rice' },
+      createItemId,
+    });
+
+    expect(disconnected.outputBuffer).toEqual([]);
+    expect(disconnected.storageElapsedMs).toBe(0);
+
+    const connected = advanceMachineRuntime({
+      runtime: disconnected,
+      deltaMs: 2_000,
+      nowMs: 4_000,
+      hasOutputConnection: true,
+      config: { spawnFoodId: 'rice' },
+      createItemId,
+    });
+
+    expect(connected.outputBuffer).toHaveLength(1);
   });
 
   it('keeps only the first storage output while it is waiting', () => {
@@ -59,8 +95,9 @@ describe('machine runtime', () => {
     for (let index = 0; index < MACHINE_OUTPUT_CAPACITY + 1; index += 1) {
       runtime = advanceMachineRuntime({
         runtime,
-        deltaMs: 1_000,
-        nowMs: (index + 1) * 1_000,
+        deltaMs: 2_000,
+        nowMs: (index + 1) * 2_000,
+        hasOutputConnection: true,
         config: { spawnFoodId: 'rice' },
         createItemId: () => `item-${nextItemIndex++}`,
       });
@@ -88,8 +125,8 @@ describe('machine runtime', () => {
 
     const completed = advanceMachineRuntime({
       runtime: processing,
-      deltaMs: 1_000,
-      nowMs: 1_000,
+      deltaMs: 500,
+      nowMs: 500,
       createItemId,
     });
 
@@ -210,7 +247,6 @@ describe('machine runtime', () => {
     const firstOutput = extractMachineOutput({
       runtime,
       outputConnections: connections,
-      occupiedConnectionIds: new Set(),
     });
 
     expect(firstOutput?.connection.id).toBe('connection-1');
@@ -221,7 +257,6 @@ describe('machine runtime', () => {
         outputBuffer: [item('item-2', 'rice')],
       },
       outputConnections: connections,
-      occupiedConnectionIds: new Set(),
     });
 
     expect(secondOutput?.connection.id).toBe('connection-2');
@@ -232,7 +267,6 @@ describe('machine runtime', () => {
         outputBuffer: [item('item-3', 'rice')],
       },
       outputConnections: connections,
-      occupiedConnectionIds: new Set(),
     });
 
     expect(thirdOutput?.connection.id).toBe('connection-3');
@@ -243,7 +277,6 @@ describe('machine runtime', () => {
         outputBuffer: [item('item-4', 'rice')],
       },
       outputConnections: connections,
-      occupiedConnectionIds: new Set(),
     });
 
     expect(fourthOutput?.connection.id).toBe('connection-4');
@@ -254,7 +287,6 @@ describe('machine runtime', () => {
         outputBuffer: [item('item-5', 'rice')],
       },
       outputConnections: connections,
-      occupiedConnectionIds: new Set(),
     });
 
     expect(fifthOutput?.connection.id).toBe('connection-1');

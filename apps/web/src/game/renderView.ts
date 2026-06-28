@@ -6,6 +6,7 @@ import { toWorldPosition } from './grid.ts';
 import type { FoodItem } from './items.ts';
 import {
   MACHINE_PROCESS_TIME_MS,
+  STORAGE_SPAWN_INTERVAL_MS,
   type MachineRuntime,
   type MachineRuntimeConfig,
 } from './machineRuntime.ts';
@@ -23,9 +24,14 @@ export const DEFAULT_EFFICIENCY_WINDOW_MS = 60_000;
 
 export type RenderMachineView = {
   machine: PlacedMachine;
-  isProcessing: boolean;
+  operationProgress: RenderMachineProgressView | null;
   hasOutput: boolean;
   heldItems: readonly RenderMachineHeldItemView[];
+};
+
+export type RenderMachineProgressView = {
+  kind: 'waiting' | 'processing';
+  value: number;
 };
 
 export type RenderMachineHeldItemView = {
@@ -77,6 +83,38 @@ function lerp(start: number, end: number, progress: number) {
   return start + (end - start) * progress;
 }
 
+function clampProgress(progress: number) {
+  return Math.max(0, Math.min(1, progress));
+}
+
+function createMachineProgressView(
+  runtime: MachineRuntime | undefined,
+): RenderMachineProgressView | null {
+  if (runtime === undefined) {
+    return null;
+  }
+
+  if (runtime.machineId === 'storage') {
+    return {
+      kind: 'waiting',
+      value: clampProgress(
+        runtime.storageElapsedMs / STORAGE_SPAWN_INTERVAL_MS,
+      ),
+    };
+  }
+
+  if (runtime.process === null) {
+    return null;
+  }
+
+  return {
+    kind: 'processing',
+    value: clampProgress(
+      1 - runtime.process.remainingMs / MACHINE_PROCESS_TIME_MS,
+    ),
+  };
+}
+
 function createInputItemView(item: FoodItem): RenderMachineHeldItemView | null {
   const food = getFoodInfo(item.foodId);
 
@@ -125,9 +163,8 @@ export function createMachineHeldItemViews(
       foodId: process.outputFoodId,
       spriteId: food.spriteId,
       status: 'processing',
-      progress: Math.max(
-        0,
-        Math.min(1, 1 - process.remainingMs / MACHINE_PROCESS_TIME_MS),
+      progress: clampProgress(
+        1 - process.remainingMs / MACHINE_PROCESS_TIME_MS,
       ),
     },
   ];
@@ -233,8 +270,7 @@ export function createRenderView({
 
       return {
         machine,
-        isProcessing:
-          runtime?.process !== null && runtime?.process !== undefined,
+        operationProgress: createMachineProgressView(runtime),
         hasOutput: (runtime?.outputBuffer.length ?? 0) > 0,
         heldItems: createMachineHeldItemViews(runtime),
       };

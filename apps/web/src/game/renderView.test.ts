@@ -55,7 +55,7 @@ describe('render view', () => {
       process: {
         recipeId: 'cooked-rice',
         outputFoodId: 'cooked-rice',
-        remainingMs: 500,
+        remainingMs: 250,
       },
     };
 
@@ -81,7 +81,7 @@ describe('render view', () => {
     const process = {
       recipeId: 'cooked-rice',
       outputFoodId: 'cooked-rice',
-      remainingMs: 1_000,
+      remainingMs: 500,
     };
 
     expect(
@@ -203,9 +203,52 @@ describe('render view', () => {
     ]);
     expect(view.machines[0]).toMatchObject({
       hasOutput: true,
-      isProcessing: false,
+      operationProgress: { kind: 'waiting', value: 0 },
       heldItems: [],
     });
+  });
+
+  it('creates waiting and processing progress for machine rendering', () => {
+    const storage = machine('storage-1', 0);
+    const heater: PlacedMachine = {
+      id: 'heater-1',
+      machineId: 'heater',
+      position: { x: 1, z: 0 },
+    };
+    const gameState: GameState = {
+      machines: [storage, heater],
+      connections: [],
+      stageIndex: 0,
+      selection: { selectedMachineId: null },
+    };
+    const simulationState = {
+      ...createInitialSimulationState(),
+      machineRuntimes: {
+        [storage.id]: {
+          ...createMachineRuntime(storage),
+          storageElapsedMs: 1_000,
+        },
+        [heater.id]: {
+          ...createMachineRuntime(heater),
+          process: {
+            recipeId: 'cooked-rice',
+            outputFoodId: 'cooked-rice',
+            remainingMs: 250,
+          },
+        },
+      },
+    };
+
+    const view = createRenderView({
+      gameState,
+      simulationState,
+      seed: 'daily',
+    });
+
+    expect(view.machines.map((item) => item.operationProgress)).toEqual([
+      { kind: 'waiting', value: 0.5 },
+      { kind: 'processing', value: 0.5 },
+    ]);
   });
 
   it('summarizes cumulative goals and combines duplicate target foods', () => {
