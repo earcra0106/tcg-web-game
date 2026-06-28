@@ -18,6 +18,16 @@ function inputItem(id: string, foodId: string): RenderMachineHeldItemView {
   };
 }
 
+function processingItem(): RenderMachineHeldItemView {
+  return {
+    id: 'processing',
+    foodId: 'cooked-rice',
+    spriteId: 'cooked-rice',
+    status: 'processing',
+    progress: 0.5,
+  };
+}
+
 describe('MachineHeldItems', () => {
   it('always renders six input slots', () => {
     const { container } = render(<MachineHeldItems items={[]} />);
@@ -26,6 +36,27 @@ describe('MachineHeldItems', () => {
     expect(inventory).toBeInTheDocument();
     expect(inventory?.children).toHaveLength(6);
     expect(inventory?.querySelectorAll('[data-empty="true"]')).toHaveLength(6);
+  });
+
+  it('always renders one processing slot', () => {
+    const { container, rerender } = render(<MachineHeldItems items={[]} />);
+    const getProcessingInventory = () =>
+      container.querySelector('.machine-inventory--processing');
+
+    expect(getProcessingInventory()?.children).toHaveLength(1);
+    expect(getProcessingInventory()?.firstElementChild).toHaveAttribute(
+      'data-empty',
+      'true',
+    );
+
+    rerender(<MachineHeldItems items={[processingItem()]} />);
+
+    expect(
+      getProcessingInventory()?.querySelector('[aria-label="ごはん"]'),
+    ).not.toBeNull();
+    expect(
+      getProcessingInventory()?.querySelector('.machine-held-item__progress'),
+    ).not.toBeNull();
   });
 
   it('places input items at the right side of the inventory', () => {

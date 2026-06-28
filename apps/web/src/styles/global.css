@@ -434,6 +434,10 @@ select {
   box-shadow: 0 7px 16px rgb(67 40 24 / 0.28);
 }
 
+.machine-inventory--processing {
+  grid-template-columns: 57px;
+}
+
 .machine-held-item {
   position: relative;
   display: grid;

@@ -74,9 +74,18 @@ export function MachineHeldItems({ items }: MachineHeldItemsProps) {
             <HeldItemCard key={item.id} item={item} />
           ))}
         </div>
-        {processingItem !== undefined ? (
-          <HeldItemCard item={processingItem} />
-        ) : null}
+        <div className="machine-inventory machine-inventory--processing">
+          {processingItem !== undefined ? (
+            <HeldItemCard item={processingItem} />
+          ) : (
+            <div
+              className="machine-held-item"
+              data-status="processing"
+              data-empty="true"
+              aria-hidden="true"
+            />
+          )}
+        </div>
       </div>
     </Html>
   );
