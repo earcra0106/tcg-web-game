@@ -10,6 +10,7 @@ import {
 import type { ConnectionId } from '../game/connections.ts';
 import type { EditorTool } from '../game/editorState.ts';
 import type { GridPosition } from '../game/grid.ts';
+import { hasMachineInventory } from '../game/machine.ts';
 import { findMachineById, type PlacementId } from '../game/placement.ts';
 import type { RenderView } from '../game/renderView.ts';
 import { ConveyorObject } from './ConveyorObject.tsx';
@@ -315,7 +316,8 @@ export function GameScene({
           heldItems={machineView.heldItems}
           showHeldItems={
             model.editorState.selectedTool.kind === 'select' &&
-            selectedMachineId === machineView.machine.id
+            selectedMachineId === machineView.machine.id &&
+            hasMachineInventory(machineView.machine.machineId)
           }
           onPointerDown={(machineId, event) => {
             beginPress(event, { kind: 'machine', machineId });

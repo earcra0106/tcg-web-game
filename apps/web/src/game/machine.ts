@@ -26,6 +26,17 @@ export const machineInfos = [
   { id: 'trash-bin', name: 'ゴミ箱' },
 ] satisfies readonly MachineInfoData[];
 
+const machineInventoryIds = new Set<MachineId>([
+  'cutter',
+  'heater',
+  'mixer',
+  'combiner',
+]);
+
 export function getMachineInfo(id: MachineId) {
   return machineInfos.find((machine) => machine.id === id) ?? null;
+}
+
+export function hasMachineInventory(id: MachineId) {
+  return machineInventoryIds.has(id);
 }
