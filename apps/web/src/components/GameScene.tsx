@@ -302,14 +302,21 @@ export function GameScene({
           position={item.position}
         />
       ))}
-      {renderView.machines.map(({ machine, isProcessing, hasOutput }) => (
+      {renderView.machines.map((machineView) => (
         <MachineObject
-          key={machine.id}
-          machine={machine}
-          isSelected={selectedMachineId === machine.id}
-          isConnectionSource={connectionSourceMachineId === machine.id}
-          isProcessing={isProcessing}
-          hasOutput={hasOutput}
+          key={machineView.machine.id}
+          machine={machineView.machine}
+          isSelected={selectedMachineId === machineView.machine.id}
+          isConnectionSource={
+            connectionSourceMachineId === machineView.machine.id
+          }
+          isProcessing={machineView.isProcessing}
+          hasOutput={machineView.hasOutput}
+          heldItems={machineView.heldItems}
+          showHeldItems={
+            model.editorState.selectedTool.kind === 'select' &&
+            selectedMachineId === machineView.machine.id
+          }
           onPointerDown={(machineId, event) => {
             beginPress(event, { kind: 'machine', machineId });
           }}

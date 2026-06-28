@@ -5,6 +5,8 @@ import { toWorldPosition } from '../game/grid.ts';
 import { getMachineInfo } from '../game/machine.ts';
 import { getMachineSpriteFrame } from '../game/machineSprites.ts';
 import type { PlacedMachine, PlacementId } from '../game/placement.ts';
+import type { RenderMachineHeldItemView } from '../game/renderView.ts';
+import { MachineHeldItems } from './MachineHeldItems.tsx';
 import { SpritePlane } from './SpritePlane.tsx';
 
 const MACHINE_RENDER_ORDER = 10;
@@ -19,6 +21,8 @@ type MachineObjectProps = {
   isConnectionSource: boolean;
   isProcessing?: boolean;
   hasOutput?: boolean;
+  heldItems?: readonly RenderMachineHeldItemView[];
+  showHeldItems?: boolean;
   opacity?: number;
   isInteractive?: boolean;
   onPointerDown: (
@@ -85,6 +89,8 @@ export function MachineObject({
   isConnectionSource,
   isProcessing = false,
   hasOutput = false,
+  heldItems = [],
+  showHeldItems = false,
   opacity = 1,
   isInteractive = true,
   onPointerDown,
@@ -188,6 +194,7 @@ export function MachineObject({
           />
         </mesh>
       ) : null}
+      {showHeldItems ? <MachineHeldItems items={heldItems} /> : null}
     </group>
   );
 }

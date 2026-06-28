@@ -3,7 +3,12 @@ import type { FoodId, FoodSpriteId } from './food.ts';
 import { getFoodInfo } from './foods.ts';
 import type { WorldPosition } from './grid.ts';
 import { toWorldPosition } from './grid.ts';
-import type { MachineRuntimeConfig } from './machineRuntime.ts';
+import type { FoodItem } from './items.ts';
+import {
+  MACHINE_PROCESS_TIME_MS,
+  type MachineRuntime,
+  type MachineRuntimeConfig,
+} from './machineRuntime.ts';
 import type { PlacedMachine, PlacementId } from './placement.ts';
 import { findMachineById } from './placement.ts';
 import {
@@ -20,6 +25,15 @@ export type RenderMachineView = {
   machine: PlacedMachine;
   isProcessing: boolean;
   hasOutput: boolean;
+  heldItems: readonly RenderMachineHeldItemView[];
+};
+
+export type RenderMachineHeldItemView = {
+  id: string;
+  foodId: FoodId;
+  spriteId: FoodSpriteId;
+  status: 'input' | 'processing' | 'output';
+  progress: number | null;
 };
 
 export type RenderFoodItemView = {
@@ -61,6 +75,69 @@ export type CreateRenderViewInput = {
 
 function lerp(start: number, end: number, progress: number) {
   return start + (end - start) * progress;
+}
+
+function createBufferedItemView(
+  item: FoodItem,
+  status: 'input' | 'output',
+): RenderMachineHeldItemView | null {
+  const food = getFoodInfo(item.foodId);
+
+  return food === null
+    ? null
+    : {
+        id: item.id,
+        foodId: item.foodId,
+        spriteId: food.spriteId,
+        status,
+        progress: null,
+      };
+}
+
+export function createMachineHeldItemViews(
+  runtime: MachineRuntime | undefined,
+): readonly RenderMachineHeldItemView[] {
+  if (runtime === undefined) {
+    return [];
+  }
+
+  const bufferedItems = [
+    ...runtime.inputBuffer.map((item) => ({ item, status: 'input' as const })),
+    ...runtime.outputBuffer.map((item) => ({
+      item,
+      status: 'output' as const,
+    })),
+  ]
+    .sort((first, second) => second.item.createdAtMs - first.item.createdAtMs)
+    .flatMap(({ item, status }) => {
+      const view = createBufferedItemView(item, status);
+      return view === null ? [] : [view];
+    });
+  const process = runtime.process;
+
+  if (process === null) {
+    return bufferedItems;
+  }
+
+  const food = getFoodInfo(process.outputFoodId);
+
+  if (food === null) {
+    return bufferedItems;
+  }
+
+  return [
+    {
+      id: `${runtime.placementId}-process-${process.recipeId}`,
+      foodId: process.outputFoodId,
+      spriteId: food.spriteId,
+      status: 'processing',
+      progress: Math.max(
+        0,
+        Math.min(1, 1 - process.remainingMs / MACHINE_PROCESS_TIME_MS),
+      ),
+    },
+    ...bufferedItems,
+  ];
 }
 
 export function interpolateWorldPosition(
@@ -166,6 +243,7 @@ export function createRenderView({
         isProcessing:
           runtime?.process !== null && runtime?.process !== undefined,
         hasOutput: (runtime?.outputBuffer.length ?? 0) > 0,
+        heldItems: createMachineHeldItemViews(runtime),
       };
     }),
     connections: gameState.connections,

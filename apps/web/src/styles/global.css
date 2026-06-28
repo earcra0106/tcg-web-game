@@ -412,6 +412,49 @@ select {
     var(--machine-sprite-sheet-height);
 }
 
+.machine-held-items-wrapper,
+.machine-held-items {
+  pointer-events: none;
+}
+
+.machine-held-items {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  user-select: none;
+}
+
+.machine-held-item {
+  position: relative;
+  display: grid;
+  flex: 0 0 44px;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  overflow: hidden;
+  border: 1px solid rgb(190 150 111 / 0.42);
+  border-radius: 8px;
+  background: rgb(255 253 249 / 0.94);
+  box-shadow: 0 6px 14px rgb(92 64 42 / 0.2);
+}
+
+.machine-held-item .food-sprite {
+  width: 36px;
+  height: 36px;
+}
+
+.machine-held-item__progress {
+  position: absolute;
+  inset: 0;
+  width: 44px;
+  height: 44px;
+  overflow: visible;
+  fill: none;
+  stroke: #f5c542;
+  stroke-linecap: butt;
+  stroke-width: 3px;
+}
+
 .food-card__body {
   display: block;
   padding: 12px;

@@ -6,6 +6,7 @@ import { createMachineRuntime } from './machineRuntime.ts';
 import type { PlacedMachine } from './placement.ts';
 import {
   createRenderView,
+  createMachineHeldItemViews,
   createStageHudView,
   interpolateWorldPosition,
 } from './renderView.ts';
@@ -36,6 +37,95 @@ function goal(
 }
 
 describe('render view', () => {
+  it('orders held machine items newest first after the processing item', () => {
+    const placedMachine: PlacedMachine = {
+      id: 'heater-1',
+      machineId: 'heater',
+      position: { x: 0, z: 0 },
+    };
+    const runtime = {
+      ...createMachineRuntime(placedMachine),
+      inputBuffer: [
+        createFoodItem({ id: 'old-input', foodId: 'rice', createdAtMs: 100 }),
+        createFoodItem({ id: 'new-input', foodId: 'egg', createdAtMs: 300 }),
+      ],
+      outputBuffer: [
+        createFoodItem({ id: 'output', foodId: 'milk', createdAtMs: 200 }),
+      ],
+      process: {
+        recipeId: 'cooked-rice',
+        outputFoodId: 'cooked-rice',
+        remainingMs: 500,
+      },
+    };
+
+    expect(createMachineHeldItemViews(runtime)).toMatchObject([
+      {
+        id: 'heater-1-process-cooked-rice',
+        foodId: 'cooked-rice',
+        status: 'processing',
+        progress: 0.5,
+      },
+      { id: 'new-input', status: 'input', progress: null },
+      { id: 'output', status: 'output', progress: null },
+      { id: 'old-input', status: 'input', progress: null },
+    ]);
+  });
+
+  it('clamps processing progress to the complete range', () => {
+    const placedMachine: PlacedMachine = {
+      id: 'heater-1',
+      machineId: 'heater',
+      position: { x: 0, z: 0 },
+    };
+    const runtime = createMachineRuntime(placedMachine);
+    const process = {
+      recipeId: 'cooked-rice',
+      outputFoodId: 'cooked-rice',
+      remainingMs: 1_000,
+    };
+
+    expect(
+      createMachineHeldItemViews({ ...runtime, process })[0]?.progress,
+    ).toBe(0);
+    expect(
+      createMachineHeldItemViews({
+        ...runtime,
+        process: { ...process, remainingMs: 0 },
+      })[0]?.progress,
+    ).toBe(1);
+    expect(
+      createMachineHeldItemViews({
+        ...runtime,
+        process: { ...process, remainingMs: -100 },
+      })[0]?.progress,
+    ).toBe(1);
+  });
+
+  it('omits held items whose food data is unavailable', () => {
+    const placedMachine: PlacedMachine = {
+      id: 'heater-1',
+      machineId: 'heater',
+      position: { x: 0, z: 0 },
+    };
+    const runtime = {
+      ...createMachineRuntime(placedMachine),
+      inputBuffer: [
+        createFoodItem({ id: 'unknown', foodId: 'unknown', createdAtMs: 200 }),
+        createFoodItem({ id: 'known', foodId: 'rice', createdAtMs: 100 }),
+      ],
+      process: {
+        recipeId: 'unknown',
+        outputFoodId: 'unknown',
+        remainingMs: 500,
+      },
+    };
+
+    expect(createMachineHeldItemViews(runtime)).toMatchObject([
+      { id: 'known', foodId: 'rice' },
+    ]);
+  });
+
   it('interpolates food item world position by transport progress', () => {
     const fromMachine = machine('from', 0);
     const toMachine = machine('to', 2);
@@ -115,6 +205,7 @@ describe('render view', () => {
     expect(view.machines[0]).toMatchObject({
       hasOutput: true,
       isProcessing: false,
+      heldItems: [{ id: 'held', status: 'output' }],
     });
   });
 
