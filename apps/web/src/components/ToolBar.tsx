@@ -1,12 +1,13 @@
 import { Link2, MousePointer2, Trash2 } from 'lucide-react';
-import type { PointerEvent, ReactNode, WheelEvent } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import type { PointerEvent, ReactNode } from 'react';
+import { useRef } from 'react';
 import { FoodSprite } from './FoodSprite.tsx';
 import { MachineSprite } from './MachineSprite.tsx';
 import { getFoodInfo } from '../game/foods.ts';
 import type { FoodId } from '../game/food.ts';
 import { machineInfos, type MachineId } from '../game/machine.ts';
 import type { EditorTool } from '../game/editorState.ts';
+import { useHorizontalScroll } from './useHorizontalScroll.ts';
 
 type ToolBarProps = {
   selectedTool: EditorTool;
@@ -154,46 +155,13 @@ export function ToolBar({
   onSelectTool,
   onStartPlacementDrag,
 }: ToolBarProps) {
-  const toolbarRef = useRef<HTMLElement | null>(null);
-  const [hasHorizontalScrollbar, setHasHorizontalScrollbar] = useState(false);
   const toolCount =
     storageFoodIds.length + shippingFoodIds.length + placeableMachineIds.length;
-
-  const handleWheel = (event: WheelEvent<HTMLElement>) => {
-    const toolbar = toolbarRef.current;
-
-    if (toolbar === null || event.deltaY === 0) {
-      return;
-    }
-
-    if (toolbar.scrollWidth <= toolbar.clientWidth) {
-      return;
-    }
-
-    event.preventDefault();
-    toolbar.scrollLeft += event.deltaY;
-  };
-
-  useEffect(() => {
-    const toolbar = toolbarRef.current;
-
-    if (toolbar === null) {
-      return;
-    }
-
-    const updateScrollbarState = () => {
-      setHasHorizontalScrollbar(toolbar.scrollWidth > toolbar.clientWidth);
-    };
-
-    updateScrollbarState();
-
-    const resizeObserver = new ResizeObserver(updateScrollbarState);
-    resizeObserver.observe(toolbar);
-
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, [toolCount]);
+  const {
+    elementRef: toolbarRef,
+    handleWheel,
+    hasHorizontalScrollbar,
+  } = useHorizontalScroll<HTMLElement>(toolCount);
 
   return (
     <section

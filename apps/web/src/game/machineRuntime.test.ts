@@ -121,6 +121,33 @@ describe('machine runtime', () => {
     expect(completed.process).toBeNull();
   });
 
+  it('finishes the current process before applying a changed recipe', () => {
+    const completed = advanceMachineRuntime({
+      runtime: {
+        ...createMachineRuntime(machine('heater-1', 'heater')),
+        inputBuffer: [item('bread-1', 'bread')],
+        process: {
+          recipeId: 'cooked-rice',
+          outputFoodId: 'cooked-rice',
+          remainingMs: 100,
+        },
+      },
+      deltaMs: 100,
+      nowMs: 1_000,
+      config: { recipeId: 'toast' },
+      createItemId,
+    });
+
+    expect(completed.outputBuffer).toEqual([
+      expect.objectContaining({ foodId: 'cooked-rice' }),
+    ]);
+    expect(completed.inputBuffer).toEqual([]);
+    expect(completed.process).toMatchObject({
+      recipeId: 'toast',
+      outputFoodId: 'toast',
+    });
+  });
+
   it('does not start processing until required ingredients are available', () => {
     const runtime = advanceMachineRuntime({
       runtime: {

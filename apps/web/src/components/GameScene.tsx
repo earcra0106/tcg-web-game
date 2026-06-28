@@ -5,10 +5,12 @@ import {
   handleConnectionClick,
   handleGridClick,
   handleMachineClick,
+  setMachineRecipe,
   type EditorModel,
 } from '../game/editorActions.ts';
 import type { ConnectionId } from '../game/connections.ts';
 import type { EditorTool } from '../game/editorState.ts';
+import type { FoodId } from '../game/food.ts';
 import type { GridPosition } from '../game/grid.ts';
 import { hasMachineInventory } from '../game/machine.ts';
 import { findMachineById, type PlacementId } from '../game/placement.ts';
@@ -37,6 +39,7 @@ type PressState = {
 type GameSceneProps = {
   model: EditorModel;
   renderView: RenderView;
+  craftableFoodIds: readonly FoodId[];
   dragPlacementTool: PlaceMachineTool | null;
   isDraggingPlacement: boolean;
   onModelChange: (updater: (model: EditorModel) => EditorModel) => void;
@@ -80,6 +83,7 @@ function isSameTarget(first: PressTarget, second: PressTarget) {
 export function GameScene({
   model,
   renderView,
+  craftableFoodIds,
   dragPlacementTool,
   isDraggingPlacement,
   onModelChange,
@@ -314,6 +318,16 @@ export function GameScene({
           isProcessing={machineView.isProcessing}
           hasOutput={machineView.hasOutput}
           heldItems={machineView.heldItems}
+          craftableFoodIds={craftableFoodIds}
+          selectedRecipeId={
+            model.machineConfigs[machineView.machine.id]?.recipeId ?? null
+          }
+          onSelectRecipe={(recipeId) => {
+            onPlaySound('select');
+            onModelChange((current) =>
+              setMachineRecipe(current, machineView.machine.id, recipeId),
+            );
+          }}
           showHeldItems={
             model.editorState.selectedTool.kind === 'select' &&
             selectedMachineId === machineView.machine.id &&
@@ -372,6 +386,9 @@ export function GameScene({
           isConnectionSource={false}
           opacity={0.45}
           isInteractive={false}
+          craftableFoodIds={[]}
+          selectedRecipeId={null}
+          onSelectRecipe={() => undefined}
           onPointerDown={() => undefined}
           onPointerUp={() => undefined}
         />

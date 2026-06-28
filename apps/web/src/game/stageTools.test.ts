@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  getCraftableFoodIds,
   getShippingFoodIdsForGoals,
   getSpawnableIngredientsForFood,
   getStorageFoodIdsForGoals,
@@ -14,6 +15,26 @@ function goal(stageNumber: number, targetFoodId: StageGoal['targetFoodId']) {
 }
 
 describe('stage tools', () => {
+  it('finds every food craftable from unlocked storage foods', () => {
+    const craftableFoodIds = getCraftableFoodIds(['lettuce', 'tomato']);
+
+    expect(craftableFoodIds).toEqual(
+      expect.arrayContaining([
+        'chopped-lettuce',
+        'sliced-tomato',
+        'tomato-sauce',
+        'salad',
+      ]),
+    );
+    expect(craftableFoodIds).not.toContain('toast');
+  });
+
+  it('resolves recipes repeatedly for multi-step foods', () => {
+    expect(getCraftableFoodIds(['potato', 'carrot'])).toEqual(
+      expect.arrayContaining(['cut-potato', 'chopped-carrot', 'potato-salad']),
+    );
+  });
+
   it('resolves salad to spawnable storage ingredients', () => {
     expect(getSpawnableIngredientsForFood('salad')).toEqual([
       'lettuce',
