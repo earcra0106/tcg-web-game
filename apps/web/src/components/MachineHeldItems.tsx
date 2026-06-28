@@ -104,6 +104,10 @@ export function MachineHeldItems({
             aria-label="製造する食べ物を選択"
             onPointerDown={(event) => event.stopPropagation()}
             onPointerUp={(event) => event.stopPropagation()}
+            onWheel={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+            }}
           >
             <h2>製造する食べ物を選択</h2>
             <div

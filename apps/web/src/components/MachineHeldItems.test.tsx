@@ -30,6 +30,7 @@ function processingItem(): RenderMachineHeldItemView {
 
 function renderMachineHeldItems(
   overrides: Partial<ComponentProps<typeof MachineHeldItems>> = {},
+  onParentWheel?: ComponentProps<'div'>['onWheel'],
 ) {
   const props = {
     items: [],
@@ -40,7 +41,14 @@ function renderMachineHeldItems(
     ...overrides,
   } satisfies ComponentProps<typeof MachineHeldItems>;
 
-  return { ...render(<MachineHeldItems {...props} />), props };
+  return {
+    ...render(
+      <div onWheel={onParentWheel}>
+        <MachineHeldItems {...props} />
+      </div>,
+    ),
+    props,
+  };
 }
 
 describe('MachineHeldItems', () => {
@@ -183,5 +191,20 @@ describe('MachineHeldItems', () => {
     fireEvent.wheel(options, { deltaY: 24 });
 
     expect(options.scrollLeft).toBe(24);
+  });
+
+  it('does not pass wheel input from the selector to the camera area', () => {
+    const onParentWheel = vi.fn();
+    renderMachineHeldItems({}, onParentWheel);
+
+    fireEvent.click(
+      screen.getByRole('button', { name: '製造する食べ物を選択' }),
+    );
+    fireEvent.wheel(
+      screen.getByRole('region', { name: '製造する食べ物を選択' }),
+      { deltaY: 24 },
+    );
+
+    expect(onParentWheel).not.toHaveBeenCalled();
   });
 });

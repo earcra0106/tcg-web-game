@@ -528,7 +528,7 @@ select {
   right: 0;
   bottom: calc(100% + 8px);
   z-index: 3;
-  width: 160px;
+  width: 162px;
   overflow: hidden;
   border: 1px solid rgb(190 150 111 / 0.26);
   border-radius: 10px;
@@ -557,8 +557,6 @@ select {
   overflow-x: auto;
   overflow-y: hidden;
   box-sizing: border-box;
-  background: #8b5e3c;
-  scrollbar-color: #aaa transparent;
 }
 
 .recipe-selector__options--scrollable {
@@ -567,11 +565,6 @@ select {
 
 .recipe-selector__options::-webkit-scrollbar {
   height: 12px;
-  background: transparent;
-}
-
-.recipe-selector__options::-webkit-scrollbar-track {
-  background: transparent;
 }
 
 .recipe-selector__options::-webkit-scrollbar-thumb,
