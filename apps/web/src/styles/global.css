@@ -567,14 +567,13 @@ select {
   height: 12px;
 }
 
-.recipe-selector__options::-webkit-scrollbar-thumb,
-.recipe-selector__options::-webkit-scrollbar-button {
-  background-color: #aaa;
+.recipe-selector__options::-webkit-scrollbar-thumb {
+  background-color: #e6d199;
+  border-radius: 6px;
 }
 
 .recipe-selector__options::-webkit-scrollbar-button {
-  width: 12px;
-  height: 12px;
+  display: none;
 }
 
 .recipe-selector__option {
