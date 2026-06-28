@@ -1,4 +1,8 @@
 import type { FoodDifficulty, FoodId } from './food.ts';
+import {
+  EFFICIENCY_UNIT_MS,
+  STAGE_GOAL_EFFICIENCY_SETTINGS,
+} from './efficiencySettings.ts';
 import { createSeededRandom } from './random.ts';
 import {
   findRecipeByOutput,
@@ -34,12 +38,23 @@ function assertStageNumber(stageNumber: number) {
 }
 
 function calculateRequiredEfficiency(stageNumber: number) {
-  const introEfficiency = 0.55 + stageNumber * 0.05;
-  const scaledEfficiency = 0.65 + Math.floor((stageNumber - 1) / 3) * 0.05;
-  const efficiency = Math.min(
-    0.95,
-    stageNumber <= 4 ? introEfficiency : scaledEfficiency,
+  const {
+    introBasePerMinute,
+    laterBasePerMinute,
+    increasePerMinute,
+    stagesPerIncrease,
+    maximumPerMinute,
+  } = STAGE_GOAL_EFFICIENCY_SETTINGS;
+  const introEfficiencyPerMinute =
+    introBasePerMinute + stageNumber * increasePerMinute;
+  const scaledEfficiencyPerMinute =
+    laterBasePerMinute +
+    Math.floor((stageNumber - 1) / stagesPerIncrease) * increasePerMinute;
+  const efficiencyPerMinute = Math.min(
+    maximumPerMinute,
+    stageNumber <= 4 ? introEfficiencyPerMinute : scaledEfficiencyPerMinute,
   );
+  const efficiency = efficiencyPerMinute * (EFFICIENCY_UNIT_MS / 60_000);
 
   return Math.round(efficiency * 100) / 100;
 }
