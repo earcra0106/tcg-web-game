@@ -37,7 +37,7 @@ function goal(
 }
 
 describe('render view', () => {
-  it('orders held machine items as input, processing, and output', () => {
+  it('orders input items before processing and omits waiting output', () => {
     const placedMachine: PlacedMachine = {
       id: 'heater-1',
       machineId: 'heater',
@@ -68,7 +68,6 @@ describe('render view', () => {
         status: 'processing',
         progress: 0.5,
       },
-      { id: 'output', status: 'output', progress: null },
     ]);
   });
 
@@ -205,7 +204,7 @@ describe('render view', () => {
     expect(view.machines[0]).toMatchObject({
       hasOutput: true,
       isProcessing: false,
-      heldItems: [{ id: 'held', status: 'output' }],
+      heldItems: [],
     });
   });
 

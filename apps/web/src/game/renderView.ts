@@ -32,7 +32,7 @@ export type RenderMachineHeldItemView = {
   id: string;
   foodId: FoodId;
   spriteId: FoodSpriteId;
-  status: 'input' | 'processing' | 'output';
+  status: 'input' | 'processing';
   progress: number | null;
 };
 
@@ -77,10 +77,7 @@ function lerp(start: number, end: number, progress: number) {
   return start + (end - start) * progress;
 }
 
-function createBufferedItemView(
-  item: FoodItem,
-  status: 'input' | 'output',
-): RenderMachineHeldItemView | null {
+function createInputItemView(item: FoodItem): RenderMachineHeldItemView | null {
   const food = getFoodInfo(item.foodId);
 
   return food === null
@@ -89,7 +86,7 @@ function createBufferedItemView(
         id: item.id,
         foodId: item.foodId,
         spriteId: food.spriteId,
-        status,
+        status: 'input',
         progress: null,
       };
 }
@@ -101,28 +98,24 @@ export function createMachineHeldItemViews(
     return [];
   }
 
-  const createBufferedItemViews = (
-    items: readonly FoodItem[],
-    status: 'input' | 'output',
-  ) =>
+  const createInputItemViews = (items: readonly FoodItem[]) =>
     [...items]
       .sort((first, second) => second.createdAtMs - first.createdAtMs)
       .flatMap((item) => {
-        const view = createBufferedItemView(item, status);
+        const view = createInputItemView(item);
         return view === null ? [] : [view];
       });
-  const inputItems = createBufferedItemViews(runtime.inputBuffer, 'input');
-  const outputItems = createBufferedItemViews(runtime.outputBuffer, 'output');
+  const inputItems = createInputItemViews(runtime.inputBuffer);
   const process = runtime.process;
 
   if (process === null) {
-    return [...inputItems, ...outputItems];
+    return inputItems;
   }
 
   const food = getFoodInfo(process.outputFoodId);
 
   if (food === null) {
-    return [...inputItems, ...outputItems];
+    return inputItems;
   }
 
   return [
@@ -137,7 +130,6 @@ export function createMachineHeldItemViews(
         Math.min(1, 1 - process.remainingMs / MACHINE_PROCESS_TIME_MS),
       ),
     },
-    ...outputItems,
   ];
 }
 
