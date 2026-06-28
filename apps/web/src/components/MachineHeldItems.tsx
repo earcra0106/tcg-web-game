@@ -1,6 +1,6 @@
 import { Html } from '@react-three/drei';
 import { RefreshCw, X } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { FoodId } from '../game/food.ts';
 import { getFoodInfo } from '../game/foods.ts';
 import type { MachineId } from '../game/machine.ts';
@@ -77,13 +77,30 @@ export function MachineHeldItems({
     selectedRecipeId === null ? null : getFoodInfo(selectedRecipeId);
   const optionCount = recipes.length + 1;
   const emptyOptionCount = Math.max(0, 3 - optionCount);
-  const {
-    elementRef: optionsRef,
-    handleWheel,
-    hasHorizontalScrollbar,
-  } = useHorizontalScroll<HTMLDivElement>(
-    `${isRecipeSelectorOpen}:${optionCount}`,
-  );
+  const recipeSelectorRef = useRef<HTMLElement | null>(null);
+  const { elementRef: optionsRef, hasHorizontalScrollbar } =
+    useHorizontalScroll<HTMLDivElement>(
+      `${isRecipeSelectorOpen}:${optionCount}`,
+    );
+
+  useEffect(() => {
+    const recipeSelector = recipeSelectorRef.current;
+
+    if (recipeSelector === null) {
+      return;
+    }
+
+    const blockWheel = (event: WheelEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+    };
+
+    recipeSelector.addEventListener('wheel', blockWheel, { passive: false });
+
+    return () => {
+      recipeSelector.removeEventListener('wheel', blockWheel);
+    };
+  }, [isRecipeSelectorOpen]);
 
   const selectRecipe = (recipeId: FoodId | null) => {
     onSelectRecipe(recipeId);
@@ -100,14 +117,11 @@ export function MachineHeldItems({
       <div className="machine-held-items">
         {isRecipeSelectorOpen ? (
           <section
+            ref={recipeSelectorRef}
             className="recipe-selector"
             aria-label="製造する食べ物を選択"
             onPointerDown={(event) => event.stopPropagation()}
             onPointerUp={(event) => event.stopPropagation()}
-            onWheel={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-            }}
           >
             <h2>製造する食べ物を選択</h2>
             <div
@@ -117,7 +131,6 @@ export function MachineHeldItems({
                   ? 'recipe-selector__options recipe-selector__options--scrollable'
                   : 'recipe-selector__options'
               }
-              onWheel={handleWheel}
             >
               <button
                 className="recipe-selector__option"

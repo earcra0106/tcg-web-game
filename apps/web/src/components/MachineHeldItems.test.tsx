@@ -188,9 +188,15 @@ describe('MachineHeldItems', () => {
       scrollLeft: { configurable: true, value: 0, writable: true },
     });
 
-    fireEvent.wheel(options, { deltaY: 24 });
+    const wheelEvent = new WheelEvent('wheel', {
+      bubbles: true,
+      cancelable: true,
+      deltaY: 24,
+    });
+    fireEvent(options, wheelEvent);
 
     expect(options.scrollLeft).toBe(24);
+    expect(wheelEvent.defaultPrevented).toBe(true);
   });
 
   it('does not pass wheel input from the selector to the camera area', () => {
@@ -200,11 +206,17 @@ describe('MachineHeldItems', () => {
     fireEvent.click(
       screen.getByRole('button', { name: '製造する食べ物を選択' }),
     );
-    fireEvent.wheel(
+    const wheelEvent = new WheelEvent('wheel', {
+      bubbles: true,
+      cancelable: true,
+      deltaY: 24,
+    });
+    fireEvent(
       screen.getByRole('region', { name: '製造する食べ物を選択' }),
-      { deltaY: 24 },
+      wheelEvent,
     );
 
     expect(onParentWheel).not.toHaveBeenCalled();
+    expect(wheelEvent.defaultPrevented).toBe(true);
   });
 });
