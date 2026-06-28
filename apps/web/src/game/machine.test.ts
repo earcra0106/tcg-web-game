@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { machineInfos, type MachineInfoData } from './machine.ts';
+import {
+  hasMachineInventory,
+  machineInfos,
+  type MachineInfoData,
+} from './machine.ts';
 import {
   getMachineSpriteFrame,
   machineSpriteFrames,
@@ -73,5 +77,13 @@ describe('machine sprites', () => {
   it('does not create sprite frames for machines without sprite assets', () => {
     expect(getMachineSpriteFrame('storage')).toBeNull();
     expect(getMachineSpriteFrame('shipping')).toBeNull();
+  });
+
+  it('limits inventories to food processing machines', () => {
+    expect(
+      machineInfos
+        .filter((machine) => hasMachineInventory(machine.id))
+        .map((machine) => machine.id),
+    ).toEqual(['cutter', 'heater', 'mixer', 'combiner']);
   });
 });

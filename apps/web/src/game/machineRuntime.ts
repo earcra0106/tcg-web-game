@@ -11,7 +11,7 @@ import type { PlacedMachine, PlacementId } from './placement.ts';
 export const STORAGE_SPAWN_INTERVAL_MS = 1_000;
 export const MACHINE_PROCESS_TIME_MS = 1_000;
 export const MACHINE_INPUT_CAPACITY = 6;
-export const MACHINE_OUTPUT_CAPACITY = 6;
+export const MACHINE_OUTPUT_CAPACITY = 1;
 
 export type MachineRuntimeConfig = {
   spawnFoodId?: FoodId;
@@ -243,17 +243,19 @@ function advanceStorage({
     };
   }
 
+  const outputItem = createFoodItem({
+    id: createItemId(),
+    foodId: config.spawnFoodId,
+    createdAtMs: nowMs,
+  });
+
   return {
     ...runtime,
     storageElapsedMs: storageElapsedMs - STORAGE_SPAWN_INTERVAL_MS,
-    outputBuffer: [
-      ...runtime.outputBuffer,
-      createFoodItem({
-        id: createItemId(),
-        foodId: config.spawnFoodId,
-        createdAtMs: nowMs,
-      }),
-    ].slice(-MACHINE_OUTPUT_CAPACITY),
+    outputBuffer:
+      runtime.outputBuffer.length >= MACHINE_OUTPUT_CAPACITY
+        ? runtime.outputBuffer
+        : [...runtime.outputBuffer, outputItem],
   };
 }
 
@@ -289,16 +291,18 @@ function advanceProcessor({
     const remainingMs = nextRuntime.process.remainingMs - deltaMs;
 
     if (remainingMs <= 0) {
+      const outputItem = createFoodItem({
+        id: createItemId(),
+        foodId: nextRuntime.process.outputFoodId,
+        createdAtMs: nowMs,
+      });
+
       nextRuntime = {
         ...nextRuntime,
-        outputBuffer: [
-          ...nextRuntime.outputBuffer,
-          createFoodItem({
-            id: createItemId(),
-            foodId: nextRuntime.process.outputFoodId,
-            createdAtMs: nowMs,
-          }),
-        ].slice(-MACHINE_OUTPUT_CAPACITY),
+        outputBuffer:
+          nextRuntime.outputBuffer.length >= MACHINE_OUTPUT_CAPACITY
+            ? nextRuntime.outputBuffer
+            : [...nextRuntime.outputBuffer, outputItem],
         process: null,
       };
     } else {

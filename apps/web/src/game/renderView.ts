@@ -3,7 +3,12 @@ import type { FoodId, FoodSpriteId } from './food.ts';
 import { getFoodInfo } from './foods.ts';
 import type { WorldPosition } from './grid.ts';
 import { toWorldPosition } from './grid.ts';
-import type { MachineRuntimeConfig } from './machineRuntime.ts';
+import type { FoodItem } from './items.ts';
+import {
+  MACHINE_PROCESS_TIME_MS,
+  type MachineRuntime,
+  type MachineRuntimeConfig,
+} from './machineRuntime.ts';
 import type { PlacedMachine, PlacementId } from './placement.ts';
 import { findMachineById } from './placement.ts';
 import {
@@ -20,6 +25,15 @@ export type RenderMachineView = {
   machine: PlacedMachine;
   isProcessing: boolean;
   hasOutput: boolean;
+  heldItems: readonly RenderMachineHeldItemView[];
+};
+
+export type RenderMachineHeldItemView = {
+  id: string;
+  foodId: FoodId;
+  spriteId: FoodSpriteId;
+  status: 'input' | 'processing';
+  progress: number | null;
 };
 
 export type RenderFoodItemView = {
@@ -61,6 +75,62 @@ export type CreateRenderViewInput = {
 
 function lerp(start: number, end: number, progress: number) {
   return start + (end - start) * progress;
+}
+
+function createInputItemView(item: FoodItem): RenderMachineHeldItemView | null {
+  const food = getFoodInfo(item.foodId);
+
+  return food === null
+    ? null
+    : {
+        id: item.id,
+        foodId: item.foodId,
+        spriteId: food.spriteId,
+        status: 'input',
+        progress: null,
+      };
+}
+
+export function createMachineHeldItemViews(
+  runtime: MachineRuntime | undefined,
+): readonly RenderMachineHeldItemView[] {
+  if (runtime === undefined) {
+    return [];
+  }
+
+  const createInputItemViews = (items: readonly FoodItem[]) =>
+    [...items]
+      .sort((first, second) => second.createdAtMs - first.createdAtMs)
+      .flatMap((item) => {
+        const view = createInputItemView(item);
+        return view === null ? [] : [view];
+      });
+  const inputItems = createInputItemViews(runtime.inputBuffer);
+  const process = runtime.process;
+
+  if (process === null) {
+    return inputItems;
+  }
+
+  const food = getFoodInfo(process.outputFoodId);
+
+  if (food === null) {
+    return inputItems;
+  }
+
+  return [
+    ...inputItems,
+    {
+      id: `${runtime.placementId}-process-${process.recipeId}`,
+      foodId: process.outputFoodId,
+      spriteId: food.spriteId,
+      status: 'processing',
+      progress: Math.max(
+        0,
+        Math.min(1, 1 - process.remainingMs / MACHINE_PROCESS_TIME_MS),
+      ),
+    },
+  ];
 }
 
 export function interpolateWorldPosition(
@@ -166,6 +236,7 @@ export function createRenderView({
         isProcessing:
           runtime?.process !== null && runtime?.process !== undefined,
         hasOutput: (runtime?.outputBuffer.length ?? 0) > 0,
+        heldItems: createMachineHeldItemViews(runtime),
       };
     }),
     connections: gameState.connections,

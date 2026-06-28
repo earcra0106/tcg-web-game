@@ -52,7 +52,7 @@ describe('machine runtime', () => {
     ]);
   });
 
-  it('keeps the newest six outputs and removes the oldest output', () => {
+  it('keeps only the first storage output while it is waiting', () => {
     let nextItemIndex = 1;
     let runtime = createMachineRuntime(machine('storage-1', 'storage'));
 
@@ -66,14 +66,7 @@ describe('machine runtime', () => {
       });
     }
 
-    expect(runtime.outputBuffer.map((output) => output.id)).toEqual([
-      'item-2',
-      'item-3',
-      'item-4',
-      'item-5',
-      'item-6',
-      'item-7',
-    ]);
+    expect(runtime.outputBuffer.map((output) => output.id)).toEqual(['item-1']);
   });
 
   it('processes matching recipes for production machines', () => {
@@ -105,6 +98,27 @@ describe('machine runtime', () => {
         foodId: 'cooked-rice',
       }),
     ]);
+  });
+
+  it('discards a completed item when an output is already waiting', () => {
+    const existingOutput = item('existing-output', 'toast');
+    const completed = advanceMachineRuntime({
+      runtime: {
+        ...createMachineRuntime(machine('heater-1', 'heater')),
+        outputBuffer: [existingOutput],
+        process: {
+          recipeId: 'cooked-rice',
+          outputFoodId: 'cooked-rice',
+          remainingMs: 100,
+        },
+      },
+      deltaMs: 100,
+      nowMs: 1_000,
+      createItemId,
+    });
+
+    expect(completed.outputBuffer).toEqual([existingOutput]);
+    expect(completed.process).toBeNull();
   });
 
   it('does not start processing until required ingredients are available', () => {
