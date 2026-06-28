@@ -1,6 +1,6 @@
 import type { FoodId } from './food.ts';
 import { getFoodInfo } from './foods.ts';
-import { findRecipeByOutput } from './recipes.ts';
+import { findRecipeByOutput, getRecipes, type FoodRecipe } from './recipes.ts';
 import type { StageGoal } from './stageGoals.ts';
 
 export function getSpawnableIngredientsForFood(
@@ -46,4 +46,30 @@ export function getStorageFoodIdsForGoals(goals: readonly StageGoal[]) {
 
 export function getShippingFoodIdsForGoals(goals: readonly StageGoal[]) {
   return uniqueFoodIds(goals.map((goal) => goal.targetFoodId));
+}
+
+export function getCraftableFoodIds(
+  unlockedFoodIds: readonly FoodId[],
+  recipes: readonly FoodRecipe[] = getRecipes(),
+) {
+  const craftableFoodIds = new Set(unlockedFoodIds);
+  let didAddFood = true;
+
+  while (didAddFood) {
+    didAddFood = false;
+
+    recipes.forEach((recipe) => {
+      if (
+        craftableFoodIds.has(recipe.outputFoodId) ||
+        !recipe.inputFoodIds.every((foodId) => craftableFoodIds.has(foodId))
+      ) {
+        return;
+      }
+
+      craftableFoodIds.add(recipe.outputFoodId);
+      didAddFood = true;
+    });
+  }
+
+  return [...craftableFoodIds];
 }

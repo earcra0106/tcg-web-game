@@ -20,6 +20,7 @@ import {
   stepSimulation,
 } from './game/simulation.ts';
 import {
+  getCraftableFoodIds,
   getShippingFoodIdsForGoals,
   getStorageFoodIdsForGoals,
 } from './game/stageTools.ts';
@@ -80,6 +81,10 @@ export function App() {
   const shippingFoodIds = useMemo(
     () => getShippingFoodIdsForGoals(cumulativeStageGoals),
     [cumulativeStageGoals],
+  );
+  const craftableFoodIds = useMemo(
+    () => getCraftableFoodIds(storageFoodIds),
+    [storageFoodIds],
   );
 
   if (audioRef.current === null) {
@@ -211,6 +216,7 @@ export function App() {
       <GameCanvas
         model={model}
         renderView={renderView}
+        craftableFoodIds={craftableFoodIds}
         dragPlacementTool={placementDrag?.tool ?? null}
         isDraggingPlacement={placementDrag?.isDragging === true}
         onModelChange={(updater) => {

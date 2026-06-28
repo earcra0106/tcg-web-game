@@ -4,6 +4,7 @@ import { MOUSE, TOUCH, TextureLoader } from 'three';
 import type { EditorModel } from '../game/editorActions.ts';
 import type { EditorTool } from '../game/editorState.ts';
 import type { GameSoundId } from '../game/audio.ts';
+import type { FoodId } from '../game/food.ts';
 import { FOOD_SPRITESHEET_URL } from '../game/foodSprites.ts';
 import { MACHINE_SPRITESHEET_URL } from '../game/machineSprites.ts';
 import type { RenderView } from '../game/renderView.ts';
@@ -14,6 +15,7 @@ type PlaceMachineTool = Extract<EditorTool, { kind: 'place-machine' }>;
 type GameCanvasProps = {
   model: EditorModel;
   renderView: RenderView;
+  craftableFoodIds: readonly FoodId[];
   dragPlacementTool: PlaceMachineTool | null;
   isDraggingPlacement: boolean;
   onModelChange: (updater: (model: EditorModel) => EditorModel) => void;
@@ -27,6 +29,7 @@ useLoader.preload(TextureLoader, FOOD_SPRITESHEET_URL);
 export function GameCanvas({
   model,
   renderView,
+  craftableFoodIds,
   dragPlacementTool,
   isDraggingPlacement,
   onModelChange,
@@ -42,6 +45,7 @@ export function GameCanvas({
         <GameScene
           model={model}
           renderView={renderView}
+          craftableFoodIds={craftableFoodIds}
           dragPlacementTool={dragPlacementTool}
           isDraggingPlacement={isDraggingPlacement}
           onModelChange={onModelChange}

@@ -1,5 +1,6 @@
 import type { ThreeEvent } from '@react-three/fiber';
 import * as THREE from 'three';
+import type { FoodId } from '../game/food.ts';
 import { getFoodInfo } from '../game/foods.ts';
 import { toWorldPosition } from '../game/grid.ts';
 import { getMachineInfo } from '../game/machine.ts';
@@ -22,6 +23,9 @@ type MachineObjectProps = {
   isProcessing?: boolean;
   hasOutput?: boolean;
   heldItems?: readonly RenderMachineHeldItemView[];
+  craftableFoodIds: readonly FoodId[];
+  selectedRecipeId: FoodId | null;
+  onSelectRecipe: (recipeId: FoodId | null) => void;
   showHeldItems?: boolean;
   opacity?: number;
   isInteractive?: boolean;
@@ -90,6 +94,9 @@ export function MachineObject({
   isProcessing = false,
   hasOutput = false,
   heldItems = [],
+  craftableFoodIds,
+  selectedRecipeId,
+  onSelectRecipe,
   showHeldItems = false,
   opacity = 1,
   isInteractive = true,
@@ -194,7 +201,15 @@ export function MachineObject({
           />
         </mesh>
       ) : null}
-      {showHeldItems ? <MachineHeldItems items={heldItems} /> : null}
+      {showHeldItems ? (
+        <MachineHeldItems
+          items={heldItems}
+          machineId={machine.machineId}
+          selectedRecipeId={selectedRecipeId}
+          craftableFoodIds={craftableFoodIds}
+          onSelectRecipe={onSelectRecipe}
+        />
+      ) : null}
     </group>
   );
 }
