@@ -255,9 +255,9 @@ describe('render view', () => {
     const hud = createStageHudView({
       stageNumber: 3,
       goals: [
-        goal(1, 'toast', 1),
-        goal(2, 'cooked-rice', 1),
-        goal(3, 'toast', 1),
+        goal(1, 'toast', 1 / 6),
+        goal(2, 'cooked-rice', 1 / 6),
+        goal(3, 'toast', 1 / 6),
       ],
       history: [
         { itemId: 'toast-1', foodId: 'toast', shippedAtMs: 10_000 },
@@ -272,14 +272,14 @@ describe('render view', () => {
       expect.objectContaining({
         foodId: 'toast',
         stageNumbers: [1, 3],
-        requiredEfficiency: 2,
-        currentEfficiency: 2,
+        requiredEfficiency: 1 / 3,
+        currentEfficiency: 1 / 3,
         isCleared: true,
       }),
       expect.objectContaining({
         foodId: 'cooked-rice',
-        requiredEfficiency: 1,
-        currentEfficiency: 1,
+        requiredEfficiency: 1 / 6,
+        currentEfficiency: 1 / 6,
         isCleared: true,
       }),
     ]);
@@ -289,7 +289,7 @@ describe('render view', () => {
   it('marks cumulative goals uncleared when any target is below requirement', () => {
     const hud = createStageHudView({
       stageNumber: 2,
-      goals: [goal(1, 'toast', 1), goal(2, 'cooked-rice', 2)],
+      goals: [goal(1, 'toast', 1 / 6), goal(2, 'cooked-rice', 1 / 3)],
       history: [
         { itemId: 'toast-1', foodId: 'toast', shippedAtMs: 10_000 },
         { itemId: 'rice-1', foodId: 'cooked-rice', shippedAtMs: 30_000 },

@@ -8,4 +8,4 @@
 
 ### void describe('stage goals')
 
-daily/stage8 の反復結果が同一。daily stage1..4 の対象が cooked-rice, toast, salad, potato-salad で各difficulty1。stage1効率.6、stage12効率.8。stage5と12は対象ID+効率の組が異なる。seed normal の stage5..24 は boiled-egg/omelet-base を選ばない。stage0 は RangeError。
+daily/stage8 の反復結果が同一。daily stage1..4 の対象が cooked-rice, toast, salad, potato-salad で各difficulty1。10秒あたりのstage1効率.1、stage12効率.13。stage5と12は対象ID+効率の組が異なる。seed normal の stage5..24 は boiled-egg/omelet-base を選ばない。stage0 は RangeError。

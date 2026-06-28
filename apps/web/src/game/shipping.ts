@@ -1,4 +1,5 @@
 import type { FoodId } from './food.ts';
+import { EFFICIENCY_UNIT_MS } from './efficiencySettings.ts';
 import type { StageGoal } from './stageGoals.ts';
 
 export type ShipmentRecord = {
@@ -44,7 +45,7 @@ export function calculateShippingEfficiency(input: ShippingEfficiencyInput) {
 
   const shipments = countTargetShipments(input);
 
-  return shipments / (input.windowMs / 60_000);
+  return shipments / (input.windowMs / EFFICIENCY_UNIT_MS);
 }
 
 export function isStageGoalCleared({

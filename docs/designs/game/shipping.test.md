@@ -12,4 +12,4 @@
 
 ### void describe('shipping')
 
-空履歴へ toast/item-1/@500 を追加した配列、now60000/window60000 の cooked-rice 効率2を検証する。必要効率2の cooked-rice goal は clear、同 goal の target だけ toast にすると false。
+空履歴へ toast/item-1/@500 を追加した配列、now60000/window60000 の cooked-rice 効率1/3（10秒あたり）を検証する。必要効率1/3の cooked-rice goal は clear、同 goal の target だけ toast にすると false。

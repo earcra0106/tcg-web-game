@@ -8,7 +8,7 @@ type StageHudProps = {
 };
 
 function formatEfficiency(value: number) {
-  return value.toFixed(1);
+  return value.toFixed(2);
 }
 
 export function StageHud({ hud, isMuted, onToggleMuted }: StageHudProps) {
@@ -49,7 +49,7 @@ export function StageHud({ hud, isMuted, onToggleMuted }: StageHudProps) {
             <dd>
               {formatEfficiency(goal.currentEfficiency)} /{' '}
               {formatEfficiency(goal.requiredEfficiency)}
-              <small>/min</small>
+              <small>/10秒</small>
             </dd>
           </div>
         ))}

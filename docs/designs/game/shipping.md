@@ -2,7 +2,7 @@
 
 ## 責務
 
-出荷履歴を不変更新し、時間窓内の対象食品の毎分出荷効率とステージ達成を判定する。
+出荷履歴を不変更新し、時間窓内の対象食品の10秒あたり出荷効率とステージ達成を判定する。
 
 ## 型仕様
 
@@ -21,7 +21,7 @@
 
 ### number calculateShippingEfficiency(input)
 
-windowMs が0以下なら `RangeError('windowMs must be greater than zero')`。それ以外は対象件数を `windowMs/60000` で割り毎分値を返す。
+windowMs が0以下なら `RangeError('windowMs must be greater than zero')`。それ以外は対象件数を `windowMs/EFFICIENCY_UNIT_MS` で割り、10秒あたりの値を返す。
 
 ### boolean isStageGoalCleared({ history, goal, nowMs, windowMs })
 

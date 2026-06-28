@@ -38,7 +38,7 @@ describe('shipping', () => {
         nowMs: 60_000,
         windowMs: 60_000,
       }),
-    ).toBe(2);
+    ).toBeCloseTo(1 / 3);
   });
 
   it('clears only when target food efficiency reaches the goal', () => {
@@ -47,7 +47,7 @@ describe('shipping', () => {
       targetFoodId: 'cooked-rice',
       targetFoodName: 'ごはん',
       difficulty: 1,
-      requiredEfficiency: 2,
+      requiredEfficiency: 1 / 3,
     };
 
     expect(

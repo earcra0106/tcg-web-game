@@ -35,10 +35,10 @@ describe('stage goals', () => {
 
   it('raises required efficiency as stages progress', () => {
     expect(getStageGoal({ seed: 'daily', stageNumber: 1 })).toMatchObject({
-      requiredEfficiency: 0.6,
+      requiredEfficiency: 0.1,
     });
     expect(getStageGoal({ seed: 'daily', stageNumber: 12 })).toMatchObject({
-      requiredEfficiency: 0.8,
+      requiredEfficiency: 0.13,
     });
   });
 
