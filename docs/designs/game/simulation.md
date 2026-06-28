@@ -30,11 +30,11 @@ items を順番に処理する。progress<1 は waiting に維持。到着先 ru
 
 ### RuntimeAdvanceResult advanceRuntimes(...)（内部）
 
-machines 順に存在する runtime を `advanceMachineRuntime` し新 record へ格納する。ID factory は現在 index を `item-N` 化後に1増やす。configs は placement ID で参照。runtime 不在は飛ばす。
+machines 順に存在する runtime を `advanceMachineRuntime` し新 record へ格納する。各機械から始まる接続の有無も渡す。ID factory は現在 index を `item-N` 化後に1増やす。configs は placement ID で参照。runtime 不在は飛ばす。
 
 ### TransportingFoodItem[] extractOutputs(...)（内部）
 
-待機 items コピーと、その connectionId の占有 Set を作る。各機械について出力接続を得る。出口なし splitter/merger は input/output を即空にする。他は output を抽出し、接続を占有、progress=0 の搬送 item を追加する。通常機械は1回で終了。splitter/merger は抽出後 delta=0 で次入力を出力へ移し、空または全接続占有までループする。この内部呼出の ID factory は空文字だが中継機なので生成には使われない。
+待機 items をコピーし、各機械について出力接続を得る。出口なし splitter/merger は input/output を即空にする。他は output を抽出し、progress=0 の搬送 item を追加する。同じ接続に複数 item があっても搬出でき、各 item は独立して進む。通常機械は1回で終了。splitter/merger は抽出後 delta=0 で次入力を出力へ移し、空になるまでループする。この内部呼出の ID factory は空文字だが中継機なので生成には使われない。
 
 ### SimulationState stepSimulation(state, input)
 

@@ -315,7 +315,7 @@ export function GameScene({
           isConnectionSource={
             connectionSourceMachineId === machineView.machine.id
           }
-          isProcessing={machineView.isProcessing}
+          operationProgress={machineView.operationProgress}
           hasOutput={machineView.hasOutput}
           heldItems={machineView.heldItems}
           craftableFoodIds={craftableFoodIds}

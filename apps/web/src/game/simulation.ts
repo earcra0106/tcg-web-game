@@ -151,6 +151,7 @@ function deliverArrivedItems({
 function advanceRuntimes({
   runtimes,
   machines,
+  connections,
   deltaMs,
   nowMs,
   machineConfigs,
@@ -158,6 +159,7 @@ function advanceRuntimes({
 }: {
   runtimes: Record<PlacementId, MachineRuntime>;
   machines: readonly PlacedMachine[];
+  connections: readonly MachineConnection[];
   deltaMs: number;
   nowMs: number;
   machineConfigs: Readonly<Record<PlacementId, MachineRuntimeConfig>>;
@@ -177,6 +179,9 @@ function advanceRuntimes({
       runtime,
       deltaMs,
       nowMs,
+      hasOutputConnection: connections.some(
+        (connection) => connection.fromMachineId === machine.id,
+      ),
       config: machineConfigs[machine.id],
       createItemId: () => {
         const id = createItemId(itemIndex);
@@ -206,9 +211,6 @@ function extractOutputs({
   nowMs: number;
 }) {
   const nextItems = [...items];
-  const occupiedConnectionIds = new Set(
-    nextItems.map((item) => item.connectionId),
-  );
 
   machines.forEach((machine) => {
     const runtime = runtimes[machine.id];
@@ -237,7 +239,6 @@ function extractOutputs({
       const output = extractMachineOutput({
         runtime: nextRuntime,
         outputConnections,
-        occupiedConnectionIds,
       });
 
       if (output === null) {
@@ -247,7 +248,6 @@ function extractOutputs({
 
       nextRuntime = output.runtime;
       runtimes[machine.id] = nextRuntime;
-      occupiedConnectionIds.add(output.connection.id);
       nextItems.push(
         createTransportingFoodItem(
           output.item,
@@ -312,6 +312,7 @@ export function stepSimulation(
   const advancedRuntimes = advanceRuntimes({
     runtimes: syncedRuntimes,
     machines: input.machines,
+    connections: input.connections,
     deltaMs: input.deltaMs,
     nowMs,
     machineConfigs: input.machineConfigs ?? {},

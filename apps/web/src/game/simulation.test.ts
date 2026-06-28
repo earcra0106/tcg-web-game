@@ -182,7 +182,7 @@ describe('simulation', () => {
     const spawned = stepSimulation(createInitialSimulationState(), {
       machines,
       connections,
-      deltaMs: 1_000,
+      deltaMs: 2_000,
       machineConfigs: {
         'storage-1': { spawnFoodId: 'rice' },
       },
@@ -207,7 +207,7 @@ describe('simulation', () => {
     expect(shipped.shippingHistory).toEqual([
       expect.objectContaining({
         foodId: 'rice',
-        shippedAtMs: 1_600,
+        shippedAtMs: 2_600,
       }),
     ]);
   });
@@ -231,7 +231,7 @@ describe('simulation', () => {
     };
     const spawned = stepSimulation(createInitialSimulationState(), {
       ...input,
-      deltaMs: 1_000,
+      deltaMs: 2_000,
     });
     const received = stepSimulation(spawned, {
       ...input,
@@ -239,7 +239,7 @@ describe('simulation', () => {
     });
     const cooked = stepSimulation(received, {
       ...input,
-      deltaMs: 1_000,
+      deltaMs: 500,
     });
     const shipped = stepSimulation(cooked, {
       ...input,
@@ -249,9 +249,70 @@ describe('simulation', () => {
     expect(shipped.shippingHistory).toEqual([
       expect.objectContaining({
         foodId: 'cooked-rice',
-        shippedAtMs: 3_200,
+        shippedAtMs: 3_700,
       }),
     ]);
+  });
+
+  it('moves multiple food items independently on the same conveyor', () => {
+    const machines = [
+      machine('storage-1', 'storage', 0),
+      machine('shipping-1', 'shipping', 10, 'rice'),
+    ];
+    const connections = [connection('connection-1', 'storage-1', 'shipping-1')];
+    const input = {
+      machines,
+      connections,
+      machineConfigs: {
+        'storage-1': { spawnFoodId: 'rice' },
+      },
+    };
+    const first = stepSimulation(createInitialSimulationState(), {
+      ...input,
+      deltaMs: 2_000,
+    });
+    const second = stepSimulation(first, {
+      ...input,
+      deltaMs: 2_000,
+    });
+
+    expect(second.items).toHaveLength(2);
+    expect(second.items.map((item) => item.connectionId)).toEqual([
+      'connection-1',
+      'connection-1',
+    ]);
+    expect(second.items[0]?.progress).toBeCloseTo(1 / 3);
+    expect(second.items[1]?.progress).toBe(0);
+  });
+
+  it('restarts the storage interval when a conveyor is not connected', () => {
+    const storage = machine('storage-1', 'storage', 0);
+    const shipping = machine('shipping-1', 'shipping', 1, 'rice');
+    const machineConfigs = {
+      'storage-1': { spawnFoodId: 'rice' },
+    };
+    const disconnected = stepSimulation(createInitialSimulationState(), {
+      machines: [storage, shipping],
+      connections: [],
+      deltaMs: 2_000,
+      machineConfigs,
+    });
+    const almostReady = stepSimulation(disconnected, {
+      machines: [storage, shipping],
+      connections: [connection('connection-1', storage.id, shipping.id)],
+      deltaMs: 1_999,
+      machineConfigs,
+    });
+    const ready = stepSimulation(almostReady, {
+      machines: [storage, shipping],
+      connections: [connection('connection-1', storage.id, shipping.id)],
+      deltaMs: 1,
+      machineConfigs,
+    });
+
+    expect(disconnected.items).toEqual([]);
+    expect(almostReady.items).toEqual([]);
+    expect(ready.items).toHaveLength(1);
   });
 
   it('passes splitter inputs through all branches immediately in round-robin order', () => {

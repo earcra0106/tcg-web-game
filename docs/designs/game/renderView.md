@@ -7,7 +7,7 @@
 ## 型・定数仕様
 
 - `DEFAULT_EFFICIENCY_WINDOW_MS=60000`。
-- 機械 view は machine、処理中/出力待ちフラグ、heldItems。
+- 機械 view は machine、nullableな稼働進捗、出力待ちフラグ、heldItems。稼働進捗は `waiting|processing` と0〜1の値を持つ。
 - held item は id/foodId/spriteId、status=`input|processing`、nullable progress。
 - 搬送 item view は world position を持つ。
 - HUD goal は food、該当 stageNumbers、合算 required/current efficiency、clear。
@@ -25,7 +25,7 @@
 
 ### readonly RenderMachineHeldItemView[] createMachineHeldItemViews(runtime)
 
-undefined は空。inputBuffer を createdAtMs 降順（新しい順）にコピーソートし、未知食品を除外して入力 view 化する。outputBuffer は表示しない。process がなければ入力だけ。process 出力食品が未知でも入力だけ。既知なら末尾に processing view を追加し、ID=`placementId-process-recipeId`、progress=`clamp(1-remainingMs/1000,0,1)`。
+undefined は空。inputBuffer を createdAtMs 降順（新しい順）にコピーソートし、未知食品を除外して入力 view 化する。outputBuffer は表示しない。process がなければ入力だけ。process 出力食品が未知でも入力だけ。既知なら末尾に processing view を追加し、ID=`placementId-process-recipeId`、progress=`clamp(1-remainingMs/500,0,1)`。
 
 ### WorldPosition interpolateWorldPosition(fromMachine,toMachine,progress)
 
@@ -41,4 +41,4 @@ undefined は空。inputBuffer を createdAtMs 降順（新しい順）にコピ
 
 ### RenderView createRenderView(input)
 
-stageNumber=`gameState.stageIndex+1`、1..stageNumber の累積目標を生成。各配置機械を同順で view 化し、process が null/undefined 以外なら isProcessing、outputBuffer 長>0なら hasOutput。connections は元参照。搬送 items は始終機械と食品がすべて見つかるものだけ同順で view 化し補間位置を付与。HUD は simulation の履歴・時刻と指定/既定窓から生成する。seed は目標決定に使用する。
+stageNumber=`gameState.stageIndex+1`、1..stageNumber の累積目標を生成。各配置機械を同順で view 化し、storage は `storageElapsedMs/2000` の waiting、process 中は `1-remainingMs/500` の processing を稼働進捗として0〜1にクランプする。outputBuffer 長>0なら hasOutput。connections は元参照。搬送 items は始終機械と食品がすべて見つかるものだけ同順で view 化し補間位置を付与。HUD は simulation の履歴・時刻と指定/既定窓から生成する。seed は目標決定に使用する。
