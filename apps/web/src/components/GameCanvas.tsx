@@ -56,7 +56,8 @@ export function GameCanvas({
           enablePan
           enableRotate={false}
           minDistance={2.2}
-          maxDistance={10}
+          maxDistance={20}
+          screenSpacePanning={false}
           target={[0, 0, 0]}
           mouseButtons={{
             LEFT: undefined,
