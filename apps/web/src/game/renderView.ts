@@ -101,31 +101,32 @@ export function createMachineHeldItemViews(
     return [];
   }
 
-  const bufferedItems = [
-    ...runtime.inputBuffer.map((item) => ({ item, status: 'input' as const })),
-    ...runtime.outputBuffer.map((item) => ({
-      item,
-      status: 'output' as const,
-    })),
-  ]
-    .sort((first, second) => second.item.createdAtMs - first.item.createdAtMs)
-    .flatMap(({ item, status }) => {
-      const view = createBufferedItemView(item, status);
-      return view === null ? [] : [view];
-    });
+  const createBufferedItemViews = (
+    items: readonly FoodItem[],
+    status: 'input' | 'output',
+  ) =>
+    [...items]
+      .sort((first, second) => second.createdAtMs - first.createdAtMs)
+      .flatMap((item) => {
+        const view = createBufferedItemView(item, status);
+        return view === null ? [] : [view];
+      });
+  const inputItems = createBufferedItemViews(runtime.inputBuffer, 'input');
+  const outputItems = createBufferedItemViews(runtime.outputBuffer, 'output');
   const process = runtime.process;
 
   if (process === null) {
-    return bufferedItems;
+    return [...inputItems, ...outputItems];
   }
 
   const food = getFoodInfo(process.outputFoodId);
 
   if (food === null) {
-    return bufferedItems;
+    return [...inputItems, ...outputItems];
   }
 
   return [
+    ...inputItems,
     {
       id: `${runtime.placementId}-process-${process.recipeId}`,
       foodId: process.outputFoodId,
@@ -136,7 +137,7 @@ export function createMachineHeldItemViews(
         Math.min(1, 1 - process.remainingMs / MACHINE_PROCESS_TIME_MS),
       ),
     },
-    ...bufferedItems,
+    ...outputItems,
   ];
 }
 

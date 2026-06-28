@@ -37,7 +37,7 @@ function goal(
 }
 
 describe('render view', () => {
-  it('orders held machine items newest first after the processing item', () => {
+  it('orders held machine items as input, processing, and output', () => {
     const placedMachine: PlacedMachine = {
       id: 'heater-1',
       machineId: 'heater',
@@ -60,15 +60,15 @@ describe('render view', () => {
     };
 
     expect(createMachineHeldItemViews(runtime)).toMatchObject([
+      { id: 'new-input', status: 'input', progress: null },
+      { id: 'old-input', status: 'input', progress: null },
       {
         id: 'heater-1-process-cooked-rice',
         foodId: 'cooked-rice',
         status: 'processing',
         progress: 0.5,
       },
-      { id: 'new-input', status: 'input', progress: null },
       { id: 'output', status: 'output', progress: null },
-      { id: 'old-input', status: 'input', progress: null },
     ]);
   });
 
