@@ -21,7 +21,7 @@
 
 ### readonly MachineConnection[] createConnection(connections, machines, connection)
 
-始点・終点機械を ID 検索する。次のいずれかなら元配列参照を返す: 機械が不存在、始点が splitter 以外ですでに出力が1本以上、始点が shipping/trash-bin、終点が storage、接続 ID が既存、同一始点・終点の組が既存。成功時だけ末尾へ追加した新配列を返す。自己接続や入力本数はここでは禁止しない。
+始点・終点機械を ID 検索する。次のいずれかなら元配列参照を返す: 始点と終点が同一機械、機械が不存在、始点が splitter 以外ですでに出力が1本以上、始点が shipping/trash-bin、終点が storage、接続 ID が既存、同一始点・終点の組が既存。成功時だけ末尾へ追加した新配列を返す。入力本数はここでは禁止しない。
 
 ### MachineConnection[] removeConnection(connections, connectionId)
 
