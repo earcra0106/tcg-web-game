@@ -1,4 +1,4 @@
-import { BookOpen, ChevronLeft } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import type { PointerEvent } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FoodSprite } from './components/FoodSprite.tsx';
@@ -227,15 +227,6 @@ export function App() {
         }}
         onPlaySound={playSound}
       />
-      <button
-        className="icon-button encyclopedia-button"
-        type="button"
-        onClick={() => setScreen('encyclopedia')}
-        aria-label="食べもの図鑑を開く"
-      >
-        <BookOpen aria-hidden="true" size={20} />
-        <span>食べもの図鑑</span>
-      </button>
       <StageHud
         hud={renderView.hud}
         isMuted={isMuted}
@@ -244,6 +235,7 @@ export function App() {
           audioRef.current?.setMuted(nextMuted);
           setIsMuted(nextMuted);
         }}
+        onOpenEncyclopedia={() => setScreen('encyclopedia')}
       />
       <ToolBar
         selectedTool={model.editorState.selectedTool}
