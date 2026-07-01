@@ -7,6 +7,7 @@ import {
   removeConnectionsForMachine,
   type MachineConnection,
 } from './connections.ts';
+import { machineInfos } from './machine.ts';
 import type { PlacedMachine } from './placement.ts';
 
 const machines: readonly PlacedMachine[] = [
@@ -40,6 +41,26 @@ describe('machine connections', () => {
 
     expect(nextConnections).toBe(connections);
   });
+
+  it.each(machineInfos)(
+    'rejects a conveyor from $id to itself',
+    ({ id: machineId }) => {
+      const connections: readonly MachineConnection[] = [];
+      const selfMachine: PlacedMachine = {
+        id: `self-${machineId}`,
+        machineId,
+        position: { x: 0, z: 0 },
+      };
+
+      expect(
+        createConnection(connections, [selfMachine], {
+          id: 'self-connection',
+          fromMachineId: selfMachine.id,
+          toMachineId: selfMachine.id,
+        }),
+      ).toBe(connections);
+    },
+  );
 
   it('prevents duplicate connection ids', () => {
     const connections = [connection];

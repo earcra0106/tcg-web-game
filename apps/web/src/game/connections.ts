@@ -35,6 +35,10 @@ export function createConnection(
   machines: readonly PlacedMachine[],
   connection: MachineConnection,
 ) {
+  if (connection.fromMachineId === connection.toMachineId) {
+    return connections;
+  }
+
   const fromMachine = findMachineById(machines, connection.fromMachineId);
   const toMachine = findMachineById(machines, connection.toMachineId);
 
