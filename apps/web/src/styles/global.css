@@ -227,9 +227,9 @@ select {
 }
 
 .icon-button--square {
-  width: 36px;
-  min-width: 36px;
-  min-height: 36px;
+  width: 42px;
+  min-width: 42px;
+  min-height: 42px;
   padding: 0;
 }
 
