@@ -434,10 +434,24 @@ select {
 }
 
 .recipe-tree__food--expandable {
+  width: 100px;
+  min-width: 100px;
+  max-width: 100px;
+  height: 100px;
+  container-type: inline-size;
   border-color: rgb(89 120 119 / 0.32);
   background: #fffdf9;
   box-shadow: 0 6px 14px rgb(92 64 42 / 0.1);
   cursor: pointer;
+}
+
+.recipe-tree__food--expandable > span {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: clamp(0.5rem, 9cqi, 0.78rem);
+  line-height: 1;
+  text-overflow: clip;
+  white-space: nowrap;
 }
 
 .recipe-tree__food--expandable:hover {
