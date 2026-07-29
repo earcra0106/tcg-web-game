@@ -362,11 +362,27 @@ select {
 
 .recipe-tree-modal__body {
   min-width: 0;
-  overflow: auto;
+  min-height: 240px;
+  overflow: hidden;
   padding: 12px;
   border: 1px solid rgb(190 150 111 / 0.22);
   border-radius: 8px;
   background: #fffaf4;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.recipe-tree-modal__body:active {
+  cursor: grabbing;
+}
+
+.recipe-tree-modal__viewport {
+  width: max-content;
+  min-width: 100%;
+  min-height: 100%;
+  transform-origin: 0 0;
+  will-change: transform;
 }
 
 .recipe-tree__recipe {
