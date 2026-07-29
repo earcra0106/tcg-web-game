@@ -5,6 +5,20 @@ import { SeedModal } from './SeedModal.tsx';
 const currentSeed = '123e4567-e89b-42d3-a456-426614174000';
 
 describe('SeedModal', () => {
+  it('does not focus the seed input when opened', () => {
+    render(
+      <SeedModal
+        currentSeed={currentSeed}
+        onClose={vi.fn()}
+        onRetry={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.getByPlaceholderText('シード値を入力(空ならランダムシード)'),
+    ).not.toHaveFocus();
+  });
+
   it('shows the current seed and retries with a valid specified seed', () => {
     const onRetry = vi.fn();
     render(
