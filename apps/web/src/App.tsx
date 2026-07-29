@@ -386,16 +386,6 @@ function FoodCard({
       <div className="food-card__sprite" aria-hidden="true">
         <FoodSprite spriteId={food.spriteId} label={food.name} />
       </div>
-      <div className="food-card__body">
-        <div className="food-card__summary">
-          <h2>{food.name}</h2>
-          <p>
-            {food.canSpawnFromStorage
-              ? '基本素材'
-              : '加工食品'}
-          </p>
-        </div>
-      </div>
     </button>
   );
 }
