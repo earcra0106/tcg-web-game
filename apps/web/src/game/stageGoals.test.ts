@@ -10,44 +10,63 @@ describe('stage goals', () => {
     );
   });
 
-  it('uses a single storage ingredient recipe for stage 1', () => {
-    const goal = getStageGoal({ seed: 'daily', stageNumber: 1 });
+  it('uses a single storage ingredient recipe for stages 1 and 2', () => {
+    const goals = [1, 2].map((stageNumber) =>
+      getStageGoal({ seed: 'daily', stageNumber }),
+    );
+
+    for (const goal of goals) {
+      const recipe = getRecipes().find(
+        (candidate) => candidate.outputFoodId === goal.targetFoodId,
+      );
+
+      expect(goal.difficulty).toBe(1);
+      expect(recipe?.inputFoodIds).toHaveLength(1);
+      expect(getFoodInfo(recipe?.inputFoodIds[0] ?? '')?.process).toBeNull();
+    }
+  });
+
+  it('uses the specified difficulties without repeats through stage 9', () => {
+    const goals = Array.from({ length: 9 }, (_, index) =>
+      getStageGoal({ seed: 'daily', stageNumber: index + 1 }),
+    );
+
+    expect(goals.map((goal) => goal.difficulty)).toEqual([
+      1, 1, 1, 2, 1, 2, 3, 2, 3,
+    ]);
+    expect(new Set(goals.map((goal) => goal.targetFoodId)).size).toBe(9);
+  });
+
+  it('excludes single storage ingredient recipes for stage 3', () => {
+    const goal = getStageGoal({ seed: 'daily', stageNumber: 3 });
     const recipe = getRecipes().find(
       (candidate) => candidate.outputFoodId === goal.targetFoodId,
     );
 
-    expect(goal.difficulty).toBe(1);
-    expect(recipe?.inputFoodIds).toHaveLength(1);
-    expect(getFoodInfo(recipe?.inputFoodIds[0] ?? '')?.process).toBeNull();
+    expect(recipe).toBeDefined();
+    expect(
+      recipe?.inputFoodIds.length === 1 &&
+        getFoodInfo(recipe.inputFoodIds[0]!)?.process === null,
+    ).toBe(false);
   });
 
-  it('uses the specified difficulties without repeats through stage 6', () => {
-    const goals = Array.from({ length: 6 }, (_, index) =>
-      getStageGoal({ seed: 'daily', stageNumber: index + 1 }),
-    );
-
-    expect(goals.map((goal) => goal.difficulty)).toEqual([1, 1, 2, 1, 2, 3]);
-    expect(new Set(goals.map((goal) => goal.targetFoodId)).size).toBe(6);
-  });
-
-  it('uses difficulty 3 for every third stage after stage 6', () => {
-    expect(getStageGoal({ seed: 'daily', stageNumber: 9 }).difficulty).toBe(3);
+  it('uses difficulty 3 for every third stage from stage 10', () => {
     expect(getStageGoal({ seed: 'daily', stageNumber: 12 }).difficulty).toBe(3);
   });
 
-  it('allows stage 7 and later goals to repeat an earlier food', () => {
+  it('allows stage 10 and later goals to repeat an earlier food', () => {
     const hasRepeatedGoal = Array.from({ length: 100 }, (_, index) => {
       const seed = `repeat-${index}`;
       const earlierFoodIds = new Set(
         Array.from(
-          { length: 6 },
+          { length: 9 },
           (_, stageIndex) =>
             getStageGoal({ seed, stageNumber: stageIndex + 1 }).targetFoodId,
         ),
       );
 
       return earlierFoodIds.has(
-        getStageGoal({ seed, stageNumber: 7 }).targetFoodId,
+        getStageGoal({ seed, stageNumber: 10 }).targetFoodId,
       );
     }).some(Boolean);
 
