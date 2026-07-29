@@ -525,7 +525,7 @@ select {
 
 .food-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, 90px);
+  grid-template-columns: repeat(auto-fit, 80px);
   justify-content: space-between;
   row-gap: 14px;
   max-width: 1120px;
@@ -535,8 +535,8 @@ select {
 .food-card {
   display: grid;
   place-items: center;
-  width: 90px;
-  height: 90px;
+  width: 80px;
+  height: 80px;
   padding: 0;
   border: 1px solid rgb(190 150 111 / 0.28);
   border-radius: 8px;
