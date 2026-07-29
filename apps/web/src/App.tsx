@@ -46,6 +46,7 @@ export function App() {
     createInitialSimulationState(),
   );
   const [isMuted, setIsMuted] = useState(false);
+  const [simulationSpeed, setSimulationSpeed] = useState<1 | 2>(1);
   const [seed, setSeed] = useState(() => createDailySeed());
   const [isSeedModalOpen, setIsSeedModalOpen] = useState(false);
   const [placementDrag, setPlacementDrag] = useState<PlacementDragState | null>(
@@ -160,7 +161,7 @@ export function App() {
           stepSimulation(current, {
             machines: model.gameState.machines,
             connections: model.gameState.connections,
-            deltaMs,
+            deltaMs: deltaMs * simulationSpeed,
             machineConfigs: model.machineConfigs,
             stageGoal,
           }),
@@ -179,6 +180,7 @@ export function App() {
     model.gameState.machines,
     model.gameState.connections,
     model.machineConfigs,
+    simulationSpeed,
     stageGoal,
   ]);
 
@@ -233,6 +235,7 @@ export function App() {
         craftableFoodIds={craftableFoodIds}
         dragPlacementTool={placementDrag?.tool ?? null}
         isDraggingPlacement={placementDrag?.isDragging === true}
+        simulationSpeed={simulationSpeed}
         onModelChange={(updater) => {
           setModel((current) => updater(current));
         }}
@@ -244,11 +247,15 @@ export function App() {
       <StageHud
         hud={renderView.hud}
         isMuted={isMuted}
+        simulationSpeed={simulationSpeed}
         onOpenSeed={() => setIsSeedModalOpen(true)}
         onToggleMuted={() => {
           const nextMuted = !isMuted;
           audioRef.current?.setMuted(nextMuted);
           setIsMuted(nextMuted);
+        }}
+        onToggleSimulationSpeed={() => {
+          setSimulationSpeed((current) => (current === 1 ? 2 : 1));
         }}
         onOpenEncyclopedia={() => setScreen('encyclopedia')}
       />

@@ -18,6 +18,7 @@ type GameCanvasProps = {
   craftableFoodIds: readonly FoodId[];
   dragPlacementTool: PlaceMachineTool | null;
   isDraggingPlacement: boolean;
+  simulationSpeed: 1 | 2;
   onModelChange: (updater: (model: EditorModel) => EditorModel) => void;
   onPlacementDrop: () => void;
   onPlaySound: (soundId: GameSoundId) => void;
@@ -32,6 +33,7 @@ export function GameCanvas({
   craftableFoodIds,
   dragPlacementTool,
   isDraggingPlacement,
+  simulationSpeed,
   onModelChange,
   onPlacementDrop,
   onPlaySound,
@@ -48,6 +50,7 @@ export function GameCanvas({
           craftableFoodIds={craftableFoodIds}
           dragPlacementTool={dragPlacementTool}
           isDraggingPlacement={isDraggingPlacement}
+          simulationSpeed={simulationSpeed}
           onModelChange={onModelChange}
           onPlacementDrop={onPlacementDrop}
           onPlaySound={onPlaySound}

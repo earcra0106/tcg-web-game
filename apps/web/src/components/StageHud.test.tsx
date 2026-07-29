@@ -39,7 +39,9 @@ describe('StageHud', () => {
       <StageHud
         hud={hud}
         isMuted={false}
+        simulationSpeed={1}
         onToggleMuted={vi.fn()}
+        onToggleSimulationSpeed={vi.fn()}
         onOpenSeed={vi.fn()}
         onOpenEncyclopedia={vi.fn()}
       />,
@@ -55,7 +57,9 @@ describe('StageHud', () => {
       <StageHud
         hud={hud}
         isMuted={false}
+        simulationSpeed={1}
         onToggleMuted={vi.fn()}
+        onToggleSimulationSpeed={vi.fn()}
         onOpenSeed={vi.fn()}
         onOpenEncyclopedia={vi.fn()}
       />,
@@ -76,7 +80,9 @@ describe('StageHud', () => {
       <StageHud
         hud={hud}
         isMuted={false}
+        simulationSpeed={1}
         onToggleMuted={vi.fn()}
+        onToggleSimulationSpeed={vi.fn()}
         onOpenSeed={onOpenSeed}
         onOpenEncyclopedia={vi.fn()}
       />,
@@ -85,5 +91,39 @@ describe('StageHud', () => {
     fireEvent.click(screen.getByRole('button', { name: 'シード値を開く' }));
 
     expect(onOpenSeed).toHaveBeenCalledOnce();
+  });
+
+  it('toggles simulation speed and marks the button active at 2x speed', () => {
+    const onToggleSimulationSpeed = vi.fn();
+    const { rerender } = render(
+      <StageHud
+        hud={hud}
+        isMuted={false}
+        simulationSpeed={1}
+        onToggleMuted={vi.fn()}
+        onToggleSimulationSpeed={onToggleSimulationSpeed}
+        onOpenSeed={vi.fn()}
+        onOpenEncyclopedia={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: '2倍速に切り替える' }));
+    expect(onToggleSimulationSpeed).toHaveBeenCalledOnce();
+
+    rerender(
+      <StageHud
+        hud={hud}
+        isMuted={false}
+        simulationSpeed={2}
+        onToggleMuted={vi.fn()}
+        onToggleSimulationSpeed={onToggleSimulationSpeed}
+        onOpenSeed={vi.fn()}
+        onOpenEncyclopedia={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.getByRole('button', { name: '1倍速に切り替える' }),
+    ).toHaveClass('icon-button--fast-forward-active');
   });
 });

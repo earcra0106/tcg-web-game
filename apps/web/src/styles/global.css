@@ -222,6 +222,12 @@ select {
   background: #f8ffff;
 }
 
+.icon-button--fast-forward-active {
+  border-color: #d64d48;
+  color: #d64d48;
+  background: #fff5f4;
+}
+
 .icon-button--quiet {
   box-shadow: none;
 }

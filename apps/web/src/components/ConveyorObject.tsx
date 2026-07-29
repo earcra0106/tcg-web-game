@@ -10,6 +10,7 @@ type ConveyorObjectProps = {
   connection: MachineConnection;
   fromMachine: PlacedMachine;
   toMachine: PlacedMachine;
+  simulationSpeed: 1 | 2;
   onPointerDown: (
     connectionId: string,
     event: ThreeEvent<PointerEvent>,
@@ -34,6 +35,7 @@ export function ConveyorObject({
   connection,
   fromMachine,
   toMachine,
+  simulationSpeed,
   onPointerDown,
   onPointerUp,
 }: ConveyorObjectProps) {
@@ -45,8 +47,8 @@ export function ConveyorObject({
     nowMs,
   });
 
-  useFrame(() => {
-    setNowMs(performance.now());
+  useFrame((_, deltaSeconds) => {
+    setNowMs((current) => current + deltaSeconds * 1_000 * simulationSpeed);
   });
 
   return (
