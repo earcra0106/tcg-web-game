@@ -8,6 +8,7 @@ import {
   VolumeX,
 } from 'lucide-react';
 import { useState } from 'react';
+import type { FoodId } from '../game/food.ts';
 import type { StageHudView } from '../game/renderView.ts';
 
 type StageHudProps = {
@@ -18,6 +19,7 @@ type StageHudProps = {
   onToggleSimulationSpeed: () => void;
   onOpenSeed: () => void;
   onOpenEncyclopedia: () => void;
+  onOpenRecipeTree: (foodId: FoodId) => void;
 };
 
 function formatEfficiency(value: number) {
@@ -32,6 +34,7 @@ export function StageHud({
   onToggleSimulationSpeed,
   onOpenSeed,
   onOpenEncyclopedia,
+  onOpenRecipeTree,
 }: StageHudProps) {
   const [areGoalsExpanded, setAreGoalsExpanded] = useState(false);
   const currentGoal = hud.goals.find((goal) =>
@@ -100,28 +103,31 @@ export function StageHud({
           </button>
         </div>
       </div>
-      <button
-        className="hud__goals"
-        type="button"
-        aria-expanded={areGoalsExpanded}
-        aria-label={
-          areGoalsExpanded ? '目標一覧を折りたたむ' : '目標一覧を展開する'
-        }
-        onClick={() => setAreGoalsExpanded((current) => !current)}
-      >
-        <span className="hud__goals-icon" aria-hidden="true">
+      <div className="hud__goals" aria-label="目標一覧">
+        <button
+          className="hud__goals-toggle"
+          type="button"
+          aria-expanded={areGoalsExpanded}
+          aria-label={
+            areGoalsExpanded ? '目標一覧を折りたたむ' : '目標一覧を展開する'
+          }
+          onClick={() => setAreGoalsExpanded((current) => !current)}
+        >
           {areGoalsExpanded ? (
             <ChevronUp size={16} />
           ) : (
             <ChevronDown size={16} />
           )}
-        </span>
+        </button>
         {visibleGoals.map((goal) => (
-          <span
+          <button
             key={goal.foodId}
+            type="button"
             className={
               goal.isCleared ? 'hud__goal hud__goal--cleared' : 'hud__goal'
             }
+            aria-label={`${goal.foodName}のレシピツリーを開く`}
+            onClick={() => onOpenRecipeTree(goal.foodId)}
           >
             <span className="hud__goal-name">
               {goal.foodName}
@@ -132,9 +138,9 @@ export function StageHud({
               {formatEfficiency(goal.requiredEfficiency)}
               <small>/10秒</small>
             </span>
-          </span>
+          </button>
         ))}
-      </button>
+      </div>
     </section>
   );
 }

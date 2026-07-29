@@ -3,7 +3,9 @@ import {
   findCookableRecipe,
   findRecipeByOutput,
   findRecipesForMachine,
+  getMachineForProcess,
   getProcessForMachine,
+  getRecipeIngredientDescendantFoodIds,
   getRecipes,
   getServableRecipes,
   normalizeFoodIds,
@@ -33,6 +35,13 @@ describe('recipes', () => {
     expect(getProcessForMachine('shipping')).toBeNull();
     expect(getProcessForMachine('splitter')).toBeNull();
     expect(getProcessForMachine('trash-bin')).toBeNull();
+  });
+
+  it('maps cooking processes back to their production machines', () => {
+    expect(getMachineForProcess('cutting')).toBe('cutter');
+    expect(getMachineForProcess('heating')).toBe('heater');
+    expect(getMachineForProcess('mixing')).toBe('mixer');
+    expect(getMachineForProcess('combining')).toBe('combiner');
   });
 
   it('returns recipes that a machine can process', () => {
@@ -100,5 +109,35 @@ describe('recipes', () => {
       id: 'toast',
       name: 'トースト',
     });
+  });
+
+  it('collects ingredient descendants without looping through circular recipes', () => {
+    const recipes = [
+      {
+        id: 'first',
+        name: 'first',
+        process: 'heating' as const,
+        inputFoodIds: ['second'],
+        outputFoodId: 'first',
+        outputFood: {} as never,
+        canBeServed: false,
+        difficulty: null,
+      },
+      {
+        id: 'second',
+        name: 'second',
+        process: 'heating' as const,
+        inputFoodIds: ['first'],
+        outputFoodId: 'second',
+        outputFood: {} as never,
+        canBeServed: false,
+        difficulty: null,
+      },
+    ];
+
+    expect(getRecipeIngredientDescendantFoodIds('first', recipes)).toEqual([
+      'second',
+      'first',
+    ]);
   });
 });
