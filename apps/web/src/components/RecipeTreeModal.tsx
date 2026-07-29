@@ -1,5 +1,6 @@
 import { ArrowDown, ArrowRight, X } from 'lucide-react';
 import { type PointerEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { FoodId } from '../game/food.ts';
 import { getFoodInfo } from '../game/foods.ts';
 import { getMachineInfo } from '../game/machine.ts';
@@ -445,7 +446,7 @@ export function RecipeTreeModal({
           };
   };
 
-  return (
+  return createPortal(
     <div
       className="modal-backdrop recipe-tree-modal-backdrop"
       role="presentation"
@@ -507,6 +508,7 @@ export function RecipeTreeModal({
           </div>
         )}
       </section>
-    </div>
+    </div>,
+    document.body,
   );
 }

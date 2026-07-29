@@ -349,6 +349,7 @@ select {
 }
 
 .recipe-tree-modal-backdrop {
+  position: fixed;
   padding: 30px;
 }
 

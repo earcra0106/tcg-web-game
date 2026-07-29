@@ -48,10 +48,10 @@ describe('RecipeTreeModal', () => {
   });
 
   it('pans the tree by dragging the display area', () => {
-    const { container } = render(
-      <RecipeTreeModal targetFoodId="toast" onClose={vi.fn()} />,
-    );
-    const displayArea = container.querySelector('.recipe-tree-modal__body')!;
+    render(<RecipeTreeModal targetFoodId="toast" onClose={vi.fn()} />);
+    const displayArea = document.body.querySelector(
+      '.recipe-tree-modal__body',
+    )!;
     const viewport = screen.getByTestId('recipe-tree-viewport');
 
     fireEvent.pointerDown(displayArea, {
@@ -70,10 +70,10 @@ describe('RecipeTreeModal', () => {
   });
 
   it('zooms the tree with the mouse wheel and a pinch gesture', () => {
-    const { container } = render(
-      <RecipeTreeModal targetFoodId="toast" onClose={vi.fn()} />,
-    );
-    const displayArea = container.querySelector('.recipe-tree-modal__body')!;
+    render(<RecipeTreeModal targetFoodId="toast" onClose={vi.fn()} />);
+    const displayArea = document.body.querySelector(
+      '.recipe-tree-modal__body',
+    )!;
     const viewport = screen.getByTestId('recipe-tree-viewport');
 
     fireEvent.wheel(displayArea, {
@@ -106,11 +106,9 @@ describe('RecipeTreeModal', () => {
 
   it('closes from the backdrop, close button, and Escape key', () => {
     const onClose = vi.fn();
-    const { container } = render(
-      <RecipeTreeModal targetFoodId="toast" onClose={onClose} />,
-    );
+    render(<RecipeTreeModal targetFoodId="toast" onClose={onClose} />);
 
-    fireEvent.pointerDown(container.firstElementChild!);
+    fireEvent.pointerDown(screen.getByRole('presentation'));
     fireEvent.click(
       screen.getByRole('button', { name: 'レシピツリーモーダルを閉じる' }),
     );
