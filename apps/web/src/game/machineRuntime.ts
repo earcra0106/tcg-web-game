@@ -88,7 +88,7 @@ export function canAcceptMachineInput(runtime: MachineRuntime) {
     return true;
   }
 
-  return runtime.inputBuffer.length < MACHINE_INPUT_CAPACITY;
+  return true;
 }
 
 export function receiveMachineInput(
