@@ -20,13 +20,60 @@ type RecipeTreeModalProps = {
 
 type RecipeTreeNodeProps = {
   foodId: FoodId;
+  path: string;
   recipes: readonly FoodRecipe[];
   expandedFoodIds: ReadonlySet<FoodId>;
+  expandedRecipePaths: ReadonlySet<string>;
   ancestorFoodIds: ReadonlySet<FoodId>;
-  claimedExpandedFoodIds: Set<FoodId>;
   isRoot?: boolean;
   onToggle: (foodId: FoodId) => void;
 };
+
+function getExpandedRecipePaths(
+  targetFoodId: FoodId,
+  expandedFoodIds: ReadonlySet<FoodId>,
+  recipes: readonly FoodRecipe[],
+) {
+  const expandedRecipePaths = new Set<string>();
+  const claimedFoodIds = new Set<FoodId>([targetFoodId]);
+
+  const visit = (
+    foodId: FoodId,
+    path: string,
+    ancestorFoodIds: ReadonlySet<FoodId>,
+  ) => {
+    const recipe = findRecipeByOutput(foodId, recipes);
+
+    if (
+      recipe === null ||
+      ancestorFoodIds.has(foodId) ||
+      !expandedFoodIds.has(foodId) ||
+      claimedFoodIds.has(foodId)
+    ) {
+      return;
+    }
+
+    claimedFoodIds.add(foodId);
+    expandedRecipePaths.add(path);
+    const nextAncestorFoodIds = new Set(ancestorFoodIds).add(foodId);
+
+    recipe.inputFoodIds.forEach((ingredientId, index) => {
+      visit(ingredientId, `${path}.${index}`, nextAncestorFoodIds);
+    });
+  };
+
+  const rootRecipe = findRecipeByOutput(targetFoodId, recipes);
+
+  if (rootRecipe !== null) {
+    const rootAncestorFoodIds = new Set<FoodId>([targetFoodId]);
+
+    rootRecipe.inputFoodIds.forEach((ingredientId, index) => {
+      visit(ingredientId, `root.${index}`, rootAncestorFoodIds);
+    });
+  }
+
+  return expandedRecipePaths;
+}
 
 function FoodNode({
   foodId,
@@ -70,21 +117,23 @@ function FoodNode({
 
 function RecipeTreeNode({
   foodId,
+  path,
   recipes,
   expandedFoodIds,
+  expandedRecipePaths,
   ancestorFoodIds,
-  claimedExpandedFoodIds,
   isRoot = false,
   onToggle,
 }: RecipeTreeNodeProps) {
   const recipe = findRecipeByOutput(foodId, recipes);
-  const isRequestedExpanded = isRoot || expandedFoodIds.has(foodId);
   const isCycle = ancestorFoodIds.has(foodId);
-  const isAlreadyClaimed = claimedExpandedFoodIds.has(foodId);
   const isExpanded =
-    recipe !== null && isRequestedExpanded && !isCycle && !isAlreadyClaimed;
+    recipe !== null && (isRoot || expandedRecipePaths.has(path));
   const isExpandable =
-    !isRoot && recipe !== null && !isCycle && !isAlreadyClaimed;
+    !isRoot &&
+    recipe !== null &&
+    !isCycle &&
+    (!expandedFoodIds.has(foodId) || expandedRecipePaths.has(path));
 
   if (!isExpanded || recipe === null) {
     return (
@@ -97,7 +146,6 @@ function RecipeTreeNode({
     );
   }
 
-  claimedExpandedFoodIds.add(foodId);
   const machineId = getMachineForProcess(recipe.process);
   const machine = machineId === null ? null : getMachineInfo(machineId);
   const nextAncestorFoodIds = new Set(ancestorFoodIds).add(foodId);
@@ -112,10 +160,11 @@ function RecipeTreeNode({
           <RecipeTreeNode
             key={`${ingredientId}-${index}`}
             foodId={ingredientId}
+            path={`${path}.${index}`}
             recipes={recipes}
             expandedFoodIds={expandedFoodIds}
+            expandedRecipePaths={expandedRecipePaths}
             ancestorFoodIds={nextAncestorFoodIds}
-            claimedExpandedFoodIds={claimedExpandedFoodIds}
             onToggle={onToggle}
           />
         ))}
@@ -148,6 +197,10 @@ export function RecipeTreeModal({
     new Set(),
   );
   const recipes = useMemo(() => getRecipes(), []);
+  const expandedRecipePaths = useMemo(
+    () => getExpandedRecipePaths(targetFoodId, expandedFoodIds, recipes),
+    [expandedFoodIds, recipes, targetFoodId],
+  );
   const targetFood = getFoodInfo(targetFoodId);
 
   useEffect(() => {
@@ -214,10 +267,11 @@ export function RecipeTreeModal({
         <div className="recipe-tree-modal__body">
           <RecipeTreeNode
             foodId={targetFoodId}
+            path="root"
             recipes={recipes}
             expandedFoodIds={expandedFoodIds}
+            expandedRecipePaths={expandedRecipePaths}
             ancestorFoodIds={new Set()}
-            claimedExpandedFoodIds={new Set()}
             isRoot
             onToggle={toggleRecipe}
           />

@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
+import { StrictMode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { RecipeTreeModal } from './RecipeTreeModal.tsx';
 
@@ -31,6 +32,17 @@ describe('RecipeTreeModal', () => {
 
     expect(screen.queryByText('切断機')).not.toBeInTheDocument();
     expect(screen.queryByText('トマト')).not.toBeInTheDocument();
+  });
+
+  it('keeps the root recipe expanded during Strict Mode double rendering', () => {
+    render(
+      <StrictMode>
+        <RecipeTreeModal targetFoodId="toast" onClose={vi.fn()} />
+      </StrictMode>,
+    );
+
+    expect(screen.getByText('加熱機')).toBeInTheDocument();
+    expect(screen.getByText('食パン')).toBeInTheDocument();
   });
 
   it('closes from the backdrop, close button, and Escape key', () => {
