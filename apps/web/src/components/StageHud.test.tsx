@@ -40,6 +40,7 @@ describe('StageHud', () => {
         hud={hud}
         isMuted={false}
         onToggleMuted={vi.fn()}
+        onOpenSeed={vi.fn()}
         onOpenEncyclopedia={vi.fn()}
       />,
     );
@@ -55,6 +56,7 @@ describe('StageHud', () => {
         hud={hud}
         isMuted={false}
         onToggleMuted={vi.fn()}
+        onOpenSeed={vi.fn()}
         onOpenEncyclopedia={vi.fn()}
       />,
     );
@@ -66,5 +68,22 @@ describe('StageHud', () => {
       3,
     );
     expect(goals).toHaveTextContent(/サラダ.*ごはん.*トースト/);
+  });
+
+  it('opens the seed value controls from the button before the volume button', () => {
+    const onOpenSeed = vi.fn();
+    render(
+      <StageHud
+        hud={hud}
+        isMuted={false}
+        onToggleMuted={vi.fn()}
+        onOpenSeed={onOpenSeed}
+        onOpenEncyclopedia={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'シード値を開く' }));
+
+    expect(onOpenSeed).toHaveBeenCalledOnce();
   });
 });

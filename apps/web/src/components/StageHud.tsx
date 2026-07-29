@@ -2,6 +2,7 @@ import {
   BookOpen,
   ChevronDown,
   ChevronUp,
+  Dice5,
   Volume2,
   VolumeX,
 } from 'lucide-react';
@@ -12,6 +13,7 @@ type StageHudProps = {
   hud: StageHudView;
   isMuted: boolean;
   onToggleMuted: () => void;
+  onOpenSeed: () => void;
   onOpenEncyclopedia: () => void;
 };
 
@@ -23,6 +25,7 @@ export function StageHud({
   hud,
   isMuted,
   onToggleMuted,
+  onOpenSeed,
   onOpenEncyclopedia,
 }: StageHudProps) {
   const [areGoalsExpanded, setAreGoalsExpanded] = useState(false);
@@ -46,6 +49,14 @@ export function StageHud({
           </p>
         </div>
         <div className="hud__actions">
+          <button
+            className="icon-button icon-button--square"
+            type="button"
+            aria-label="シード値を開く"
+            onClick={onOpenSeed}
+          >
+            <Dice5 aria-hidden="true" size={18} />
+          </button>
           <button
             className="icon-button icon-button--square"
             type="button"

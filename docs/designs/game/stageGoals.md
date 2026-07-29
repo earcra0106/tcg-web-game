@@ -2,13 +2,16 @@
 
 ## 責務
 
-seed と1始まりのステージ番号から、序盤固定・以降疑似ランダムの出荷目標と必要効率を決定する。
+seed と1始まりのステージ番号から、難易度と導入条件に応じた候補を決定的な疑似乱数で選び、出荷目標と必要効率を決定する。
 
 ## 型・データ仕様
 
 - `StageGoal`: stageNumber, targetFoodId/name, difficulty(非null), requiredEfficiency。
 - `StageGoalInput`: seed, stageNumber、任意 recipes。
-- 固定目標: stage 1〜4 は順に cooked-rice, toast, salad, potato-salad。
+- お題候補は `getServableRecipes(recipes)` のうち、`difficulty` が非nullのレシピとする。
+- stage 1 の候補は、難易度1かつ、倉庫から搬出できる材料1つを1回加工して完成するレシピとする。すなわち、入力材料が1件であり、その材料の `process` が `null` であることを条件とする。
+- stage 1〜6 は、すでに選ばれた対象料理を候補から除外する。同一 seed では stage 1 から順に選択を再現して重複を防ぐ。
+- stage 7 以降は過去の対象料理を除外しないため、お題が重複しうる。
 
 ## 関数仕様
 
@@ -20,9 +23,20 @@ seed と1始まりのステージ番号から、序盤固定・以降疑似ラ�
 
 `efficiencySettings.ts` の毎分基準値を使い、1〜4は `introBasePerMinute+stage*increasePerMinute`、5以降は `laterBasePerMinute+floor((stage-1)/stagesPerIncrease)*increasePerMinute`。`maximumPerMinute` を上限とし、`EFFICIENCY_UNIT_MS/60000` を乗算して10秒単位へ換算後、小数第2位へ `round(value*100)/100`。
 
-### FoodDifficulty calculateMaxDifficulty(stageNumber)（内部）
+### StageGoalCandidateRule getStageGoalCandidateRule(stageNumber)（内部）
 
-1〜5は1、6〜10は2、11以上は3。
+各ステージの候補条件を以下のとおり返す。stage 7以降で3の倍数である条件を、全難易度の条件より優先する。
+
+| ステージ | 候補条件 |
+| --- | --- |
+| 1 | 難易度1かつ、材料1つを1回加工して完成する料理 |
+| 2 | 難易度1 |
+| 3 | 難易度2 |
+| 4 | 難易度1 |
+| 5 | 難易度2 |
+| 6 | 難易度3 |
+| 7以降の3の倍数 | 難易度3 |
+| その他の7以降 | 難易度1〜3のすべて |
 
 ### StageGoal toStageGoal(stageNumber, recipe)（内部）
 
@@ -30,4 +44,4 @@ difficulty が null なら `Error('Stage goal recipe must have difficulty: '+id)
 
 ### StageGoal getStageGoal({ seed, stageNumber, recipes })
 
-番号を検査し、`getServableRecipes(recipes)` を候補元にする。stage 1〜4で対応固定 ID が候補に存在すればそれを返す。なければ最大難易度以下かつ difficulty 非nullに絞り、`createSeededRandom(seed, stageNumber).pick` する。候補なしなら `Error('No servable recipes are available for stage goals')`。固定 ID が欠けた場合もランダム選択へフォールバックする。
+番号を検査し、候補元を `getServableRecipes(recipes)` とする。ステージごとの候補条件で絞り込み、stage 1〜6では同じ seed による先行ステージの対象料理を除外する。候補から `createSeededRandom(seed, stageNumber).pick` で1件を選ぶ。stage 7以降は先行ステージの対象料理を除外しない。候補なしなら `Error('No servable recipes are available for stage goals')`。

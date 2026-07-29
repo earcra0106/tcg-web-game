@@ -3,6 +3,7 @@ import type { PointerEvent } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FoodSprite } from './components/FoodSprite.tsx';
 import { GameCanvas } from './components/GameCanvas.tsx';
+import { SeedModal } from './components/SeedModal.tsx';
 import { StageHud } from './components/StageHud.tsx';
 import { ModeToolBar, ToolBar } from './components/ToolBar.tsx';
 import { createGameAudioController, type GameSoundId } from './game/audio.ts';
@@ -25,6 +26,7 @@ import {
   getStorageFoodIdsForGoals,
 } from './game/stageTools.ts';
 import { getStageGoal } from './game/stageGoals.ts';
+import { createDailySeed } from './game/seed.ts';
 
 const TOOL_DRAG_THRESHOLD_PX = 6;
 
@@ -44,6 +46,8 @@ export function App() {
     createInitialSimulationState(),
   );
   const [isMuted, setIsMuted] = useState(false);
+  const [seed, setSeed] = useState(() => createDailySeed());
+  const [isSeedModalOpen, setIsSeedModalOpen] = useState(false);
   const [placementDrag, setPlacementDrag] = useState<PlacementDragState | null>(
     null,
   );
@@ -54,15 +58,15 @@ export function App() {
   const lastClearedStageRef = useRef<number | null>(null);
   const stageNumber = model.gameState.stageIndex + 1;
   const stageGoal = useMemo(
-    () => getStageGoal({ seed: 'daily', stageNumber }),
-    [stageNumber],
+    () => getStageGoal({ seed, stageNumber }),
+    [seed, stageNumber],
   );
   const cumulativeStageGoals = useMemo(
     () =>
       Array.from({ length: stageNumber }, (_, index) =>
-        getStageGoal({ seed: 'daily', stageNumber: index + 1 }),
+        getStageGoal({ seed, stageNumber: index + 1 }),
       ),
-    [stageNumber],
+    [seed, stageNumber],
   );
   const renderView = useMemo(
     () =>
@@ -70,9 +74,9 @@ export function App() {
         gameState: model.gameState,
         simulationState,
         machineConfigs: model.machineConfigs,
-        seed: 'daily',
+        seed,
       }),
-    [model.gameState, model.machineConfigs, simulationState],
+    [model.gameState, model.machineConfigs, seed, simulationState],
   );
   const storageFoodIds = useMemo(
     () => getStorageFoodIdsForGoals(cumulativeStageGoals),
@@ -211,6 +215,16 @@ export function App() {
     return <FoodEncyclopedia onBack={() => setScreen('game')} />;
   }
 
+  const retryWithSeed = (nextSeed: string) => {
+    setSeed(nextSeed);
+    setModel(createInitialEditorModel());
+    setSimulationState(createInitialSimulationState());
+    setPlacementDrag(null);
+    lastSimulationFrameMsRef.current = null;
+    lastClearedStageRef.current = null;
+    setIsSeedModalOpen(false);
+  };
+
   return (
     <main className="app-shell">
       <GameCanvas
@@ -230,6 +244,7 @@ export function App() {
       <StageHud
         hud={renderView.hud}
         isMuted={isMuted}
+        onOpenSeed={() => setIsSeedModalOpen(true)}
         onToggleMuted={() => {
           const nextMuted = !isMuted;
           audioRef.current?.setMuted(nextMuted);
@@ -237,6 +252,13 @@ export function App() {
         }}
         onOpenEncyclopedia={() => setScreen('encyclopedia')}
       />
+      {isSeedModalOpen ? (
+        <SeedModal
+          currentSeed={seed}
+          onClose={() => setIsSeedModalOpen(false)}
+          onRetry={retryWithSeed}
+        />
+      ) : null}
       <ToolBar
         selectedTool={model.editorState.selectedTool}
         storageFoodIds={storageFoodIds}

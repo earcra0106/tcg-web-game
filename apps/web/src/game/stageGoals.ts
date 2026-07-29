@@ -4,11 +4,8 @@ import {
   STAGE_GOAL_EFFICIENCY_SETTINGS,
 } from './efficiencySettings.ts';
 import { createSeededRandom } from './random.ts';
-import {
-  findRecipeByOutput,
-  getServableRecipes,
-  type FoodRecipe,
-} from './recipes.ts';
+import { getServableRecipes, type FoodRecipe } from './recipes.ts';
+import { getFoodInfo } from './foods.ts';
 
 export type StageGoal = {
   stageNumber: number;
@@ -23,13 +20,6 @@ export type StageGoalInput = {
   stageNumber: number;
   recipes?: readonly FoodRecipe[];
 };
-
-const introTargetFoodIds = [
-  'cooked-rice',
-  'toast',
-  'salad',
-  'potato-salad',
-] as const satisfies readonly FoodId[];
 
 function assertStageNumber(stageNumber: number) {
   if (!Number.isInteger(stageNumber) || stageNumber < 1) {
@@ -59,16 +49,75 @@ function calculateRequiredEfficiency(stageNumber: number) {
   return Math.round(efficiency * 100) / 100;
 }
 
-function calculateMaxDifficulty(stageNumber: number): FoodDifficulty {
-  if (stageNumber >= 11) {
-    return 3;
+function getStageGoalCandidateRule(stageNumber: number) {
+  if (stageNumber === 1) {
+    return {
+      difficulties: [1] as const,
+      requiresSingleStorageIngredient: true,
+    };
   }
 
-  if (stageNumber >= 6) {
-    return 2;
+  const introDifficulties: Partial<Record<number, FoodDifficulty>> = {
+    2: 1,
+    3: 2,
+    4: 1,
+    5: 2,
+    6: 3,
+  };
+  const introDifficulty = introDifficulties[stageNumber];
+
+  if (introDifficulty !== undefined) {
+    return {
+      difficulties: [introDifficulty] as const,
+      requiresSingleStorageIngredient: false,
+    };
   }
 
-  return 1;
+  return {
+    difficulties: (stageNumber % 3 === 0
+      ? [3]
+      : [1, 2, 3]) as readonly FoodDifficulty[],
+    requiresSingleStorageIngredient: false,
+  };
+}
+
+function isSingleStorageIngredientRecipe(recipe: FoodRecipe) {
+  if (recipe.inputFoodIds.length !== 1) {
+    return false;
+  }
+
+  const ingredient = getFoodInfo(recipe.inputFoodIds[0]!);
+
+  return ingredient !== null && ingredient.process === null;
+}
+
+function selectRecipe({
+  seed,
+  stageNumber,
+  recipes,
+  excludedFoodIds,
+}: {
+  seed: string;
+  stageNumber: number;
+  recipes: readonly FoodRecipe[];
+  excludedFoodIds: ReadonlySet<FoodId>;
+}) {
+  const rule = getStageGoalCandidateRule(stageNumber);
+  const candidates = recipes.filter(
+    (recipe) =>
+      recipe.difficulty !== null &&
+      rule.difficulties.includes(recipe.difficulty) &&
+      !excludedFoodIds.has(recipe.outputFoodId) &&
+      (!rule.requiresSingleStorageIngredient ||
+        isSingleStorageIngredientRecipe(recipe)),
+  );
+  const recipe = createSeededRandom(seed, stageNumber).pick(candidates);
+
+  if (recipe === null) {
+    throw new Error('No servable recipes are available for stage goals');
+  }
+
+  return recipe;
 }
 
 function toStageGoal(stageNumber: number, recipe: FoodRecipe): StageGoal {
@@ -93,27 +142,27 @@ export function getStageGoal({
   assertStageNumber(stageNumber);
 
   const servableRecipes = getServableRecipes(recipes);
-  const introTargetFoodId = introTargetFoodIds[stageNumber - 1];
+  const selectedFoodIds = new Set<FoodId>();
+  let selectedRecipe: FoodRecipe | null = null;
 
-  if (introTargetFoodId !== undefined) {
-    const introRecipe = findRecipeByOutput(introTargetFoodId, servableRecipes);
+  for (
+    let currentStageNumber = 1;
+    currentStageNumber <= stageNumber;
+    currentStageNumber += 1
+  ) {
+    const recipe = selectRecipe({
+      seed,
+      stageNumber: currentStageNumber,
+      recipes: servableRecipes,
+      excludedFoodIds: currentStageNumber <= 6 ? selectedFoodIds : new Set(),
+    });
 
-    if (introRecipe !== null) {
-      return toStageGoal(stageNumber, introRecipe);
+    if (currentStageNumber <= 6) {
+      selectedFoodIds.add(recipe.outputFoodId);
     }
+
+    selectedRecipe = recipe;
   }
 
-  const maxDifficulty = calculateMaxDifficulty(stageNumber);
-  const candidates = servableRecipes.filter(
-    (recipe) =>
-      recipe.difficulty !== null && recipe.difficulty <= maxDifficulty,
-  );
-  const random = createSeededRandom(seed, stageNumber);
-  const recipe = random.pick(candidates);
-
-  if (recipe === null) {
-    throw new Error('No servable recipes are available for stage goals');
-  }
-
-  return toStageGoal(stageNumber, recipe);
+  return toStageGoal(stageNumber, selectedRecipe!);
 }
