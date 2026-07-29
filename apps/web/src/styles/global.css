@@ -474,6 +474,10 @@ select {
   white-space: nowrap;
 }
 
+.recipe-tree__food--expandable[aria-expanded='true'] {
+  border-color: #d64d48;
+}
+
 .recipe-tree__food--expandable:hover {
   background: #f0fbfa;
 }
