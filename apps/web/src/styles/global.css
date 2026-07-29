@@ -396,7 +396,7 @@ select {
 .recipe-tree__ingredients {
   display: grid;
   grid-auto-flow: row;
-  justify-items: center;
+  justify-items: end;
   align-items: center;
   align-content: space-evenly;
   gap: 16px;
