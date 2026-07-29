@@ -3,6 +3,7 @@ import {
   ChevronDown,
   ChevronUp,
   Dice5,
+  FastForward,
   Volume2,
   VolumeX,
 } from 'lucide-react';
@@ -12,7 +13,9 @@ import type { StageHudView } from '../game/renderView.ts';
 type StageHudProps = {
   hud: StageHudView;
   isMuted: boolean;
+  simulationSpeed: 1 | 2;
   onToggleMuted: () => void;
+  onToggleSimulationSpeed: () => void;
   onOpenSeed: () => void;
   onOpenEncyclopedia: () => void;
 };
@@ -24,7 +27,9 @@ function formatEfficiency(value: number) {
 export function StageHud({
   hud,
   isMuted,
+  simulationSpeed,
   onToggleMuted,
+  onToggleSimulationSpeed,
   onOpenSeed,
   onOpenEncyclopedia,
 }: StageHudProps) {
@@ -68,6 +73,21 @@ export function StageHud({
             ) : (
               <Volume2 aria-hidden="true" size={18} />
             )}
+          </button>
+          <button
+            className={
+              simulationSpeed === 2
+                ? 'icon-button icon-button--square icon-button--fast-forward-active'
+                : 'icon-button icon-button--square'
+            }
+            type="button"
+            aria-label={
+              simulationSpeed === 2 ? '1倍速に切り替える' : '2倍速に切り替える'
+            }
+            aria-pressed={simulationSpeed === 2}
+            onClick={onToggleSimulationSpeed}
+          >
+            <FastForward aria-hidden="true" size={18} />
           </button>
           <button
             className="icon-button"

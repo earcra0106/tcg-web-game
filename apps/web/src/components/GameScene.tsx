@@ -42,6 +42,7 @@ type GameSceneProps = {
   craftableFoodIds: readonly FoodId[];
   dragPlacementTool: PlaceMachineTool | null;
   isDraggingPlacement: boolean;
+  simulationSpeed: 1 | 2;
   onModelChange: (updater: (model: EditorModel) => EditorModel) => void;
   onPlacementDrop: () => void;
   onPlaySound: (soundId: GameSoundId) => void;
@@ -86,6 +87,7 @@ export function GameScene({
   craftableFoodIds,
   dragPlacementTool,
   isDraggingPlacement,
+  simulationSpeed,
   onModelChange,
   onPlacementDrop,
   onPlaySound,
@@ -275,6 +277,7 @@ export function GameScene({
             connection={connection}
             fromMachine={fromMachine}
             toMachine={toMachine}
+            simulationSpeed={simulationSpeed}
             onPointerDown={(connectionId, event) => {
               beginPress(event, { kind: 'connection', connectionId });
             }}

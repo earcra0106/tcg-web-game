@@ -31,6 +31,7 @@ describe('GameCanvas', () => {
       craftableFoodIds: [],
       dragPlacementTool: null,
       isDraggingPlacement: false,
+      simulationSpeed: 1,
       onModelChange: vi.fn(),
       onPlacementDrop: vi.fn(),
       onPlaySound: vi.fn(),
