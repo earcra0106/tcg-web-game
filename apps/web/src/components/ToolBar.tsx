@@ -1,4 +1,4 @@
-import { Link2, MousePointer2, Trash2 } from 'lucide-react';
+import { MousePointer2, MoveUpRight, Trash2 } from 'lucide-react';
 import type { PointerEvent, ReactNode } from 'react';
 import { useRef } from 'react';
 import { FoodSprite } from './FoodSprite.tsx';
@@ -134,7 +134,7 @@ export function ModeToolBar({
         label="コンベア"
         onSelectTool={onSelectTool}
       >
-        <Link2 aria-hidden="true" size={18} />
+        <MoveUpRight aria-hidden="true" size={18} />
       </ModeToolButton>
       <ModeToolButton
         tool={{ kind: 'delete' }}
