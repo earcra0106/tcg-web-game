@@ -49,8 +49,10 @@ describe('StageHud', () => {
     );
 
     const goals = screen.getByLabelText('目標一覧');
+    expect(within(goals).getByText('10秒あたりの生産目標')).toBeInTheDocument();
     expect(within(goals).getByText('サラダ')).toBeInTheDocument();
     expect(within(goals).queryByText('ごはん')).not.toBeInTheDocument();
+    expect(within(goals).queryByText('/10秒')).not.toBeInTheDocument();
   });
 
   it('orders the current goal first and remaining goals by first appearance', () => {

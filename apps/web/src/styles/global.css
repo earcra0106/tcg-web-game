@@ -149,10 +149,22 @@ select {
   text-align: left;
 }
 
+.hud__goals-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hud__goals-title {
+  margin: 0;
+  color: #3b3028;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
 .hud__goals-toggle {
   display: grid;
   place-items: center;
-  justify-self: end;
   height: 16px;
   padding: 0;
   border: 0;
@@ -202,12 +214,6 @@ select {
   font-size: 0.84rem;
   font-weight: 800;
   white-space: nowrap;
-}
-
-.hud__goal-efficiency small {
-  margin-left: 2px;
-  color: #8a6f5b;
-  font-size: 0.68rem;
 }
 
 .icon-button {

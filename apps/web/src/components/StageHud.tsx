@@ -104,21 +104,24 @@ export function StageHud({
         </div>
       </div>
       <div className="hud__goals" aria-label="目標一覧">
-        <button
-          className="hud__goals-toggle"
-          type="button"
-          aria-expanded={areGoalsExpanded}
-          aria-label={
-            areGoalsExpanded ? '目標一覧を折りたたむ' : '目標一覧を展開する'
-          }
-          onClick={() => setAreGoalsExpanded((current) => !current)}
-        >
-          {areGoalsExpanded ? (
-            <ChevronUp size={16} />
-          ) : (
-            <ChevronDown size={16} />
-          )}
-        </button>
+        <div className="hud__goals-header">
+          <p className="hud__goals-title">10秒あたりの生産目標</p>
+          <button
+            className="hud__goals-toggle"
+            type="button"
+            aria-expanded={areGoalsExpanded}
+            aria-label={
+              areGoalsExpanded ? '目標一覧を折りたたむ' : '目標一覧を展開する'
+            }
+            onClick={() => setAreGoalsExpanded((current) => !current)}
+          >
+            {areGoalsExpanded ? (
+              <ChevronUp size={16} />
+            ) : (
+              <ChevronDown size={16} />
+            )}
+          </button>
+        </div>
         {visibleGoals.map((goal) => (
           <button
             key={goal.foodId}
@@ -136,7 +139,6 @@ export function StageHud({
             <span className="hud__goal-efficiency">
               {formatEfficiency(goal.currentEfficiency)} /{' '}
               {formatEfficiency(goal.requiredEfficiency)}
-              <small>/10秒</small>
             </span>
           </button>
         ))}
