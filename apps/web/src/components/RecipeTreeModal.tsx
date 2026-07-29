@@ -472,34 +472,40 @@ export function RecipeTreeModal({
             <X aria-hidden="true" size={18} />
           </button>
         </header>
-        <div
-          ref={viewportBodyRef}
-          className="recipe-tree-modal__body"
-          aria-label="レシピツリー表示領域"
-          onPointerDown={startPan}
-          onPointerMove={movePan}
-          onPointerUp={stopPan}
-          onPointerCancel={stopPan}
-        >
+        {targetFood.canSpawnFromStorage ? (
+          <p className="recipe-tree-modal__storage-message">
+            {targetFood.name}は倉庫から搬入できます
+          </p>
+        ) : (
           <div
-            className="recipe-tree-modal__viewport"
-            data-testid="recipe-tree-viewport"
-            style={{
-              transform: `translate(${viewport.translateX}px, ${viewport.translateY}px) scale(${viewport.scale})`,
-            }}
+            ref={viewportBodyRef}
+            className="recipe-tree-modal__body"
+            aria-label="レシピツリー表示領域"
+            onPointerDown={startPan}
+            onPointerMove={movePan}
+            onPointerUp={stopPan}
+            onPointerCancel={stopPan}
           >
-            <RecipeTreeNode
-              foodId={targetFoodId}
-              path="root"
-              recipes={recipes}
-              expandedFoodIds={expandedFoodIds}
-              expandedRecipePaths={expandedRecipePaths}
-              ancestorFoodIds={new Set()}
-              isRoot
-              onToggle={toggleRecipe}
-            />
+            <div
+              className="recipe-tree-modal__viewport"
+              data-testid="recipe-tree-viewport"
+              style={{
+                transform: `translate(${viewport.translateX}px, ${viewport.translateY}px) scale(${viewport.scale})`,
+              }}
+            >
+              <RecipeTreeNode
+                foodId={targetFoodId}
+                path="root"
+                recipes={recipes}
+                expandedFoodIds={expandedFoodIds}
+                expandedRecipePaths={expandedRecipePaths}
+                ancestorFoodIds={new Set()}
+                isRoot
+                onToggle={toggleRecipe}
+              />
+            </div>
           </div>
-        </div>
+        )}
       </section>
     </div>
   );

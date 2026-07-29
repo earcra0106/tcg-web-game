@@ -4,13 +4,15 @@ import { describe, expect, it, vi } from 'vitest';
 import { RecipeTreeModal } from './RecipeTreeModal.tsx';
 
 describe('RecipeTreeModal', () => {
-  it('shows a basic food without a processing machine or arrow', () => {
+  it('shows storage guidance without a recipe tree for a basic food', () => {
     render(<RecipeTreeModal targetFoodId="rice" onClose={vi.fn()} />);
 
     expect(
       screen.getByRole('dialog', { name: '米のレシピツリー' }),
-    ).toHaveTextContent('米');
-    expect(screen.queryByText('加熱機')).not.toBeInTheDocument();
+    ).toHaveTextContent('米は倉庫から搬入できます');
+    expect(
+      screen.queryByLabelText('レシピツリー表示領域'),
+    ).not.toBeInTheDocument();
   });
 
   it('shows a recipe with its machine and expands then collapses subrecipes', () => {
