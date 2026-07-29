@@ -406,6 +406,13 @@ select {
   margin: 0 auto;
 }
 
+.help-content__logo {
+  display: block;
+  width: min(100%, 560px);
+  height: auto;
+  margin: 0 auto;
+}
+
 .help-content section {
   display: grid;
   gap: 6px;

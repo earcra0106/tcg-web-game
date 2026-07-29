@@ -1,6 +1,11 @@
 export function HelpContent() {
   return (
     <div className="help-content">
+      <img
+        className="help-content__logo"
+        src="/assets/sprites/logo.png"
+        alt="cookers!"
+      />
       <section>
         <h3>ゲームの目的</h3>
         <p>

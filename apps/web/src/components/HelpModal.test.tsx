@@ -9,6 +9,10 @@ describe('HelpModal', () => {
     expect(screen.getByRole('dialog', { name: '遊び方' })).toHaveTextContent(
       'ゲームの目的',
     );
+    expect(screen.getByRole('img', { name: 'cookers!' })).toHaveAttribute(
+      'src',
+      '/assets/sprites/logo.png',
+    );
     expect(screen.getByText('コンベアをつなぐ')).toBeInTheDocument();
   });
 
