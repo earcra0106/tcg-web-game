@@ -391,7 +391,7 @@ function FoodCard({
           <h2>{food.name}</h2>
           <p>
             {food.canSpawnFromStorage
-              ? '倉庫から搬出できる基本素材'
+              ? '基本素材'
               : '加工食品'}
           </p>
         </div>
