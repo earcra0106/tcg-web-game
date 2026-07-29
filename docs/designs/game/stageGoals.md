@@ -21,7 +21,7 @@ seed と1始まりのステージ番号から、難易度と導入条件に応�
 
 ### number calculateRequiredEfficiency(stageNumber)（内部）
 
-`efficiencySettings.ts` の毎分基準値を使い、1〜4は `introBasePerMinute+stage*increasePerMinute`、5以降は `laterBasePerMinute+floor((stage-1)/stagesPerIncrease)*increasePerMinute`。`maximumPerMinute` を上限とし、`EFFICIENCY_UNIT_MS/60000` を乗算して10秒単位へ換算後、小数第2位へ `round(value*100)/100`。
+通常は `stageNumber*increasePerStage` として10秒あたりの要求効率を返す。ステージ番号が5の倍数の場合は、`multipleOfFive`（10秒あたり10）を返す。
 
 ### StageGoalCandidateRule getStageGoalCandidateRule(stageNumber)（内部）
 
