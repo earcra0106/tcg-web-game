@@ -154,7 +154,7 @@ select {
   display: grid;
   place-items: center;
   justify-self: end;
-  height: 0;
+  height: 16px;
   color: #8a6f5b;
 }
 
