@@ -349,7 +349,7 @@ select {
 }
 
 .recipe-tree-modal-backdrop {
-  padding: 0;
+  padding: 30px;
 }
 
 .recipe-tree-modal__header {
