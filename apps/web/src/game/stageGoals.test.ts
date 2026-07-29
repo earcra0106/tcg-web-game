@@ -73,15 +73,15 @@ describe('stage goals', () => {
     expect(hasRepeatedGoal).toBe(true);
   });
 
-  it('increases required efficiency by 5 per stage except multiples of five', () => {
+  it('requires efficiency of 5 for each normal stage', () => {
     expect(getStageGoal({ seed: 'daily', stageNumber: 1 })).toMatchObject({
       requiredEfficiency: 5,
     });
     expect(getStageGoal({ seed: 'daily', stageNumber: 4 })).toMatchObject({
-      requiredEfficiency: 20,
+      requiredEfficiency: 5,
     });
     expect(getStageGoal({ seed: 'daily', stageNumber: 6 })).toMatchObject({
-      requiredEfficiency: 30,
+      requiredEfficiency: 5,
     });
   });
 

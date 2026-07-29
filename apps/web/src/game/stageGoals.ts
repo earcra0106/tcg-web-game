@@ -25,11 +25,9 @@ function assertStageNumber(stageNumber: number) {
 }
 
 function calculateRequiredEfficiency(stageNumber: number) {
-  const { increasePerStage, multipleOfFive } = STAGE_GOAL_EFFICIENCY_SETTINGS;
+  const { requiredPerStage, multipleOfFive } = STAGE_GOAL_EFFICIENCY_SETTINGS;
 
-  return stageNumber % 5 === 0
-    ? multipleOfFive
-    : stageNumber * increasePerStage;
+  return stageNumber % 5 === 0 ? multipleOfFive : requiredPerStage;
 }
 
 function getStageGoalCandidateRule(stageNumber: number) {
