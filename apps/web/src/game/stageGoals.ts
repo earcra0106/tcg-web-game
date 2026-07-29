@@ -50,19 +50,22 @@ function calculateRequiredEfficiency(stageNumber: number) {
 }
 
 function getStageGoalCandidateRule(stageNumber: number) {
-  if (stageNumber === 1) {
+  if (stageNumber === 1 || stageNumber === 2) {
     return {
       difficulties: [1] as const,
       requiresSingleStorageIngredient: true,
+      excludesSingleStorageIngredient: false,
     };
   }
 
   const introDifficulties: Partial<Record<number, FoodDifficulty>> = {
-    2: 1,
-    3: 2,
-    4: 1,
-    5: 2,
-    6: 3,
+    3: 1,
+    4: 2,
+    5: 1,
+    6: 2,
+    7: 3,
+    8: 2,
+    9: 3,
   };
   const introDifficulty = introDifficulties[stageNumber];
 
@@ -70,6 +73,7 @@ function getStageGoalCandidateRule(stageNumber: number) {
     return {
       difficulties: [introDifficulty] as const,
       requiresSingleStorageIngredient: false,
+      excludesSingleStorageIngredient: stageNumber === 3,
     };
   }
 
@@ -78,6 +82,7 @@ function getStageGoalCandidateRule(stageNumber: number) {
       ? [3]
       : [1, 2, 3]) as readonly FoodDifficulty[],
     requiresSingleStorageIngredient: false,
+    excludesSingleStorageIngredient: false,
   };
 }
 
@@ -109,7 +114,9 @@ function selectRecipe({
       rule.difficulties.includes(recipe.difficulty) &&
       !excludedFoodIds.has(recipe.outputFoodId) &&
       (!rule.requiresSingleStorageIngredient ||
-        isSingleStorageIngredientRecipe(recipe)),
+        isSingleStorageIngredientRecipe(recipe)) &&
+      (!rule.excludesSingleStorageIngredient ||
+        !isSingleStorageIngredientRecipe(recipe)),
   );
   const recipe = createSeededRandom(seed, stageNumber).pick(candidates);
 
@@ -154,10 +161,10 @@ export function getStageGoal({
       seed,
       stageNumber: currentStageNumber,
       recipes: servableRecipes,
-      excludedFoodIds: currentStageNumber <= 6 ? selectedFoodIds : new Set(),
+      excludedFoodIds: currentStageNumber <= 9 ? selectedFoodIds : new Set(),
     });
 
-    if (currentStageNumber <= 6) {
+    if (currentStageNumber <= 9) {
       selectedFoodIds.add(recipe.outputFoodId);
     }
 
