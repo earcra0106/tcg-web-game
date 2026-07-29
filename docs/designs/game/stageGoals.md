@@ -21,7 +21,7 @@ seed と1始まりのステージ番号から、難易度と導入条件に応�
 
 ### number calculateRequiredEfficiency(stageNumber)（内部）
 
-通常は `stageNumber*increasePerStage` として10秒あたりの要求効率を返す。ステージ番号が5の倍数の場合は、`multipleOfFive`（10秒あたり10）を返す。
+通常は `requiredPerStage`（10秒あたり5）を返す。ステージ番号が5の倍数の場合は、`multipleOfFive`（10秒あたり10）を返す。過去ステージの要求効率は累積目標判定で維持する。
 
 ### StageGoalCandidateRule getStageGoalCandidateRule(stageNumber)（内部）
 
