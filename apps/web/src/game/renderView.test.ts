@@ -8,6 +8,7 @@ import {
   createRenderView,
   createMachineHeldItemViews,
   createStageHudView,
+  DEFAULT_EFFICIENCY_WINDOW_MS,
   interpolateWorldPosition,
 } from './renderView.ts';
 import { createInitialSimulationState } from './simulation.ts';
@@ -284,6 +285,24 @@ describe('render view', () => {
       }),
     ]);
     expect(hud.isCleared).toBe(true);
+  });
+
+  it('uses the latest ten seconds for the default efficiency window', () => {
+    const hud = createStageHudView({
+      stageNumber: 1,
+      goals: [goal(1, 'toast', 1)],
+      history: [
+        { itemId: 'old-toast', foodId: 'toast', shippedAtMs: 40_000 },
+        { itemId: 'recent-toast', foodId: 'toast', shippedAtMs: 55_000 },
+      ],
+      nowMs: 60_000,
+    });
+
+    expect(DEFAULT_EFFICIENCY_WINDOW_MS).toBe(10_000);
+    expect(hud.goals[0]).toMatchObject({
+      currentEfficiency: 1,
+      isCleared: true,
+    });
   });
 
   it('marks cumulative goals uncleared when any target is below requirement', () => {

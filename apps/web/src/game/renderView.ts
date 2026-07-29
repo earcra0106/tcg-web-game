@@ -18,9 +18,10 @@ import {
 } from './shipping.ts';
 import type { SimulationState } from './simulation.ts';
 import { getStageGoal, type StageGoal } from './stageGoals.ts';
+import { EFFICIENCY_UNIT_MS } from './efficiencySettings.ts';
 import type { GameState } from './gameState.ts';
 
-export const DEFAULT_EFFICIENCY_WINDOW_MS = 60_000;
+export const DEFAULT_EFFICIENCY_WINDOW_MS = EFFICIENCY_UNIT_MS;
 
 export type RenderMachineView = {
   machine: PlacedMachine;

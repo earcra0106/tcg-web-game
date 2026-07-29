@@ -6,7 +6,7 @@
 
 ## 型・定数仕様
 
-- `DEFAULT_EFFICIENCY_WINDOW_MS=60000`。
+- `DEFAULT_EFFICIENCY_WINDOW_MS=10000`（10秒）。
 - 機械 view は machine、nullableな稼働進捗、出力待ちフラグ、heldItems。稼働進捗は `waiting|processing` と0〜1の値を持つ。
 - held item は id/foodId/spriteId、status=`input|processing`、nullable progress。
 - 搬送 item view は world position を持つ。
@@ -37,7 +37,7 @@ undefined は空。inputBuffer を createdAtMs 降順（新しい順）にコピ
 
 ### StageHudView createStageHudView(input)
 
-既定 window=60000。goals を順に FoodId で Map 集約する。初出 ID は history から現在効率を1回計算し、要求値と比較。重複 ID は stageNumbers 末尾追加、requiredEfficiency を加算し、初出時に計算した currentEfficiency と合算要求を比較する。Map 挿入順で goals を返す。全体 clear は goal が1件以上かつ全件 clear（空は false）。stageNumber は入力値をそのまま返す。
+既定 window=10000（10秒）。goals を順に FoodId で Map 集約する。初出 ID は history から現在効率を1回計算し、要求値と比較。重複 ID は stageNumbers 末尾追加、requiredEfficiency を加算し、初出時に計算した currentEfficiency と合算要求を比較する。Map 挿入順で goals を返す。全体 clear は goal が1件以上かつ全件 clear（空は false）。stageNumber は入力値をそのまま返す。
 
 ### RenderView createRenderView(input)
 
