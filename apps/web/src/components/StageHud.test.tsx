@@ -42,6 +42,7 @@ describe('StageHud', () => {
         simulationSpeed={1}
         onToggleMuted={vi.fn()}
         onToggleSimulationSpeed={vi.fn()}
+        onOpenHelp={vi.fn()}
         onOpenSeed={vi.fn()}
         onOpenEncyclopedia={vi.fn()}
         onOpenRecipeTree={vi.fn()}
@@ -63,6 +64,7 @@ describe('StageHud', () => {
         simulationSpeed={1}
         onToggleMuted={vi.fn()}
         onToggleSimulationSpeed={vi.fn()}
+        onOpenHelp={vi.fn()}
         onOpenSeed={vi.fn()}
         onOpenEncyclopedia={vi.fn()}
         onOpenRecipeTree={vi.fn()}
@@ -78,7 +80,28 @@ describe('StageHud', () => {
     expect(goals).toHaveTextContent(/サラダ.*ごはん.*トースト/);
   });
 
-  it('opens the seed value controls from the button before the volume button', () => {
+  it('opens the help button before the seed value button', () => {
+    const onOpenHelp = vi.fn();
+    render(
+      <StageHud
+        hud={hud}
+        isMuted={false}
+        simulationSpeed={1}
+        onToggleMuted={vi.fn()}
+        onToggleSimulationSpeed={vi.fn()}
+        onOpenHelp={onOpenHelp}
+        onOpenSeed={vi.fn()}
+        onOpenEncyclopedia={vi.fn()}
+        onOpenRecipeTree={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: '遊び方を開く' }));
+
+    expect(onOpenHelp).toHaveBeenCalledOnce();
+  });
+
+  it('opens the seed value controls', () => {
     const onOpenSeed = vi.fn();
     render(
       <StageHud
@@ -87,6 +110,7 @@ describe('StageHud', () => {
         simulationSpeed={1}
         onToggleMuted={vi.fn()}
         onToggleSimulationSpeed={vi.fn()}
+        onOpenHelp={vi.fn()}
         onOpenSeed={onOpenSeed}
         onOpenEncyclopedia={vi.fn()}
         onOpenRecipeTree={vi.fn()}
@@ -107,6 +131,7 @@ describe('StageHud', () => {
         simulationSpeed={1}
         onToggleMuted={vi.fn()}
         onToggleSimulationSpeed={onToggleSimulationSpeed}
+        onOpenHelp={vi.fn()}
         onOpenSeed={vi.fn()}
         onOpenEncyclopedia={vi.fn()}
         onOpenRecipeTree={vi.fn()}
@@ -123,6 +148,7 @@ describe('StageHud', () => {
         simulationSpeed={2}
         onToggleMuted={vi.fn()}
         onToggleSimulationSpeed={onToggleSimulationSpeed}
+        onOpenHelp={vi.fn()}
         onOpenSeed={vi.fn()}
         onOpenEncyclopedia={vi.fn()}
         onOpenRecipeTree={vi.fn()}
@@ -143,6 +169,7 @@ describe('StageHud', () => {
         simulationSpeed={1}
         onToggleMuted={vi.fn()}
         onToggleSimulationSpeed={vi.fn()}
+        onOpenHelp={vi.fn()}
         onOpenSeed={vi.fn()}
         onOpenEncyclopedia={vi.fn()}
         onOpenRecipeTree={onOpenRecipeTree}

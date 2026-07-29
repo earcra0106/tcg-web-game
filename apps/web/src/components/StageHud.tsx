@@ -4,6 +4,7 @@ import {
   ChevronUp,
   Dice5,
   FastForward,
+  HelpCircle,
   Volume2,
   VolumeX,
 } from 'lucide-react';
@@ -17,6 +18,7 @@ type StageHudProps = {
   simulationSpeed: 1 | 2;
   onToggleMuted: () => void;
   onToggleSimulationSpeed: () => void;
+  onOpenHelp: () => void;
   onOpenSeed: () => void;
   onOpenEncyclopedia: () => void;
   onOpenRecipeTree: (foodId: FoodId) => void;
@@ -32,6 +34,7 @@ export function StageHud({
   simulationSpeed,
   onToggleMuted,
   onToggleSimulationSpeed,
+  onOpenHelp,
   onOpenSeed,
   onOpenEncyclopedia,
   onOpenRecipeTree,
@@ -57,6 +60,14 @@ export function StageHud({
           </p>
         </div>
         <div className="hud__actions">
+          <button
+            className="icon-button icon-button--square"
+            type="button"
+            aria-label="遊び方を開く"
+            onClick={onOpenHelp}
+          >
+            <HelpCircle aria-hidden="true" size={18} />
+          </button>
           <button
             className="icon-button icon-button--square"
             type="button"

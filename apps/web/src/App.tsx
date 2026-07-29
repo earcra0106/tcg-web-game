@@ -2,6 +2,7 @@ import { ChevronLeft } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FoodSprite } from './components/FoodSprite.tsx';
 import { GameCanvas } from './components/GameCanvas.tsx';
+import { HelpModal } from './components/HelpModal.tsx';
 import { RecipeTreeModal } from './components/RecipeTreeModal.tsx';
 import { SeedModal } from './components/SeedModal.tsx';
 import { StageHud } from './components/StageHud.tsx';
@@ -44,6 +45,7 @@ export function App() {
   const [isMuted, setIsMuted] = useState(false);
   const [simulationSpeed, setSimulationSpeed] = useState<1 | 2>(1);
   const [seed, setSeed] = useState(() => createDailySeed());
+  const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [isSeedModalOpen, setIsSeedModalOpen] = useState(false);
   const [recipeTreeFoodId, setRecipeTreeFoodId] = useState<FoodId | null>(null);
   const [placementDrag, setPlacementDrag] = useState<PlacementDragState | null>(
@@ -252,6 +254,7 @@ export function App() {
         hud={renderView.hud}
         isMuted={isMuted}
         simulationSpeed={simulationSpeed}
+        onOpenHelp={() => setIsHelpModalOpen(true)}
         onOpenSeed={() => setIsSeedModalOpen(true)}
         onToggleMuted={() => {
           const nextMuted = !isMuted;
@@ -264,6 +267,9 @@ export function App() {
         onOpenEncyclopedia={() => setScreen('encyclopedia')}
         onOpenRecipeTree={setRecipeTreeFoodId}
       />
+      {isHelpModalOpen ? (
+        <HelpModal onClose={() => setIsHelpModalOpen(false)} />
+      ) : null}
       {isSeedModalOpen ? (
         <SeedModal
           currentSeed={seed}
