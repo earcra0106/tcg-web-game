@@ -188,7 +188,7 @@ function RecipeTreeNode({
   const machine = machineId === null ? null : getMachineInfo(machineId);
   const nextAncestorFoodIds = new Set(ancestorFoodIds).add(foodId);
 
-  return (
+  const recipeTree = (
     <div className="recipe-tree__recipe">
       <div
         className="recipe-tree__ingredients"
@@ -223,6 +223,14 @@ function RecipeTreeNode({
         isExpanded={expandedFoodIds.has(foodId)}
         onToggle={onToggle}
       />
+    </div>
+  );
+
+  return isRoot ? (
+    recipeTree
+  ) : (
+    <div className="recipe-tree__branch recipe-tree__branch--expanded">
+      {recipeTree}
     </div>
   );
 }
@@ -439,7 +447,7 @@ export function RecipeTreeModal({
 
   return (
     <div
-      className="modal-backdrop"
+      className="modal-backdrop recipe-tree-modal-backdrop"
       role="presentation"
       onPointerDown={(event) => {
         if (event.target === event.currentTarget) {
