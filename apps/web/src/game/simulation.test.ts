@@ -74,7 +74,7 @@ describe('simulation', () => {
     });
   });
 
-  it('keeps conveyor items waiting when the target cannot accept them', () => {
+  it('discards the oldest input when a full target receives food', () => {
     const heater = machine('heater-1', 'heater', 1);
     const fullRuntime = {
       ...createMachineRuntime(heater),
@@ -116,14 +116,15 @@ describe('simulation', () => {
         connection('connection-2', 'heater-1', 'shipping-1'),
       ],
       deltaMs: 600,
+      machineConfigs: {
+        'heater-1': { recipeId: 'toast' },
+      },
     });
 
-    expect(nextState.items).toEqual([
-      expect.objectContaining({
-        id: 'item-1',
-        progress: 1,
-      }),
-    ]);
+    expect(nextState.items).toEqual([]);
+    expect(
+      nextState.machineRuntimes['heater-1']?.inputBuffer.map((item) => item.id),
+    ).toEqual(['held-1', 'held-2', 'held-3', 'held-4', 'held-5', 'item-1']);
   });
 
   it('moves conveyor items at a constant speed regardless of distance', () => {

@@ -25,11 +25,11 @@
 
 ### boolean canAcceptMachineInput(runtime)
 
-storage は false。shipping/trash-bin は常に true。他は input length<6。
+storage は false。その他の機械は常に true。満杯時も入力を受け入れ、最古の食品を削除する。
 
 ### MachineRuntime receiveMachineInput(runtime, item)
 
-shipping/trash-bin は消費扱いで元 runtime を返す。他は末尾に item を追加して最後の6件だけを保持するため、満杯時は最古が落ちる。capacity 判定は呼出側責務。
+shipping/trash-bin は消費扱いで元 runtime を返す。他は末尾に item を追加して最後の6件だけを保持するため、満杯時は最古が落ちる。
 
 ### boolean isSpawnableFood(foodId)（内部）
 
