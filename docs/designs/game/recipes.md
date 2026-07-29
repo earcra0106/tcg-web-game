@@ -16,6 +16,10 @@
 
 上記 map の値を返す。
 
+### MachineId | null getMachineForProcess(process)
+
+加工種別に対応する最初の加工機IDを返す。対応がなければ null。
+
 ### FoodId[] normalizeFoodIds(foodIds)
 
 新配列を作り `localeCompare` で昇順ソートする。元配列は変更しない。
@@ -35,6 +39,10 @@ canBeServed が true のもののみ。
 ### FoodRecipe | null findRecipeByOutput(outputFoodId, recipes = getRecipes())
 
 outputFoodId 一致の最初、なければ null。
+
+### FoodId[] getRecipeIngredientDescendantFoodIds(outputFoodId, recipes = getRecipes())
+
+出力食品のレシピ材料を深さ優先でたどり、子孫食品IDを登録順で返す。同じ食品IDは一度だけ返し、循環レシピでも終了する。
 
 ### FoodRecipe[] findRecipesByProcess(process, recipes = getRecipes())
 

@@ -1,19 +1,15 @@
 import { ChevronLeft } from 'lucide-react';
-import type { PointerEvent } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FoodSprite } from './components/FoodSprite.tsx';
 import { GameCanvas } from './components/GameCanvas.tsx';
+import { RecipeTreeModal } from './components/RecipeTreeModal.tsx';
 import { SeedModal } from './components/SeedModal.tsx';
 import { StageHud } from './components/StageHud.tsx';
 import { ModeToolBar, ToolBar } from './components/ToolBar.tsx';
 import { createGameAudioController, type GameSoundId } from './game/audio.ts';
 import { createInitialEditorModel } from './game/editorActions.ts';
 import { selectEditorTool, type EditorTool } from './game/editorState.ts';
-import {
-  foodInfos,
-  getIngredientNames,
-  getProcessedIntoNames,
-} from './game/foods.ts';
+import { foodInfos } from './game/foods.ts';
 import type { FoodId } from './game/food.ts';
 import { createRenderView } from './game/renderView.ts';
 import {
@@ -49,6 +45,7 @@ export function App() {
   const [simulationSpeed, setSimulationSpeed] = useState<1 | 2>(1);
   const [seed, setSeed] = useState(() => createDailySeed());
   const [isSeedModalOpen, setIsSeedModalOpen] = useState(false);
+  const [recipeTreeFoodId, setRecipeTreeFoodId] = useState<FoodId | null>(null);
   const [placementDrag, setPlacementDrag] = useState<PlacementDragState | null>(
     null,
   );
@@ -214,7 +211,14 @@ export function App() {
   }, [playSound, renderView.hud.isCleared, renderView.hud.stageNumber]);
 
   if (screen === 'encyclopedia') {
-    return <FoodEncyclopedia onBack={() => setScreen('game')} />;
+    return (
+      <FoodEncyclopedia
+        recipeTreeFoodId={recipeTreeFoodId}
+        onBack={() => setScreen('game')}
+        onCloseRecipeTree={() => setRecipeTreeFoodId(null)}
+        onOpenRecipeTree={setRecipeTreeFoodId}
+      />
+    );
   }
 
   const retryWithSeed = (nextSeed: string) => {
@@ -258,12 +262,20 @@ export function App() {
           setSimulationSpeed((current) => (current === 1 ? 2 : 1));
         }}
         onOpenEncyclopedia={() => setScreen('encyclopedia')}
+        onOpenRecipeTree={setRecipeTreeFoodId}
       />
       {isSeedModalOpen ? (
         <SeedModal
           currentSeed={seed}
           onClose={() => setIsSeedModalOpen(false)}
           onRetry={retryWithSeed}
+        />
+      ) : null}
+      {recipeTreeFoodId !== null ? (
+        <RecipeTreeModal
+          key={recipeTreeFoodId}
+          targetFoodId={recipeTreeFoodId}
+          onClose={() => setRecipeTreeFoodId(null)}
         />
       ) : null}
       <ToolBar
@@ -306,7 +318,17 @@ export function App() {
   );
 }
 
-function FoodEncyclopedia({ onBack }: { onBack: () => void }) {
+function FoodEncyclopedia({
+  recipeTreeFoodId,
+  onBack,
+  onCloseRecipeTree,
+  onOpenRecipeTree,
+}: {
+  recipeTreeFoodId: FoodId | null;
+  onBack: () => void;
+  onCloseRecipeTree: () => void;
+  onOpenRecipeTree: (foodId: FoodId) => void;
+}) {
   return (
     <main className="app-shell app-shell--panel">
       <header className="encyclopedia-header">
@@ -323,62 +345,43 @@ function FoodEncyclopedia({ onBack }: { onBack: () => void }) {
       </header>
       <section className="food-grid" aria-label="食べもの一覧">
         {foodInfos.map((food) => (
-          <FoodCard key={food.id} foodId={food.id} />
+          <FoodCard
+            key={food.id}
+            foodId={food.id}
+            onOpenRecipeTree={onOpenRecipeTree}
+          />
         ))}
       </section>
+      {recipeTreeFoodId !== null ? (
+        <RecipeTreeModal
+          key={recipeTreeFoodId}
+          targetFoodId={recipeTreeFoodId}
+          onClose={onCloseRecipeTree}
+        />
+      ) : null}
     </main>
   );
 }
 
-function FoodCard({ foodId }: { foodId: FoodId }) {
+function FoodCard({
+  foodId,
+  onOpenRecipeTree,
+}: {
+  foodId: FoodId;
+  onOpenRecipeTree: (foodId: FoodId) => void;
+}) {
   const food = foodInfos.find((item) => item.id === foodId);
-  const [isDetailVisible, setIsDetailVisible] = useState(false);
-  const [detailPosition, setDetailPosition] = useState({ x: 0, y: 0 });
-  const longPressTimerRef = useRef<number | null>(null);
 
   if (!food) {
     return null;
   }
 
-  const ingredientNames = getIngredientNames(food);
-  const processedIntoNames = getProcessedIntoNames(food.id);
-
-  const clearLongPress = () => {
-    if (longPressTimerRef.current !== null) {
-      window.clearTimeout(longPressTimerRef.current);
-      longPressTimerRef.current = null;
-    }
-  };
-
-  const updateDetailPosition = (event: PointerEvent<HTMLElement>) => {
-    setDetailPosition({ x: event.clientX, y: event.clientY });
-  };
-
   return (
-    <article
+    <button
       className="food-card"
-      onPointerEnter={(event) => {
-        updateDetailPosition(event);
-        setIsDetailVisible(true);
-      }}
-      onPointerMove={updateDetailPosition}
-      onPointerLeave={() => {
-        clearLongPress();
-        setIsDetailVisible(false);
-      }}
-      onPointerDown={(event) => {
-        if (event.pointerType === 'mouse') {
-          return;
-        }
-
-        clearLongPress();
-        updateDetailPosition(event);
-        longPressTimerRef.current = window.setTimeout(() => {
-          setIsDetailVisible(true);
-        }, 450);
-      }}
-      onPointerUp={clearLongPress}
-      onPointerCancel={clearLongPress}
+      type="button"
+      aria-label={`${food.name}のレシピツリーを開く`}
+      onClick={() => onOpenRecipeTree(food.id)}
     >
       <div className="food-card__sprite" aria-hidden="true">
         <FoodSprite spriteId={food.spriteId} label={food.name} />
@@ -393,32 +396,6 @@ function FoodCard({ foodId }: { foodId: FoodId }) {
           </p>
         </div>
       </div>
-      {isDetailVisible ? (
-        <div
-          className="food-card__detail"
-          role="status"
-          style={{ left: detailPosition.x, top: detailPosition.y }}
-        >
-          <dl>
-            <div>
-              <dt>加工元</dt>
-              <dd>
-                {ingredientNames.length > 0
-                  ? ingredientNames.join('、')
-                  : 'なし'}
-              </dd>
-            </div>
-            <div>
-              <dt>加工先</dt>
-              <dd>
-                {processedIntoNames.length > 0
-                  ? processedIntoNames.join('、')
-                  : 'なし'}
-              </dd>
-            </div>
-          </dl>
-        </div>
-      ) : null}
-    </article>
+    </button>
   );
 }

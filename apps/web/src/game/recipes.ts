@@ -36,6 +36,14 @@ export function getProcessForMachine(machineId: MachineId) {
   return machineProcessMap[machineId];
 }
 
+export function getMachineForProcess(process: CookingProcess) {
+  return (
+    (Object.entries(machineProcessMap).find(
+      ([, machineProcess]) => machineProcess === process,
+    )?.[0] as MachineId | undefined) ?? null
+  );
+}
+
 export function normalizeFoodIds(foodIds: readonly FoodId[]) {
   return [...foodIds].sort((left, right) => left.localeCompare(right));
 }
@@ -81,6 +89,30 @@ export function findRecipeByOutput(
   recipes = getRecipes(),
 ) {
   return recipes.find((recipe) => recipe.outputFoodId === outputFoodId) ?? null;
+}
+
+export function getRecipeIngredientDescendantFoodIds(
+  outputFoodId: FoodId,
+  recipes = getRecipes(),
+) {
+  const descendantFoodIds = new Set<FoodId>();
+
+  const visit = (foodId: FoodId) => {
+    const recipe = findRecipeByOutput(foodId, recipes);
+
+    recipe?.inputFoodIds.forEach((ingredientId) => {
+      if (descendantFoodIds.has(ingredientId)) {
+        return;
+      }
+
+      descendantFoodIds.add(ingredientId);
+      visit(ingredientId);
+    });
+  };
+
+  visit(outputFoodId);
+
+  return [...descendantFoodIds];
 }
 
 export function findRecipesByProcess(

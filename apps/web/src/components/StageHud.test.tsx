@@ -44,10 +44,11 @@ describe('StageHud', () => {
         onToggleSimulationSpeed={vi.fn()}
         onOpenSeed={vi.fn()}
         onOpenEncyclopedia={vi.fn()}
+        onOpenRecipeTree={vi.fn()}
       />,
     );
 
-    const goals = screen.getByRole('button', { name: '目標一覧を展開する' });
+    const goals = screen.getByLabelText('目標一覧');
     expect(within(goals).getByText('サラダ')).toBeInTheDocument();
     expect(within(goals).queryByText('ごはん')).not.toBeInTheDocument();
   });
@@ -62,12 +63,13 @@ describe('StageHud', () => {
         onToggleSimulationSpeed={vi.fn()}
         onOpenSeed={vi.fn()}
         onOpenEncyclopedia={vi.fn()}
+        onOpenRecipeTree={vi.fn()}
       />,
     );
 
     fireEvent.click(screen.getByRole('button', { name: '目標一覧を展開する' }));
 
-    const goals = screen.getByRole('button', { name: '目標一覧を折りたたむ' });
+    const goals = screen.getByLabelText('目標一覧');
     expect(within(goals).getAllByText(/サラダ|ごはん|トースト/)).toHaveLength(
       3,
     );
@@ -85,6 +87,7 @@ describe('StageHud', () => {
         onToggleSimulationSpeed={vi.fn()}
         onOpenSeed={onOpenSeed}
         onOpenEncyclopedia={vi.fn()}
+        onOpenRecipeTree={vi.fn()}
       />,
     );
 
@@ -104,6 +107,7 @@ describe('StageHud', () => {
         onToggleSimulationSpeed={onToggleSimulationSpeed}
         onOpenSeed={vi.fn()}
         onOpenEncyclopedia={vi.fn()}
+        onOpenRecipeTree={vi.fn()}
       />,
     );
 
@@ -119,11 +123,34 @@ describe('StageHud', () => {
         onToggleSimulationSpeed={onToggleSimulationSpeed}
         onOpenSeed={vi.fn()}
         onOpenEncyclopedia={vi.fn()}
+        onOpenRecipeTree={vi.fn()}
       />,
     );
 
     expect(
       screen.getByRole('button', { name: '1倍速に切り替える' }),
     ).toHaveClass('icon-button--fast-forward-active');
+  });
+
+  it('opens the recipe tree from a stage goal card', () => {
+    const onOpenRecipeTree = vi.fn();
+    render(
+      <StageHud
+        hud={hud}
+        isMuted={false}
+        simulationSpeed={1}
+        onToggleMuted={vi.fn()}
+        onToggleSimulationSpeed={vi.fn()}
+        onOpenSeed={vi.fn()}
+        onOpenEncyclopedia={vi.fn()}
+        onOpenRecipeTree={onOpenRecipeTree}
+      />,
+    );
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'サラダのレシピツリーを開く' }),
+    );
+
+    expect(onOpenRecipeTree).toHaveBeenCalledWith('salad');
   });
 });
