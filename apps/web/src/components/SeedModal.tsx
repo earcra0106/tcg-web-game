@@ -103,7 +103,6 @@ export function SeedModal({ currentSeed, onClose, onRetry }: SeedModalProps) {
               className="seed-modal__input"
               type="text"
               autoComplete="off"
-              autoFocus
               value={seedInput}
               placeholder="シード値を入力(空ならランダムシード)"
               aria-invalid={!isSeedInputValid}
