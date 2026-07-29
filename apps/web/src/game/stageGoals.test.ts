@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { getFoodInfo } from './foods.ts';
+import { getRecipes } from './recipes.ts';
 import { getStageGoal } from './stageGoals.ts';
 
 describe('stage goals', () => {
@@ -8,29 +10,48 @@ describe('stage goals', () => {
     );
   });
 
-  it('uses fixed introductory goals from easy recipes', () => {
-    expect(
-      [1, 2, 3, 4].map((stageNumber) =>
-        getStageGoal({ seed: 'daily', stageNumber }),
-      ),
-    ).toEqual([
-      expect.objectContaining({
-        targetFoodId: 'cooked-rice',
-        difficulty: 1,
-      }),
-      expect.objectContaining({
-        targetFoodId: 'toast',
-        difficulty: 1,
-      }),
-      expect.objectContaining({
-        targetFoodId: 'salad',
-        difficulty: 1,
-      }),
-      expect.objectContaining({
-        targetFoodId: 'potato-salad',
-        difficulty: 1,
-      }),
-    ]);
+  it('uses a single storage ingredient recipe for stage 1', () => {
+    const goal = getStageGoal({ seed: 'daily', stageNumber: 1 });
+    const recipe = getRecipes().find(
+      (candidate) => candidate.outputFoodId === goal.targetFoodId,
+    );
+
+    expect(goal.difficulty).toBe(1);
+    expect(recipe?.inputFoodIds).toHaveLength(1);
+    expect(getFoodInfo(recipe?.inputFoodIds[0] ?? '')?.process).toBeNull();
+  });
+
+  it('uses the specified difficulties without repeats through stage 6', () => {
+    const goals = Array.from({ length: 6 }, (_, index) =>
+      getStageGoal({ seed: 'daily', stageNumber: index + 1 }),
+    );
+
+    expect(goals.map((goal) => goal.difficulty)).toEqual([1, 1, 2, 1, 2, 3]);
+    expect(new Set(goals.map((goal) => goal.targetFoodId)).size).toBe(6);
+  });
+
+  it('uses difficulty 3 for every third stage after stage 6', () => {
+    expect(getStageGoal({ seed: 'daily', stageNumber: 9 }).difficulty).toBe(3);
+    expect(getStageGoal({ seed: 'daily', stageNumber: 12 }).difficulty).toBe(3);
+  });
+
+  it('allows stage 7 and later goals to repeat an earlier food', () => {
+    const hasRepeatedGoal = Array.from({ length: 100 }, (_, index) => {
+      const seed = `repeat-${index}`;
+      const earlierFoodIds = new Set(
+        Array.from(
+          { length: 6 },
+          (_, stageIndex) =>
+            getStageGoal({ seed, stageNumber: stageIndex + 1 }).targetFoodId,
+        ),
+      );
+
+      return earlierFoodIds.has(
+        getStageGoal({ seed, stageNumber: 7 }).targetFoodId,
+      );
+    }).some(Boolean);
+
+    expect(hasRepeatedGoal).toBe(true);
   });
 
   it('raises required efficiency as stages progress', () => {

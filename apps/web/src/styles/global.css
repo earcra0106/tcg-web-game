@@ -233,6 +233,95 @@ select {
   padding: 0;
 }
 
+.icon-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.modal-backdrop {
+  position: absolute;
+  z-index: 10;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgb(59 48 40 / 0.36);
+}
+
+.seed-modal {
+  width: min(440px, 100%);
+  padding: 18px;
+  border: 1px solid rgb(190 150 111 / 0.35);
+  border-radius: 12px;
+  background: #fffdf9;
+  box-shadow: 0 24px 60px rgb(59 48 40 / 0.28);
+}
+
+.seed-modal__header,
+.seed-modal__field-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.seed-modal__header {
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.seed-modal__header h2 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.seed-modal form {
+  display: grid;
+  gap: 8px;
+}
+
+.seed-modal__label {
+  margin-top: 8px;
+  color: #8a6f5b;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.seed-modal__current-seed,
+.seed-modal__input {
+  min-width: 0;
+  min-height: 42px;
+  flex: 1;
+  border: 1px solid rgb(190 150 111 / 0.4);
+  border-radius: 8px;
+  background: #fffdf9;
+  color: #3b3028;
+  font: inherit;
+}
+
+.seed-modal__current-seed {
+  display: grid;
+  place-items: center;
+  padding: 0 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.78rem;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.seed-modal__input {
+  padding: 0 10px;
+}
+
+.seed-modal__input[aria-invalid='true'] {
+  border-color: #b75d5d;
+}
+
+.seed-modal__error {
+  margin: 0;
+  color: #b75d5d;
+  font-size: 0.75rem;
+}
+
 .encyclopedia-header {
   display: grid;
   grid-template-columns: auto 1fr;
