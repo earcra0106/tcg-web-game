@@ -36,6 +36,22 @@ describe('RecipeTreeModal', () => {
     expect(screen.queryByText('トマト')).not.toBeInTheDocument();
   });
 
+  it('highlights ingredient columns only for recipes with multiple ingredients', () => {
+    const { rerender } = render(
+      <RecipeTreeModal targetFoodId="salad" onClose={vi.fn()} />,
+    );
+
+    expect(screen.getByLabelText('サラダの材料')).toHaveClass(
+      'recipe-tree__ingredients--multiple',
+    );
+
+    rerender(<RecipeTreeModal targetFoodId="toast" onClose={vi.fn()} />);
+
+    expect(screen.getByLabelText('トーストの材料')).not.toHaveClass(
+      'recipe-tree__ingredients--multiple',
+    );
+  });
+
   it('keeps the root recipe expanded during Strict Mode double rendering', () => {
     render(
       <StrictMode>

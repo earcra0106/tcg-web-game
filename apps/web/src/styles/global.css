@@ -520,6 +520,12 @@ select {
   gap: 16px;
 }
 
+.recipe-tree__ingredients--multiple {
+  padding: 10px;
+  border-radius: 10px;
+  background: rgb(245 158 73 / 0.16);
+}
+
 .recipe-tree__machine,
 .recipe-tree__food {
   display: grid;
