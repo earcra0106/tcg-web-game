@@ -607,7 +607,7 @@ select {
   display: grid;
   grid-template-columns: repeat(auto-fit, 80px);
   justify-content: space-between;
-  column-gap: 14px;
+  column-gap: 7px;
   row-gap: 14px;
   max-width: 1120px;
   margin: 0 auto;
