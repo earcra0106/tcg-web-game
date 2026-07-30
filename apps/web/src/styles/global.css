@@ -74,35 +74,18 @@ button:not(:disabled):active {
   left: 16px;
   right: 16px;
   display: grid;
+  grid-template-areas: 'goals header';
+  grid-template-columns: minmax(0, 320px) max-content;
+  justify-content: space-between;
   gap: 10px;
   pointer-events: none;
 }
 
-.hud__label {
-  margin: 0;
-  color: #3b3028;
-  font-size: 0.95rem;
-  font-weight: 700;
-}
-
 .hud__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.hud__stage-card {
+  grid-area: header;
   display: flex;
   align-items: center;
   gap: 10px;
-  min-height: 42px;
-  padding: 0 14px;
-  border: 1px solid rgb(190 150 111 / 0.26);
-  border-radius: 8px;
-  background: rgb(255 253 249 / 0.82);
-  backdrop-filter: blur(12px);
-  box-shadow: 0 10px 24px rgb(92 64 42 / 0.12);
 }
 
 .hud__actions {
@@ -113,39 +96,8 @@ button:not(:disabled):active {
   pointer-events: auto;
 }
 
-.hud__status {
-  margin: 0;
-  color: #6b7f52;
-  font-size: 0.78rem;
-  font-weight: 700;
-}
-
-.hud__stats {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  margin: 0;
-}
-
-.hud__stats div {
-  min-width: 0;
-}
-
-.hud__stats dt {
-  color: #8a6f5b;
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.hud__stats dd {
-  margin: 2px 0 0;
-  overflow-wrap: anywhere;
-  color: #3b3028;
-  font-size: 0.82rem;
-}
-
 .hud__goals {
+  grid-area: goals;
   display: grid;
   gap: 8px;
   width: min(320px, calc(100vw - 32px));
@@ -184,6 +136,11 @@ button.hud__goals-header:not(:disabled):active {
   color: #3b3028;
   font-size: 0.82rem;
   font-weight: 800;
+}
+
+.hud__goals-title span {
+  color: #8a6f5b;
+  font-weight: 700;
 }
 
 .hud__goals-toggle {
@@ -1063,10 +1020,6 @@ button.hud__goals-header:not(:disabled):active {
 }
 
 @media (max-width: 560px) {
-  .hud__status {
-    display: none;
-  }
-
   .tool-bar {
     right: 12px;
     bottom: 12px;
@@ -1091,6 +1044,15 @@ button.hud__goals-header:not(:disabled):active {
   .hud__actions .icon-button:last-child {
     width: 42px;
     padding: 0;
+  }
+}
+
+@media (max-width: 710px) {
+  .hud {
+    grid-template-areas:
+      'header'
+      'goals';
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

@@ -51,6 +51,8 @@ describe('StageHud', () => {
 
     const goals = screen.getByLabelText('目標一覧');
     expect(within(goals).getByText('10秒あたりの生産目標')).toBeInTheDocument();
+    expect(within(goals).getByText('(現在:stage 3)')).toBeInTheDocument();
+    expect(screen.queryByText('累積目標を維持')).not.toBeInTheDocument();
     expect(within(goals).getByText('サラダ')).toBeInTheDocument();
     expect(within(goals).getByText('ごはん')).toBeInTheDocument();
     expect(within(goals).queryByText('/10秒')).not.toBeInTheDocument();

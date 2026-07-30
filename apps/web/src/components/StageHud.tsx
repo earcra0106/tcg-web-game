@@ -52,12 +52,6 @@ export function StageHud({
   return (
     <section className="hud" aria-label="Game status">
       <div className="hud__header">
-        <div className="hud__stage-card">
-          <p className="hud__label">Stage {hud.stageNumber}</p>
-          <p className="hud__status">
-            {hud.isCleared ? 'Clear' : '累積目標を維持'}
-          </p>
-        </div>
         <div className="hud__actions">
           <button
             className="icon-button icon-button--square"
@@ -123,7 +117,9 @@ export function StageHud({
           }
           onClick={() => setAreGoalsExpanded((current) => !current)}
         >
-          <p className="hud__goals-title">10秒あたりの生産目標</p>
+          <p className="hud__goals-title">
+            10秒あたりの生産目標 <span>(現在:stage {hud.stageNumber})</span>
+          </p>
           <span className="hud__goals-toggle" aria-hidden="true">
             {areGoalsExpanded ? (
               <ChevronUp size={16} />
