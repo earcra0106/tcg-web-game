@@ -33,7 +33,6 @@
 | prepared-shrimp        | 下処理エビ         | shrimp                                                      | cutting   |       F |      F |          T |          - |
 | chopped-carrot         | 刻みニンジン       | carrot                                                      | cutting   |       F |      F |          T |          - |
 | tomato-sauce           | トマトソース       | sliced-tomato                                               | mixing    |       F |      F |          T |          - |
-| boiled-egg             | ゆで卵             | egg                                                         | heating   |       F |      F |          T |          - |
 | curry-sauce            | カレーソース       | curry-powder, chopped-onion, chopped-carrot                 | mixing    |       F |      F |          T |          - |
 | omelet-base            | オムレツのもと     | egg, milk, cheese                                           | mixing    |       F |      F |          T |          - |
 | cooked-rice            | ごはん             | rice                                                        | heating   |       F |      T |          T |          1 |
@@ -46,7 +45,6 @@
 | cheese-toast           | チーズトースト     | toast, cheese                                               | combining |       F |      T |          F |          1 |
 | potato-salad           | ポテトサラダ       | cut-potato, chopped-carrot                                  | mixing    |       F |      T |          F |          1 |
 | fried-egg-toast        | 目玉焼きトースト   | toast, lettuce, fried-egg                                   | combining |       F |      T |          F |          2 |
-| egg-sandwich           | 卵サンド           | bread, boiled-egg, chopped-lettuce                          | combining |       F |      T |          F |          2 |
 | omelet                 | オムレツ           | omelet-base                                                 | heating   |       F |      T |          T |          2 |
 | chicken-salad          | チキンサラダ       | grilled-chicken, salad                                      | combining |       F |      T |          F |          2 |
 | shrimp-salad           | エビサラダ         | prepared-shrimp, salad                                      | combining |       F |      T |          F |          2 |

@@ -113,9 +113,6 @@ describe('stage goals', () => {
     );
 
     expect(normalGoals.map((goal) => goal.targetFoodId)).not.toContain(
-      'boiled-egg',
-    );
-    expect(normalGoals.map((goal) => goal.targetFoodId)).not.toContain(
       'omelet-base',
     );
   });
