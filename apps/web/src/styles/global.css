@@ -458,10 +458,11 @@ select {
 }
 
 .recipe-tree-modal__body {
+  position: relative;
   min-width: 0;
   min-height: 240px;
   overflow: hidden;
-  padding: 12px;
+  padding: 0;
   border: 1px solid rgb(190 150 111 / 0.22);
   border-radius: 8px;
   background: #fffaf4;
@@ -475,11 +476,16 @@ select {
 }
 
 .recipe-tree-modal__viewport {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: max-content;
-  min-width: 100%;
-  min-height: 100%;
   transform-origin: 0 0;
   will-change: transform;
+}
+
+.recipe-tree-modal__content {
+  width: max-content;
 }
 
 .recipe-tree__recipe {

@@ -47,6 +47,81 @@ describe('RecipeTreeModal', () => {
     expect(screen.getByText('食パン')).toBeInTheDocument();
   });
 
+  it('centers and fits the initially displayed tree with 100px padding', () => {
+    const clientWidth = Object.getOwnPropertyDescriptor(
+      HTMLElement.prototype,
+      'clientWidth',
+    );
+    const clientHeight = Object.getOwnPropertyDescriptor(
+      HTMLElement.prototype,
+      'clientHeight',
+    );
+    const offsetWidth = Object.getOwnPropertyDescriptor(
+      HTMLElement.prototype,
+      'offsetWidth',
+    );
+    const offsetHeight = Object.getOwnPropertyDescriptor(
+      HTMLElement.prototype,
+      'offsetHeight',
+    );
+
+    Object.defineProperties(HTMLElement.prototype, {
+      clientWidth: {
+        configurable: true,
+        get() {
+          return this.classList.contains('recipe-tree-modal__body') ? 800 : 0;
+        },
+      },
+      clientHeight: {
+        configurable: true,
+        get() {
+          return this.classList.contains('recipe-tree-modal__body') ? 600 : 0;
+        },
+      },
+      offsetWidth: {
+        configurable: true,
+        get() {
+          return this.classList.contains('recipe-tree-modal__content')
+            ? 600
+            : 0;
+        },
+      },
+      offsetHeight: {
+        configurable: true,
+        get() {
+          return this.classList.contains('recipe-tree-modal__content')
+            ? 200
+            : 0;
+        },
+      },
+    });
+
+    try {
+      render(<RecipeTreeModal targetFoodId="toast" onClose={vi.fn()} />);
+
+      expect(screen.getByTestId('recipe-tree-viewport')).toHaveStyle(
+        'transform: translate(100px, 200px) scale(1)',
+      );
+    } finally {
+      const originalDescriptors = {
+        clientWidth,
+        clientHeight,
+        offsetWidth,
+        offsetHeight,
+      };
+
+      for (const [property, descriptor] of Object.entries(
+        originalDescriptors,
+      )) {
+        if (descriptor === undefined) {
+          Reflect.deleteProperty(HTMLElement.prototype, property);
+        } else {
+          Object.defineProperty(HTMLElement.prototype, property, descriptor);
+        }
+      }
+    }
+  });
+
   it('pans the tree by dragging the display area', () => {
     render(<RecipeTreeModal targetFoodId="toast" onClose={vi.fn()} />);
     const displayArea = document.body.querySelector(
