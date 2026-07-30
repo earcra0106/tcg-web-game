@@ -231,7 +231,11 @@ function RecipeTreeNode({
   const recipeTree = (
     <div className="recipe-tree__recipe">
       <div
-        className="recipe-tree__ingredients"
+        className={
+          recipe.inputFoodIds.length > 1
+            ? 'recipe-tree__ingredients recipe-tree__ingredients--multiple'
+            : 'recipe-tree__ingredients'
+        }
         aria-label={`${recipe.name}の材料`}
       >
         {recipe.inputFoodIds.map((ingredientId, index) => (
