@@ -31,6 +31,18 @@ select {
   font: inherit;
 }
 
+button {
+  transition: transform 120ms ease-out;
+}
+
+button:not(:disabled):hover {
+  transform: scale(0.9);
+}
+
+button:not(:disabled):active {
+  transform: scale(0.7);
+}
+
 .app-shell {
   position: relative;
   width: 100%;
@@ -229,10 +241,6 @@ select {
   background: #fffdf9;
   box-shadow: 0 10px 24px rgb(92 64 42 / 0.12);
   cursor: pointer;
-}
-
-.icon-button:hover {
-  background: #f8ffff;
 }
 
 .icon-button--fast-forward-active {
@@ -573,10 +581,6 @@ select {
   border-color: #d64d48;
 }
 
-.recipe-tree__food--expandable:hover {
-  background: #f0fbfa;
-}
-
 .recipe-tree__food .food-sprite {
   width: 64px;
   height: 64px;
@@ -723,10 +727,6 @@ select {
   box-shadow: 0 10px 24px rgb(92 64 42 / 0.12);
   cursor: pointer;
   pointer-events: auto;
-}
-
-.mode-tool-button:hover {
-  background: #f8ffff;
 }
 
 .mode-tool-button[aria-pressed='true'] {
@@ -1077,5 +1077,11 @@ select {
 
   .recipe-tree__arrow--portrait {
     display: block;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button {
+    transition: none;
   }
 }
