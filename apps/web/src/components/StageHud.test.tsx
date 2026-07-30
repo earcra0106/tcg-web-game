@@ -93,9 +93,7 @@ describe('StageHud', () => {
       />,
     );
 
-    fireEvent.click(
-      screen.getByRole('button', { name: '目標一覧を折りたたむ' }),
-    );
+    fireEvent.click(screen.getByText('10秒あたりの生産目標'));
 
     expect(
       screen.getByRole('button', { name: '目標一覧を展開する' }),
