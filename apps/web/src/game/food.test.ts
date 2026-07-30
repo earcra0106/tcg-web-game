@@ -272,7 +272,7 @@ const expectedFoods = [
   [
     'hamburg',
     'ハンバーグ',
-    ['beef', 'chopped-onion', 'egg', 'bread', 'tomato-sauce', 'milk'],
+    ['hamburg-base', 'tomato-sauce'],
     'heating',
     false,
     true,
@@ -339,6 +339,16 @@ const expectedFoods = [
     false,
     3,
   ],
+  [
+    'hamburg-base',
+    'ハンバーグのタネ',
+    ['beef', 'egg', 'chopped-onion'],
+    'mixing',
+    false,
+    false,
+    true,
+    null,
+  ],
 ] as const;
 
 describe('food data types', () => {
@@ -346,14 +356,7 @@ describe('food data types', () => {
     const hamburg: FoodInfoData = {
       id: 'hamburg',
       name: 'ハンバーグ',
-      ingredientIds: [
-        'beef',
-        'chopped-onion',
-        'egg',
-        'bread',
-        'tomato-sauce',
-        'milk',
-      ],
+      ingredientIds: ['hamburg-base', 'tomato-sauce'],
       process: 'heating',
       canSpawnFromStorage: false,
       canBeServed: true,
@@ -458,6 +461,12 @@ describe('food data types', () => {
     });
     expect(foodSpritesheetData.frames['chicken-curry.png']?.frame).toEqual({
       x: 384,
+      y: 768,
+      w: 128,
+      h: 128,
+    });
+    expect(foodSpritesheetData.frames['hamburg-base.png']?.frame).toEqual({
+      x: 512,
       y: 768,
       w: 128,
       h: 128,

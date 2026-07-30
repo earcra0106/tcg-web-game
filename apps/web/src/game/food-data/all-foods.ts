@@ -499,14 +499,7 @@ export const allFoodInfos = [
   {
     id: 'hamburg',
     name: 'ハンバーグ',
-    ingredientIds: [
-      'beef',
-      'chopped-onion',
-      'egg',
-      'bread',
-      'tomato-sauce',
-      'milk',
-    ],
+    ingredientIds: ['hamburg-base', 'tomato-sauce'],
     process: 'heating',
     canSpawnFromStorage: false,
     canBeServed: true,
@@ -584,5 +577,16 @@ export const allFoodInfos = [
     canBeIngredient: false,
     difficulty: 3,
     spriteId: 'chicken-curry',
+  },
+  {
+    id: 'hamburg-base',
+    name: 'ハンバーグのタネ',
+    ingredientIds: ['beef', 'egg', 'chopped-onion'],
+    process: 'mixing',
+    canSpawnFromStorage: false,
+    canBeServed: false,
+    canBeIngredient: true,
+    difficulty: null,
+    spriteId: 'hamburg-base',
   },
 ] as const satisfies readonly FoodInfoData[];
