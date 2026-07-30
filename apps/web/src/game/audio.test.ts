@@ -89,6 +89,21 @@ describe('audio', () => {
     );
   });
 
+  it('sets the stage-clear sound volume to 30%', () => {
+    const element = {
+      currentTime: 0,
+      muted: false,
+      preload: '',
+      volume: 1,
+      play: vi.fn(),
+    };
+    const controller = createGameAudioController(() => element);
+
+    controller.play('success');
+
+    expect(element.volume).toBe(0.3);
+  });
+
   it('disposes created audio elements', () => {
     const pause = vi.fn();
     const load = vi.fn();

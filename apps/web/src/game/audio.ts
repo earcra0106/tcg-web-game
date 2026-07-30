@@ -40,7 +40,7 @@ export function createGameAudioController(
 
     const element = createAudioElement(GAME_SOUND_URLS[soundId]);
     element.preload = 'auto';
-    element.volume = soundId === 'success' ? 0.72 : 0.52;
+    element.volume = soundId === 'success' ? 0.3 : 0.52;
     element.muted = muted;
     elements.set(soundId, element);
 
