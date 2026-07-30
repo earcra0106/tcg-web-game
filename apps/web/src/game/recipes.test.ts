@@ -99,9 +99,6 @@ describe('recipes', () => {
     const servableRecipes = getServableRecipes();
 
     expect(servableRecipes.every((recipe) => recipe.canBeServed)).toBe(true);
-    expect(servableRecipes.map((recipe) => recipe.id)).not.toContain(
-      'boiled-egg',
-    );
   });
 
   it('finds recipes by output food id', () => {

@@ -8,8 +8,17 @@ export const FOOD_SPRITE_SIZE = 128;
 export const FOOD_SPRITESHEET_COLUMNS =
   FOOD_SPRITESHEET_SIZE / FOOD_SPRITE_SIZE;
 
+const retiredFoodSpriteSlots = [23, 36] as const;
+
 const foodSpriteIndexes = Object.fromEntries(
-  foodInfos.map((food, index) => [food.spriteId, index]),
+  foodInfos.map((food, registeredIndex) => {
+    const spriteIndex = retiredFoodSpriteSlots.reduce(
+      (index, retiredSlot) => (index >= retiredSlot ? index + 1 : index),
+      registeredIndex,
+    );
+
+    return [food.spriteId, spriteIndex];
+  }),
 ) satisfies Record<string, number>;
 
 export type FoodSpriteFrame = {

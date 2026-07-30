@@ -94,7 +94,6 @@ const expectedFoods = [
     true,
     null,
   ],
-  ['boiled-egg', 'ゆで卵', ['egg'], 'heating', false, false, true, null],
   [
     'curry-sauce',
     'カレーソース',
@@ -182,16 +181,6 @@ const expectedFoods = [
     'fried-egg-toast',
     '目玉焼きトースト',
     ['toast', 'lettuce', 'fried-egg'],
-    'combining',
-    false,
-    true,
-    false,
-    2,
-  ],
-  [
-    'egg-sandwich',
-    '卵サンド',
-    ['bread', 'boiled-egg', 'chopped-lettuce'],
     'combining',
     false,
     true,
@@ -439,9 +428,11 @@ describe('food data types', () => {
     foodInfos.forEach((food, index) => {
       expect(getFoodSpriteFrame(food.spriteId)).toMatchObject({
         id: food.spriteId,
-        index,
-        row: Math.floor(index / 8),
-        column: index % 8,
+        index: index + (index >= 23 ? 1 : 0) + (index >= 35 ? 1 : 0),
+        row: Math.floor(
+          (index + (index >= 23 ? 1 : 0) + (index >= 35 ? 1 : 0)) / 8,
+        ),
+        column: (index + (index >= 23 ? 1 : 0) + (index >= 35 ? 1 : 0)) % 8,
         width: 128,
         height: 128,
       });
