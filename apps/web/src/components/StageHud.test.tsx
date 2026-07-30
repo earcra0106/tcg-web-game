@@ -34,7 +34,7 @@ const hud = {
 };
 
 describe('StageHud', () => {
-  it('shows only the current stage goal initially', () => {
+  it('shows all goals with the current stage goal first initially', () => {
     render(
       <StageHud
         hud={hud}
@@ -52,7 +52,7 @@ describe('StageHud', () => {
     const goals = screen.getByLabelText('目標一覧');
     expect(within(goals).getByText('10秒あたりの生産目標')).toBeInTheDocument();
     expect(within(goals).getByText('サラダ')).toBeInTheDocument();
-    expect(within(goals).queryByText('ごはん')).not.toBeInTheDocument();
+    expect(within(goals).getByText('ごはん')).toBeInTheDocument();
     expect(within(goals).queryByText('/10秒')).not.toBeInTheDocument();
   });
 
@@ -71,13 +71,39 @@ describe('StageHud', () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole('button', { name: '目標一覧を展開する' }));
-
     const goals = screen.getByLabelText('目標一覧');
     expect(within(goals).getAllByText(/サラダ|ごはん|トースト/)).toHaveLength(
       3,
     );
     expect(goals).toHaveTextContent(/サラダ.*ごはん.*トースト/);
+  });
+
+  it('collapses and expands additional goals', () => {
+    render(
+      <StageHud
+        hud={hud}
+        isMuted={false}
+        simulationSpeed={1}
+        onToggleMuted={vi.fn()}
+        onToggleSimulationSpeed={vi.fn()}
+        onOpenHelp={vi.fn()}
+        onOpenSeed={vi.fn()}
+        onOpenEncyclopedia={vi.fn()}
+        onOpenRecipeTree={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(
+      screen.getByRole('button', { name: '目標一覧を折りたたむ' }),
+    );
+
+    expect(
+      screen.getByRole('button', { name: '目標一覧を展開する' }),
+    ).toHaveAttribute('aria-expanded', 'false');
+    expect(document.querySelector('.hud__goals-additional')).toHaveAttribute(
+      'aria-hidden',
+      'true',
+    );
   });
 
   it('opens the help button before the seed value button', () => {
@@ -160,7 +186,7 @@ describe('StageHud', () => {
     ).toHaveClass('icon-button--fast-forward-active');
   });
 
-  it('opens the recipe tree from a stage goal card', () => {
+  it('opens the recipe tree from a food icon button', () => {
     const onOpenRecipeTree = vi.fn();
     render(
       <StageHud
@@ -180,6 +206,7 @@ describe('StageHud', () => {
       screen.getByRole('button', { name: 'サラダのレシピツリーを開く' }),
     );
 
+    expect(screen.getByRole('img', { name: 'サラダ' })).toBeInTheDocument();
     expect(onOpenRecipeTree).toHaveBeenCalledWith('salad');
   });
 });
