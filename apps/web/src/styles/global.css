@@ -497,18 +497,9 @@ select {
 }
 
 .recipe-tree__branch--expanded {
-  position: relative;
-  z-index: 1;
-  width: 100px;
+  width: max-content;
   min-width: 100px;
-  height: 100px;
-}
-
-.recipe-tree__branch--expanded > .recipe-tree__recipe {
-  position: absolute;
-  top: 50%;
-  right: 0;
-  transform: translateY(-50%);
+  min-height: 100px;
 }
 
 .recipe-tree__ingredients {
@@ -1077,13 +1068,6 @@ select {
     grid-auto-flow: column;
     justify-content: space-evenly;
     align-content: center;
-  }
-
-  .recipe-tree__branch--expanded > .recipe-tree__recipe {
-    top: auto;
-    right: auto;
-    bottom: 0;
-    transform: none;
   }
 
   .recipe-tree__arrow--landscape {
