@@ -252,10 +252,16 @@ function RecipeTreeNode({
         ))}
       </div>
       {machineId !== null && machine !== null ? (
-        <div className="recipe-tree__machine">
-          <MachineSprite machineId={machineId} label={machine.name} />
-          <span>{machine.name}</span>
-        </div>
+        <>
+          <span className="recipe-tree__arrow" aria-hidden="true">
+            <ArrowRight className="recipe-tree__arrow--landscape" size={28} />
+            <ArrowDown className="recipe-tree__arrow--portrait" size={28} />
+          </span>
+          <div className="recipe-tree__machine">
+            <MachineSprite machineId={machineId} label={machine.name} />
+            <span>{machine.name}</span>
+          </div>
+        </>
       ) : null}
       <span className="recipe-tree__arrow" aria-hidden="true">
         <ArrowRight className="recipe-tree__arrow--landscape" size={28} />
