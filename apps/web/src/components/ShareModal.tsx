@@ -18,7 +18,9 @@ export function ShareModal({ stageNumber, seed, onClose }: ShareModalProps) {
   const [isCopied, setIsCopied] = useState(false);
   const shareText = buildShareText(stageNumber, seed);
   const xShareUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
-  const lineShareUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(GAME_URL)}&text=${encodeURIComponent(shareText)}`;
+  const lineShareUrl = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+    ? `https://line.me/R/share?text=${encodeURIComponent(shareText)}`
+    : `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(GAME_URL)}&text=${encodeURIComponent(shareText)}`;
 
   useEffect(() => {
     const closeOnEscape = (event: KeyboardEvent) => {
