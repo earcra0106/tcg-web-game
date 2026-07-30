@@ -83,6 +83,7 @@ button:not(:disabled):active {
 
 .hud__header {
   grid-area: header;
+  align-self: start;
   display: flex;
   align-items: center;
   gap: 10px;
