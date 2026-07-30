@@ -18,6 +18,6 @@
 
 ### AudioController createGameAudioController(createAudioElement = createDefaultAudioElement)
 
-初期ミュート false、要素 Map は空。音ごとに初回利用時のみ factory を URL 付きで呼び、preload=`auto`、volume は success のみ0.72、それ以外0.52、muted は現在値としてキャッシュする。
+初期ミュート false、要素 Map は空。音ごとに初回利用時のみ factory を URL 付きで呼び、preload=`auto`、volume は success のみ0.30、それ以外0.52、muted は現在値としてキャッシュする。
 
 返却オブジェクトの `play(id)` はミュート中なら何もしない。非ミュートなら要素を得て currentTime=0、muted=false とし play を呼ぶ。同期値/Promise を `Promise.resolve` し、拒否は autoplay 対策として握りつぶす。`setMuted(bool)` は内部値と生成済み全要素を更新する。`isMuted()` は内部値を返す。`dispose()` は全要素で任意 pause、`removeAttribute('src')`、任意 load の順に呼び Map を空にする。
