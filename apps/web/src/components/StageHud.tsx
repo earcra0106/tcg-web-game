@@ -179,7 +179,7 @@ function GoalCard({ goal, onOpenRecipeTree, tabIndex }: GoalCardProps) {
       className={goal.isCleared ? 'hud__goal hud__goal--cleared' : 'hud__goal'}
     >
       <button
-        className="hud__goal-recipe-button"
+        className="icon-button icon-button--square hud__goal-recipe-button"
         type="button"
         aria-label={`${goal.foodName}のレシピツリーを開く`}
         tabIndex={tabIndex}
