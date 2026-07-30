@@ -25,7 +25,24 @@ describe('ShareModal', () => {
       screen.getByRole('link', { name: 'LINEで共有する' }),
     ).toHaveAttribute(
       'href',
-      expect.stringContaining(encodeURIComponent(shareText)),
+      `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(
+        'https://cookers-web-game.vercel.app/',
+      )}&text=${encodeURIComponent(shareText)}`,
+    );
+  });
+
+  it('uses the LINE app share URL with the complete message on mobile', () => {
+    vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)',
+    );
+
+    render(<ShareModal stageNumber={3} seed={seed} onClose={vi.fn()} />);
+
+    expect(
+      screen.getByRole('link', { name: 'LINEで共有する' }),
+    ).toHaveAttribute(
+      'href',
+      `https://line.me/R/share?text=${encodeURIComponent(shareText)}`,
     );
   });
 
