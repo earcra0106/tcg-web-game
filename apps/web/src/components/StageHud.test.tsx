@@ -148,6 +148,34 @@ describe('StageHud', () => {
     expect(onOpenSeed).toHaveBeenCalledOnce();
   });
 
+  it('opens the share button between the help and seed value buttons', () => {
+    const onOpenShare = vi.fn();
+    render(
+      <StageHud
+        hud={hud}
+        isMuted={false}
+        simulationSpeed={1}
+        onToggleMuted={vi.fn()}
+        onToggleSimulationSpeed={vi.fn()}
+        onOpenHelp={vi.fn()}
+        onOpenShare={onOpenShare}
+        onOpenSeed={vi.fn()}
+        onOpenEncyclopedia={vi.fn()}
+        onOpenRecipeTree={vi.fn()}
+      />,
+    );
+
+    const actions = screen
+      .getByLabelText('Game status')
+      .querySelector('.hud__actions');
+    expect(actions?.children[0]).toHaveAccessibleName('遊び方を開く');
+    expect(actions?.children[1]).toHaveAccessibleName('シェアを開く');
+    expect(actions?.children[2]).toHaveAccessibleName('シード値を開く');
+
+    fireEvent.click(screen.getByRole('button', { name: 'シェアを開く' }));
+    expect(onOpenShare).toHaveBeenCalledOnce();
+  });
+
   it('toggles simulation speed and marks the button active at 2x speed', () => {
     const onToggleSimulationSpeed = vi.fn();
     const { rerender } = render(

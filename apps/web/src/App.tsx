@@ -5,6 +5,7 @@ import { GameCanvas } from './components/GameCanvas.tsx';
 import { HelpModal } from './components/HelpModal.tsx';
 import { RecipeTreeModal } from './components/RecipeTreeModal.tsx';
 import { SeedModal } from './components/SeedModal.tsx';
+import { ShareModal } from './components/ShareModal.tsx';
 import { StageHud } from './components/StageHud.tsx';
 import { ModeToolBar, ToolBar } from './components/ToolBar.tsx';
 import { createGameAudioController, type GameSoundId } from './game/audio.ts';
@@ -46,6 +47,7 @@ export function App() {
   const [simulationSpeed, setSimulationSpeed] = useState<1 | 2>(1);
   const [seed, setSeed] = useState(() => createDailySeed());
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isSeedModalOpen, setIsSeedModalOpen] = useState(false);
   const [recipeTreeFoodId, setRecipeTreeFoodId] = useState<FoodId | null>(null);
   const [placementDrag, setPlacementDrag] = useState<PlacementDragState | null>(
@@ -255,6 +257,7 @@ export function App() {
         isMuted={isMuted}
         simulationSpeed={simulationSpeed}
         onOpenHelp={() => setIsHelpModalOpen(true)}
+        onOpenShare={() => setIsShareModalOpen(true)}
         onOpenSeed={() => setIsSeedModalOpen(true)}
         onToggleMuted={() => {
           const nextMuted = !isMuted;
@@ -269,6 +272,13 @@ export function App() {
       />
       {isHelpModalOpen ? (
         <HelpModal onClose={() => setIsHelpModalOpen(false)} />
+      ) : null}
+      {isShareModalOpen ? (
+        <ShareModal
+          stageNumber={stageNumber}
+          seed={seed}
+          onClose={() => setIsShareModalOpen(false)}
+        />
       ) : null}
       {isSeedModalOpen ? (
         <SeedModal
