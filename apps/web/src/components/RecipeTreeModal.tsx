@@ -1,5 +1,12 @@
 import { ArrowDown, ArrowRight, X } from 'lucide-react';
-import { type PointerEvent, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  type PointerEvent,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { createPortal } from 'react-dom';
 import type { FoodId } from '../game/food.ts';
 import { getFoodInfo } from '../game/foods.ts';
@@ -38,6 +45,7 @@ type PinchState = {
 
 const MIN_RECIPE_TREE_SCALE = 0.5;
 const MAX_RECIPE_TREE_SCALE = 2.5;
+const RECIPE_TREE_VIEWPORT_PADDING = 100;
 
 type RecipeTreeNodeProps = {
   foodId: FoodId;
@@ -101,6 +109,37 @@ function clampRecipeTreeScale(scale: number) {
     MAX_RECIPE_TREE_SCALE,
     Math.max(MIN_RECIPE_TREE_SCALE, scale),
   );
+}
+
+function getInitialRecipeTreeViewport(
+  viewportBody: HTMLElement,
+  recipeTree: HTMLElement,
+): RecipeTreeViewport | null {
+  const treeWidth = recipeTree.offsetWidth;
+  const treeHeight = recipeTree.offsetHeight;
+  const availableWidth =
+    viewportBody.clientWidth - RECIPE_TREE_VIEWPORT_PADDING * 2;
+  const availableHeight =
+    viewportBody.clientHeight - RECIPE_TREE_VIEWPORT_PADDING * 2;
+
+  if (
+    treeWidth === 0 ||
+    treeHeight === 0 ||
+    availableWidth <= 0 ||
+    availableHeight <= 0
+  ) {
+    return null;
+  }
+
+  const scale = clampRecipeTreeScale(
+    Math.min(availableWidth / treeWidth, availableHeight / treeHeight),
+  );
+
+  return {
+    scale,
+    translateX: (viewportBody.clientWidth - treeWidth * scale) / 2,
+    translateY: (viewportBody.clientHeight - treeHeight * scale) / 2,
+  };
 }
 
 function getDistance(left: ViewportPoint, right: ViewportPoint) {
@@ -250,6 +289,7 @@ export function RecipeTreeModal({
   });
   const viewportRef = useRef(viewport);
   const viewportBodyRef = useRef<HTMLDivElement | null>(null);
+  const recipeTreeRef = useRef<HTMLDivElement | null>(null);
   const pointerPositionsRef = useRef(new Map<number, ViewportPoint>());
   const panStartRef = useRef<{
     pointerId: number;
@@ -274,6 +314,25 @@ export function RecipeTreeModal({
     window.addEventListener('keydown', closeOnEscape);
     return () => window.removeEventListener('keydown', closeOnEscape);
   }, [onClose]);
+
+  useLayoutEffect(() => {
+    const viewportBody = viewportBodyRef.current;
+    const recipeTree = recipeTreeRef.current;
+
+    if (viewportBody === null || recipeTree === null) {
+      return;
+    }
+
+    const initialViewport = getInitialRecipeTreeViewport(
+      viewportBody,
+      recipeTree,
+    );
+
+    if (initialViewport !== null) {
+      viewportRef.current = initialViewport;
+      setViewport(initialViewport);
+    }
+  }, [targetFoodId]);
 
   const updateViewport = (nextViewport: RecipeTreeViewport) => {
     viewportRef.current = nextViewport;
@@ -494,16 +553,18 @@ export function RecipeTreeModal({
                 transform: `translate(${viewport.translateX}px, ${viewport.translateY}px) scale(${viewport.scale})`,
               }}
             >
-              <RecipeTreeNode
-                foodId={targetFoodId}
-                path="root"
-                recipes={recipes}
-                expandedFoodIds={expandedFoodIds}
-                expandedRecipePaths={expandedRecipePaths}
-                ancestorFoodIds={new Set()}
-                isRoot
-                onToggle={toggleRecipe}
-              />
+              <div ref={recipeTreeRef} className="recipe-tree-modal__content">
+                <RecipeTreeNode
+                  foodId={targetFoodId}
+                  path="root"
+                  recipes={recipes}
+                  expandedFoodIds={expandedFoodIds}
+                  expandedRecipePaths={expandedRecipePaths}
+                  ancestorFoodIds={new Set()}
+                  isRoot
+                  onToggle={toggleRecipe}
+                />
+              </div>
             </div>
           </div>
         )}
