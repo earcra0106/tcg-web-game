@@ -120,6 +120,9 @@ export function SeedModal({ currentSeed, onClose, onRetry }: SeedModalProps) {
               <Play aria-hidden="true" size={18} />
             </button>
           </div>
+          <p>
+            ゲーム起動時のシード値は毎日0時に更新されます。<br />シード値が同じなら、同じステージであそべます。
+          </p>
           {!isSeedInputValid ? (
             <p id="retry-seed-error" className="seed-modal__error">
               UUID形式で入力してください。

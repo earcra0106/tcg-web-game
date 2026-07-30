@@ -55,13 +55,14 @@
 | mixed-grill            | ミックスグリル     | beef-steak, chicken-saute                                   | combining |       F |      T |          F |          2 |
 | tomato-cheese-sandwich | トマトチーズサンド | bread, sliced-tomato, cheese                                | combining |       F |      T |          F |          2 |
 | shrimp-omelet          | エビオムレツ       | prepared-shrimp, omelet-base                                | heating   |       F |      T |          F |          3 |
-| hamburg                | ハンバーグ         | beef, chopped-onion, egg, bread, tomato-sauce, milk         | heating   |       F |      T |          F |          3 |
+| hamburg                | ハンバーグ         | hamburg-base, tomato-sauce                                  | heating   |       F |      T |          F |          3 |
 | curry-rice             | カレーライス       | cooked-rice, cooked-beef, curry-sauce                       | combining |       F |      T |          F |          3 |
 | omurice                | オムライス         | cooked-rice, grilled-chicken, tomato-sauce, omelet          | combining |       F |      T |          F |          3 |
 | fried-rice             | チャーハン         | cooked-rice, egg, chopped-onion, chopped-carrot             | mixing    |       F |      T |          F |          3 |
 | shrimp-pilaf           | エビピラフ         | cooked-rice, prepared-shrimp, chopped-onion, chopped-carrot | mixing    |       F |      T |          F |          3 |
 | cheese-curry           | チーズカレー       | cooked-rice, cut-potato, cheese, curry-sauce                | combining |       F |      T |          F |          3 |
 | chicken-curry          | チキンカレー       | cooked-rice, grilled-chicken, curry-sauce                   | combining |       F |      T |          F |          3 |
+| hamburg-base           | ハンバーグのタネ   | beef, egg, chopped-onion                                    | mixing    |       F |      F |          T |          - |
 
 ## 関数仕様
 
