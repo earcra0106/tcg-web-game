@@ -5,6 +5,7 @@ import {
   Dice5,
   FastForward,
   HelpCircle,
+  Share2,
   Volume2,
   VolumeX,
 } from 'lucide-react';
@@ -21,6 +22,7 @@ type StageHudProps = {
   onToggleMuted: () => void;
   onToggleSimulationSpeed: () => void;
   onOpenHelp: () => void;
+  onOpenShare?: () => void;
   onOpenSeed: () => void;
   onOpenEncyclopedia: () => void;
   onOpenRecipeTree: (foodId: FoodId) => void;
@@ -37,6 +39,7 @@ export function StageHud({
   onToggleMuted,
   onToggleSimulationSpeed,
   onOpenHelp,
+  onOpenShare,
   onOpenSeed,
   onOpenEncyclopedia,
   onOpenRecipeTree,
@@ -60,6 +63,14 @@ export function StageHud({
             onClick={onOpenHelp}
           >
             <HelpCircle aria-hidden="true" size={18} />
+          </button>
+          <button
+            className="icon-button icon-button--square"
+            type="button"
+            aria-label="シェアを開く"
+            onClick={onOpenShare}
+          >
+            <Share2 aria-hidden="true" size={18} />
           </button>
           <button
             className="icon-button icon-button--square"
