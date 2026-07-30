@@ -314,6 +314,51 @@ button.hud__goals-header:not(:disabled):active {
   box-shadow: 0 24px 60px rgb(59 48 40 / 0.28);
 }
 
+.share-modal {
+  display: grid;
+  gap: 16px;
+  width: min(960px, 100%);
+  max-height: calc(100dvh - 32px);
+  padding: 18px;
+  border: 1px solid rgb(190 150 111 / 0.35);
+  border-radius: 12px;
+  background: #fffdf9;
+  box-shadow: 0 24px 60px rgb(59 48 40 / 0.28);
+}
+
+.share-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.share-modal__header h2 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.share-modal__image {
+  display: block;
+  width: 100%;
+  max-height: min(54dvh, 540px);
+  object-fit: contain;
+  border: 1px solid rgb(190 150 111 / 0.22);
+  border-radius: 8px;
+  background: #f4eae1;
+}
+
+.share-modal__actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  justify-content: center;
+  gap: 16px;
+}
+
+.share-modal__actions .icon-button {
+  min-width: 0;
+  padding: 0 10px;
+}
+
 .seed-modal__header,
 .seed-modal__field-row {
   display: flex;

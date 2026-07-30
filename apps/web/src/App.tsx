@@ -1,5 +1,5 @@
 import { ChevronLeft } from 'lucide-react';
-import { toBlob } from 'html-to-image';
+import { toPng } from 'html-to-image';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FoodSprite } from './components/FoodSprite.tsx';
 import { GameCanvas } from './components/GameCanvas.tsx';
@@ -7,6 +7,7 @@ import { HelpModal } from './components/HelpModal.tsx';
 import { RecipeTreeModal } from './components/RecipeTreeModal.tsx';
 import { SeedModal } from './components/SeedModal.tsx';
 import { ShareCard } from './components/ShareCard.tsx';
+import { ShareModal } from './components/ShareModal.tsx';
 import { StageHud } from './components/StageHud.tsx';
 import { ModeToolBar, ToolBar } from './components/ToolBar.tsx';
 import { createGameAudioController, type GameSoundId } from './game/audio.ts';
@@ -15,11 +16,7 @@ import { selectEditorTool, type EditorTool } from './game/editorState.ts';
 import { foodInfos } from './game/foods.ts';
 import type { FoodId } from './game/food.ts';
 import { createRenderView } from './game/renderView.ts';
-import {
-  createSharePostText,
-  createXPostIntentUrl,
-  getShareStageGoals,
-} from './game/share.ts';
+import { createSharePostText, getShareStageGoals } from './game/share.ts';
 import {
   createInitialSimulationState,
   stepSimulation,
@@ -54,13 +51,14 @@ export function App() {
   const [seed, setSeed] = useState(() => createDailySeed());
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [isSeedModalOpen, setIsSeedModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [recipeTreeFoodId, setRecipeTreeFoodId] = useState<FoodId | null>(null);
   const [placementDrag, setPlacementDrag] = useState<PlacementDragState | null>(
     null,
   );
-  const [shareFile, setShareFile] = useState<{
+  const [shareImage, setShareImage] = useState<{
     key: string;
-    file: File;
+    url: string;
   } | null>(null);
   const audioRef = useRef<ReturnType<typeof createGameAudioController> | null>(
     null,
@@ -117,7 +115,7 @@ export function App() {
     () => createSharePostText({ completedStageCount, seed }),
     [completedStageCount, seed],
   );
-  const isShareReady = shareFile?.key === shareKey;
+  const isShareReady = shareImage?.key === shareKey;
 
   if (audioRef.current === null) {
     audioRef.current = createGameAudioController();
@@ -183,20 +181,20 @@ export function App() {
     }
 
     let isCurrent = true;
-    setShareFile(null);
+    setShareImage(null);
 
-    void toBlob(shareCard, { cacheBust: true, pixelRatio: 1 })
-      .then((blob) => {
-        if (isCurrent && blob !== null) {
-          setShareFile({
+    void toPng(shareCard, { cacheBust: true, pixelRatio: 1 })
+      .then((url) => {
+        if (isCurrent) {
+          setShareImage({
             key: shareKey,
-            file: new File([blob], 'cookers-share.png', { type: 'image/png' }),
+            url,
           });
         }
       })
       .catch(() => {
         if (isCurrent) {
-          setShareFile(null);
+          setShareImage(null);
         }
       });
 
@@ -315,51 +313,10 @@ export function App() {
         onOpenHelp={() => setIsHelpModalOpen(true)}
         isShareReady={isShareReady}
         onShare={() => {
-          if (shareFile === null || shareFile.key !== shareKey) {
+          if (shareImage === null || shareImage.key !== shareKey) {
             return;
           }
-
-          const shareData = {
-            files: [shareFile.file],
-            text: sharePostText,
-          };
-
-          if (
-            typeof navigator.share === 'function' &&
-            typeof navigator.canShare === 'function' &&
-            navigator.canShare(shareData)
-          ) {
-            void navigator.share(shareData).catch((error: unknown) => {
-              if (error instanceof Error && error.name === 'AbortError') {
-                return;
-              }
-
-              const imageUrl = URL.createObjectURL(shareFile.file);
-              const link = document.createElement('a');
-              link.href = imageUrl;
-              link.download = shareFile.file.name;
-              link.click();
-              window.setTimeout(() => URL.revokeObjectURL(imageUrl), 0);
-              window.open(
-                createXPostIntentUrl(sharePostText),
-                '_blank',
-                'noopener,noreferrer',
-              );
-            });
-            return;
-          }
-
-          const imageUrl = URL.createObjectURL(shareFile.file);
-          const link = document.createElement('a');
-          link.href = imageUrl;
-          link.download = shareFile.file.name;
-          link.click();
-          window.setTimeout(() => URL.revokeObjectURL(imageUrl), 0);
-          window.open(
-            createXPostIntentUrl(sharePostText),
-            '_blank',
-            'noopener,noreferrer',
-          );
+          setIsShareModalOpen(true);
         }}
         onOpenSeed={() => setIsSeedModalOpen(true)}
         onToggleMuted={() => {
@@ -381,6 +338,13 @@ export function App() {
           currentSeed={seed}
           onClose={() => setIsSeedModalOpen(false)}
           onRetry={retryWithSeed}
+        />
+      ) : null}
+      {isShareModalOpen && isShareReady ? (
+        <ShareModal
+          imageUrl={shareImage.url}
+          postText={sharePostText}
+          onClose={() => setIsShareModalOpen(false)}
         />
       ) : null}
       {recipeTreeFoodId !== null ? (

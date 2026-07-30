@@ -13,7 +13,7 @@ export function getShareStageNumbers(completedStageCount: number) {
   }
 
   if (completedStageCount === 0) {
-    return [1] as const;
+    return [];
   }
 
   const length = Math.min(completedStageCount, 5);
@@ -43,16 +43,22 @@ export function createSharePostText({
   completedStageCount: number;
   seed: string;
 }) {
-  const headline =
-    completedStageCount === 0
-      ? '自動料理に挑戦中!'
-      : `ステージ ${completedStageCount} の生産目標を達成！`;
+  const stageNumber = Math.max(1, completedStageCount);
+  const headline = `ステージ ${stageNumber} の生産目標を達成！`;
 
   return `${headline}\nシード値: ${seed}\n\nプレイはこちらから\n${COOKERS_GAME_URL}\n\n#cookers!`;
 }
 
 export function createXPostIntentUrl(text: string) {
-  const url = new URL('https://x.com/intent/post');
+  const url = new URL('https://x.com/intent/tweet');
+  url.searchParams.set('text', text);
+
+  return url.toString();
+}
+
+export function createLineShareUrl(text: string) {
+  const url = new URL('https://social-plugins.line.me/lineit/share');
+  url.searchParams.set('url', COOKERS_GAME_URL);
   url.searchParams.set('text', text);
 
   return url.toString();

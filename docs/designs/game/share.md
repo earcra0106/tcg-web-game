@@ -8,7 +8,7 @@
 
 ### number[] getShareStageNumbers(completedStageCount)
 
-0ならステージ1だけを返す。1以上なら、最大5件のクリア済みステージを古い順に返す。負の整数または整数以外は `RangeError`。
+0なら空配列を返す。1以上なら、最大5件のクリア済みステージを古い順に返す。負の整数または整数以外は `RangeError`。
 
 ### ShareStageGoal[] getShareStageGoals({ completedStageCount, getStageGoal })
 
@@ -16,8 +16,12 @@
 
 ### string createSharePostText({ completedStageCount, seed })
 
-未クリア時は「自動料理に挑戦中!」、それ以外は達成ステージを含む指定の投稿文面を返す。
+ステージ番号は `max(1, completedStageCount)` とし、達成ステージとシード値を含む指定の投稿文面を返す。
 
 ### string createXPostIntentUrl(text)
 
-投稿文面を `https://x.com/intent/post` の `text` クエリへエンコードして返す。
+投稿文面を `https://x.com/intent/tweet` の `text` クエリへエンコードして返す。
+
+### string createLineShareUrl(text)
+
+ゲームURLと投稿文面を LINE share URL の `url`・`text` クエリへエンコードして返す。

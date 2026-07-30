@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   COOKERS_GAME_URL,
+  createLineShareUrl,
   createSharePostText,
   createXPostIntentUrl,
   getShareStageGoals,
@@ -8,8 +9,8 @@ import {
 } from './share.ts';
 
 describe('share helpers', () => {
-  it('uses the first stage goal before any stage is cleared', () => {
-    expect(getShareStageNumbers(0)).toEqual([1]);
+  it('uses no food image before any stage is cleared', () => {
+    expect(getShareStageNumbers(0)).toEqual([]);
   });
 
   it('returns at most the latest five cleared stages in chronological order', () => {
@@ -40,11 +41,11 @@ describe('share helpers', () => {
     );
   });
 
-  it('builds the in-progress post text before a stage is cleared', () => {
+  it('uses stage 1 in the post text before a stage is cleared', () => {
     expect(
       createSharePostText({ completedStageCount: 0, seed: 'daily-seed' }),
     ).toBe(
-      `自動料理に挑戦中!\nシード値: daily-seed\n\nプレイはこちらから\n${COOKERS_GAME_URL}\n\n#cookers!`,
+      `ステージ 1 の生産目標を達成！\nシード値: daily-seed\n\nプレイはこちらから\n${COOKERS_GAME_URL}\n\n#cookers!`,
     );
   });
 
@@ -53,7 +54,17 @@ describe('share helpers', () => {
     const url = new URL(createXPostIntentUrl(text));
 
     expect(url.origin).toBe('https://x.com');
-    expect(url.pathname).toBe('/intent/post');
+    expect(url.pathname).toBe('/intent/tweet');
+    expect(url.searchParams.get('text')).toBe(text);
+  });
+
+  it('encodes the game URL and post text in a LINE share URL', () => {
+    const text = 'テスト\n#cookers!';
+    const url = new URL(createLineShareUrl(text));
+
+    expect(url.origin).toBe('https://social-plugins.line.me');
+    expect(url.pathname).toBe('/lineit/share');
+    expect(url.searchParams.get('url')).toBe(COOKERS_GAME_URL);
     expect(url.searchParams.get('text')).toBe(text);
   });
 });
