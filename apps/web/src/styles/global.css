@@ -1067,6 +1067,7 @@ select {
   .recipe-tree__ingredients {
     grid-auto-flow: column;
     justify-content: space-evenly;
+    align-items: end;
     align-content: center;
   }
 
