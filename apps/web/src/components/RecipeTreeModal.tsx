@@ -131,9 +131,8 @@ function getInitialRecipeTreeViewport(
     return null;
   }
 
-  const scale = Math.min(
-    availableWidth / treeWidth,
-    availableHeight / treeHeight,
+  const scale = clampRecipeTreeScale(
+    Math.min(availableWidth / treeWidth, availableHeight / treeHeight),
   );
 
   return {
