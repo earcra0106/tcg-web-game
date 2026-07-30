@@ -19,6 +19,7 @@ describe('RecipeTreeModal', () => {
     render(<RecipeTreeModal targetFoodId="tomato-sauce" onClose={vi.fn()} />);
 
     expect(screen.getByText('ミキサー')).toBeInTheDocument();
+    expect(document.querySelectorAll('.recipe-tree__arrow')).toHaveLength(2);
     fireEvent.click(
       screen.getByRole('button', { name: 'スライストマトのレシピを展開する' }),
     );
