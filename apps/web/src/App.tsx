@@ -1,10 +1,12 @@
 import { ChevronLeft } from 'lucide-react';
+import { toBlob } from 'html-to-image';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FoodSprite } from './components/FoodSprite.tsx';
 import { GameCanvas } from './components/GameCanvas.tsx';
 import { HelpModal } from './components/HelpModal.tsx';
 import { RecipeTreeModal } from './components/RecipeTreeModal.tsx';
 import { SeedModal } from './components/SeedModal.tsx';
+import { ShareCard } from './components/ShareCard.tsx';
 import { StageHud } from './components/StageHud.tsx';
 import { ModeToolBar, ToolBar } from './components/ToolBar.tsx';
 import { createGameAudioController, type GameSoundId } from './game/audio.ts';
@@ -13,6 +15,11 @@ import { selectEditorTool, type EditorTool } from './game/editorState.ts';
 import { foodInfos } from './game/foods.ts';
 import type { FoodId } from './game/food.ts';
 import { createRenderView } from './game/renderView.ts';
+import {
+  createSharePostText,
+  createXPostIntentUrl,
+  getShareStageGoals,
+} from './game/share.ts';
 import {
   createInitialSimulationState,
   stepSimulation,
@@ -51,12 +58,18 @@ export function App() {
   const [placementDrag, setPlacementDrag] = useState<PlacementDragState | null>(
     null,
   );
+  const [shareFile, setShareFile] = useState<{
+    key: string;
+    file: File;
+  } | null>(null);
   const audioRef = useRef<ReturnType<typeof createGameAudioController> | null>(
     null,
   );
   const lastSimulationFrameMsRef = useRef<number | null>(null);
   const lastClearedStageRef = useRef<number | null>(null);
+  const shareCardRef = useRef<HTMLElement | null>(null);
   const stageNumber = model.gameState.stageIndex + 1;
+  const completedStageCount = model.gameState.stageIndex;
   const stageGoal = useMemo(
     () => getStageGoal({ seed, stageNumber }),
     [seed, stageNumber],
@@ -90,6 +103,21 @@ export function App() {
     () => getCraftableFoodIds(storageFoodIds),
     [storageFoodIds],
   );
+  const shareStageGoals = useMemo(
+    () =>
+      getShareStageGoals({
+        completedStageCount,
+        getStageGoal: (shareStageNumber) =>
+          getStageGoal({ seed, stageNumber: shareStageNumber }),
+      }),
+    [completedStageCount, seed],
+  );
+  const shareKey = `${seed}:${completedStageCount}`;
+  const sharePostText = useMemo(
+    () => createSharePostText({ completedStageCount, seed }),
+    [completedStageCount, seed],
+  );
+  const isShareReady = shareFile?.key === shareKey;
 
   if (audioRef.current === null) {
     audioRef.current = createGameAudioController();
@@ -146,6 +174,36 @@ export function App() {
       window.removeEventListener('pointercancel', handlePointerCancel);
     };
   }, [placementDrag]);
+
+  useEffect(() => {
+    const shareCard = shareCardRef.current;
+
+    if (shareCard === null) {
+      return;
+    }
+
+    let isCurrent = true;
+    setShareFile(null);
+
+    void toBlob(shareCard, { cacheBust: true, pixelRatio: 1 })
+      .then((blob) => {
+        if (isCurrent && blob !== null) {
+          setShareFile({
+            key: shareKey,
+            file: new File([blob], 'cookers-share.png', { type: 'image/png' }),
+          });
+        }
+      })
+      .catch(() => {
+        if (isCurrent) {
+          setShareFile(null);
+        }
+      });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [shareKey, shareStageGoals]);
 
   useEffect(() => {
     let animationFrameId = 0;
@@ -255,6 +313,54 @@ export function App() {
         isMuted={isMuted}
         simulationSpeed={simulationSpeed}
         onOpenHelp={() => setIsHelpModalOpen(true)}
+        isShareReady={isShareReady}
+        onShare={() => {
+          if (shareFile === null || shareFile.key !== shareKey) {
+            return;
+          }
+
+          const shareData = {
+            files: [shareFile.file],
+            text: sharePostText,
+          };
+
+          if (
+            typeof navigator.share === 'function' &&
+            typeof navigator.canShare === 'function' &&
+            navigator.canShare(shareData)
+          ) {
+            void navigator.share(shareData).catch((error: unknown) => {
+              if (error instanceof Error && error.name === 'AbortError') {
+                return;
+              }
+
+              const imageUrl = URL.createObjectURL(shareFile.file);
+              const link = document.createElement('a');
+              link.href = imageUrl;
+              link.download = shareFile.file.name;
+              link.click();
+              window.setTimeout(() => URL.revokeObjectURL(imageUrl), 0);
+              window.open(
+                createXPostIntentUrl(sharePostText),
+                '_blank',
+                'noopener,noreferrer',
+              );
+            });
+            return;
+          }
+
+          const imageUrl = URL.createObjectURL(shareFile.file);
+          const link = document.createElement('a');
+          link.href = imageUrl;
+          link.download = shareFile.file.name;
+          link.click();
+          window.setTimeout(() => URL.revokeObjectURL(imageUrl), 0);
+          window.open(
+            createXPostIntentUrl(sharePostText),
+            '_blank',
+            'noopener,noreferrer',
+          );
+        }}
         onOpenSeed={() => setIsSeedModalOpen(true)}
         onToggleMuted={() => {
           const nextMuted = !isMuted;
@@ -284,6 +390,7 @@ export function App() {
           onClose={() => setRecipeTreeFoodId(null)}
         />
       ) : null}
+      <ShareCard cardRef={shareCardRef} stageGoals={shareStageGoals} />
       <ToolBar
         selectedTool={model.editorState.selectedTool}
         storageFoodIds={storageFoodIds}

@@ -43,6 +43,8 @@ describe('StageHud', () => {
         onToggleMuted={vi.fn()}
         onToggleSimulationSpeed={vi.fn()}
         onOpenHelp={vi.fn()}
+        onShare={vi.fn()}
+        isShareReady
         onOpenSeed={vi.fn()}
         onOpenEncyclopedia={vi.fn()}
         onOpenRecipeTree={vi.fn()}
@@ -67,6 +69,8 @@ describe('StageHud', () => {
         onToggleMuted={vi.fn()}
         onToggleSimulationSpeed={vi.fn()}
         onOpenHelp={vi.fn()}
+        onShare={vi.fn()}
+        isShareReady
         onOpenSeed={vi.fn()}
         onOpenEncyclopedia={vi.fn()}
         onOpenRecipeTree={vi.fn()}
@@ -89,6 +93,8 @@ describe('StageHud', () => {
         onToggleMuted={vi.fn()}
         onToggleSimulationSpeed={vi.fn()}
         onOpenHelp={vi.fn()}
+        onShare={vi.fn()}
+        isShareReady
         onOpenSeed={vi.fn()}
         onOpenEncyclopedia={vi.fn()}
         onOpenRecipeTree={vi.fn()}
@@ -116,6 +122,8 @@ describe('StageHud', () => {
         onToggleMuted={vi.fn()}
         onToggleSimulationSpeed={vi.fn()}
         onOpenHelp={onOpenHelp}
+        onShare={vi.fn()}
+        isShareReady
         onOpenSeed={vi.fn()}
         onOpenEncyclopedia={vi.fn()}
         onOpenRecipeTree={vi.fn()}
@@ -137,6 +145,8 @@ describe('StageHud', () => {
         onToggleMuted={vi.fn()}
         onToggleSimulationSpeed={vi.fn()}
         onOpenHelp={vi.fn()}
+        onShare={vi.fn()}
+        isShareReady
         onOpenSeed={onOpenSeed}
         onOpenEncyclopedia={vi.fn()}
         onOpenRecipeTree={vi.fn()}
@@ -146,6 +156,31 @@ describe('StageHud', () => {
     fireEvent.click(screen.getByRole('button', { name: 'シード値を開く' }));
 
     expect(onOpenSeed).toHaveBeenCalledOnce();
+  });
+
+  it('shares from the button between help and seed controls', () => {
+    const onShare = vi.fn();
+    render(
+      <StageHud
+        hud={hud}
+        isMuted={false}
+        simulationSpeed={1}
+        onToggleMuted={vi.fn()}
+        onToggleSimulationSpeed={vi.fn()}
+        onOpenHelp={vi.fn()}
+        onShare={onShare}
+        isShareReady
+        onOpenSeed={vi.fn()}
+        onOpenEncyclopedia={vi.fn()}
+        onOpenRecipeTree={vi.fn()}
+      />,
+    );
+
+    const actions = document.querySelector('.hud__actions');
+    expect(actions?.children[1]).toHaveAccessibleName('Xにシェアする');
+    fireEvent.click(screen.getByRole('button', { name: 'Xにシェアする' }));
+
+    expect(onShare).toHaveBeenCalledOnce();
   });
 
   it('toggles simulation speed and marks the button active at 2x speed', () => {
@@ -158,6 +193,8 @@ describe('StageHud', () => {
         onToggleMuted={vi.fn()}
         onToggleSimulationSpeed={onToggleSimulationSpeed}
         onOpenHelp={vi.fn()}
+        onShare={vi.fn()}
+        isShareReady
         onOpenSeed={vi.fn()}
         onOpenEncyclopedia={vi.fn()}
         onOpenRecipeTree={vi.fn()}
@@ -175,6 +212,8 @@ describe('StageHud', () => {
         onToggleMuted={vi.fn()}
         onToggleSimulationSpeed={onToggleSimulationSpeed}
         onOpenHelp={vi.fn()}
+        onShare={vi.fn()}
+        isShareReady
         onOpenSeed={vi.fn()}
         onOpenEncyclopedia={vi.fn()}
         onOpenRecipeTree={vi.fn()}
@@ -196,6 +235,8 @@ describe('StageHud', () => {
         onToggleMuted={vi.fn()}
         onToggleSimulationSpeed={vi.fn()}
         onOpenHelp={vi.fn()}
+        onShare={vi.fn()}
+        isShareReady
         onOpenSeed={vi.fn()}
         onOpenEncyclopedia={vi.fn()}
         onOpenRecipeTree={onOpenRecipeTree}
