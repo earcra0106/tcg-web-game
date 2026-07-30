@@ -10,7 +10,9 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import type { FoodId } from '../game/food.ts';
+import { getFoodInfo } from '../game/foods.ts';
 import type { StageHudView } from '../game/renderView.ts';
+import { FoodSprite } from './FoodSprite.tsx';
 
 type StageHudProps = {
   hud: StageHudView;
@@ -39,16 +41,13 @@ export function StageHud({
   onOpenEncyclopedia,
   onOpenRecipeTree,
 }: StageHudProps) {
-  const [areGoalsExpanded, setAreGoalsExpanded] = useState(false);
+  const [areGoalsExpanded, setAreGoalsExpanded] = useState(true);
   const currentGoal = hud.goals.find((goal) =>
     goal.stageNumbers.includes(hud.stageNumber),
   );
   const orderedGoals = currentGoal
     ? [currentGoal, ...hud.goals.filter((goal) => goal !== currentGoal)]
     : hud.goals;
-  const visibleGoals = areGoalsExpanded
-    ? orderedGoals
-    : orderedGoals.slice(0, 1);
 
   return (
     <section className="hud" aria-label="Game status">
@@ -115,45 +114,89 @@ export function StageHud({
         </div>
       </div>
       <div className="hud__goals" aria-label="目標一覧">
-        <div className="hud__goals-header">
+        <button
+          className="hud__goals-header"
+          type="button"
+          aria-expanded={areGoalsExpanded}
+          aria-label={
+            areGoalsExpanded ? '目標一覧を折りたたむ' : '目標一覧を展開する'
+          }
+          onClick={() => setAreGoalsExpanded((current) => !current)}
+        >
           <p className="hud__goals-title">10秒あたりの生産目標</p>
-          <button
-            className="hud__goals-toggle"
-            type="button"
-            aria-expanded={areGoalsExpanded}
-            aria-label={
-              areGoalsExpanded ? '目標一覧を折りたたむ' : '目標一覧を展開する'
-            }
-            onClick={() => setAreGoalsExpanded((current) => !current)}
-          >
+          <span className="hud__goals-toggle" aria-hidden="true">
             {areGoalsExpanded ? (
               <ChevronUp size={16} />
             ) : (
               <ChevronDown size={16} />
             )}
-          </button>
-        </div>
-        {visibleGoals.map((goal) => (
-          <button
-            key={goal.foodId}
-            type="button"
+          </span>
+        </button>
+        <div className="hud__goals-list">
+          {orderedGoals.slice(0, 1).map((goal) => (
+            <GoalCard
+              key={goal.foodId}
+              goal={goal}
+              onOpenRecipeTree={onOpenRecipeTree}
+            />
+          ))}
+          <div
             className={
-              goal.isCleared ? 'hud__goal hud__goal--cleared' : 'hud__goal'
+              areGoalsExpanded
+                ? 'hud__goals-additional hud__goals-additional--expanded'
+                : 'hud__goals-additional'
             }
-            aria-label={`${goal.foodName}のレシピツリーを開く`}
-            onClick={() => onOpenRecipeTree(goal.foodId)}
+            aria-hidden={!areGoalsExpanded}
           >
-            <span className="hud__goal-name">
-              {goal.foodName}
-              <small>Stage {goal.stageNumbers.join(', ')}</small>
-            </span>
-            <span className="hud__goal-efficiency">
-              {formatEfficiency(goal.currentEfficiency)} /{' '}
-              {formatEfficiency(goal.requiredEfficiency)}
-            </span>
-          </button>
-        ))}
+            <div className="hud__goals-additional-content">
+              {orderedGoals.slice(1).map((goal) => (
+                <GoalCard
+                  key={goal.foodId}
+                  goal={goal}
+                  onOpenRecipeTree={onOpenRecipeTree}
+                  tabIndex={areGoalsExpanded ? 0 : -1}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </section>
+  );
+}
+
+type GoalCardProps = {
+  goal: StageHudView['goals'][number];
+  onOpenRecipeTree: (foodId: FoodId) => void;
+  tabIndex?: 0 | -1;
+};
+
+function GoalCard({ goal, onOpenRecipeTree, tabIndex }: GoalCardProps) {
+  const food = getFoodInfo(goal.foodId);
+
+  return (
+    <div
+      className={goal.isCleared ? 'hud__goal hud__goal--cleared' : 'hud__goal'}
+    >
+      <button
+        className="icon-button icon-button--square hud__goal-recipe-button"
+        type="button"
+        aria-label={`${goal.foodName}のレシピツリーを開く`}
+        tabIndex={tabIndex}
+        onClick={() => onOpenRecipeTree(goal.foodId)}
+      >
+        {food ? (
+          <FoodSprite spriteId={food.spriteId} label={goal.foodName} />
+        ) : null}
+      </button>
+      <span className="hud__goal-name">
+        {goal.foodName}
+        <small>Stage {goal.stageNumbers.join(', ')}</small>
+      </span>
+      <span className="hud__goal-efficiency">
+        {formatEfficiency(goal.currentEfficiency)} /{' '}
+        {formatEfficiency(goal.requiredEfficiency)}
+      </span>
+    </div>
   );
 }
