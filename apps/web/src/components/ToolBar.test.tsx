@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ToolBar } from './ToolBar.tsx';
+import { ModeToolBar, ToolBar } from './ToolBar.tsx';
 
 describe('ToolBar', () => {
   beforeEach(() => {
@@ -68,5 +68,46 @@ describe('ToolBar', () => {
       kind: 'place-machine',
       machineId: 'cutter',
     });
+  });
+
+  it('marks and scrolls the requested placement tool for the tutorial', () => {
+    render(
+      <ToolBar
+        selectedTool={{ kind: 'select' }}
+        storageFoodIds={['rice']}
+        shippingFoodIds={[]}
+        tutorialArrowTarget={{
+          kind: 'tool',
+          machineId: 'storage',
+          foodId: 'rice',
+        }}
+        onSelectTool={vi.fn()}
+        onStartPlacementDrag={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: /倉庫/ })).toHaveAttribute(
+      'data-tutorial-anchor',
+      'active',
+    );
+    expect(screen.getByRole('button', { name: /倉庫/ })).toHaveAttribute(
+      'data-tutorial-scroll',
+      'true',
+    );
+  });
+
+  it('marks the requested mode tool for the tutorial', () => {
+    render(
+      <ModeToolBar
+        selectedTool={{ kind: 'select' }}
+        tutorialArrowTarget={{ kind: 'mode', tool: 'connect' }}
+        onSelectTool={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: 'コンベア' })).toHaveAttribute(
+      'data-tutorial-anchor',
+      'active',
+    );
   });
 });

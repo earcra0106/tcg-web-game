@@ -8,6 +8,7 @@ import type { FoodId } from '../game/food.ts';
 import { FOOD_SPRITESHEET_URL } from '../game/foodSprites.ts';
 import { MACHINE_SPRITESHEET_URL } from '../game/machineSprites.ts';
 import type { RenderView } from '../game/renderView.ts';
+import type { TutorialArrowTarget, TutorialEvent } from '../game/tutorial.ts';
 import { GameScene } from './GameScene.tsx';
 
 type PlaceMachineTool = Extract<EditorTool, { kind: 'place-machine' }>;
@@ -19,9 +20,11 @@ type GameCanvasProps = {
   dragPlacementTool: PlaceMachineTool | null;
   isDraggingPlacement: boolean;
   simulationSpeed: 1 | 2;
+  tutorialArrowTarget?: TutorialArrowTarget | null;
   onModelChange: (updater: (model: EditorModel) => EditorModel) => void;
   onPlacementDrop: () => void;
   onPlaySound: (soundId: GameSoundId) => void;
+  onTutorialEvent?: (event: TutorialEvent) => void;
 };
 
 useLoader.preload(TextureLoader, MACHINE_SPRITESHEET_URL);
@@ -34,9 +37,11 @@ export function GameCanvas({
   dragPlacementTool,
   isDraggingPlacement,
   simulationSpeed,
+  tutorialArrowTarget = null,
   onModelChange,
   onPlacementDrop,
   onPlaySound,
+  onTutorialEvent,
 }: GameCanvasProps) {
   return (
     <div className="game-canvas" aria-label="Game viewport">
@@ -51,9 +56,11 @@ export function GameCanvas({
           dragPlacementTool={dragPlacementTool}
           isDraggingPlacement={isDraggingPlacement}
           simulationSpeed={simulationSpeed}
+          tutorialArrowTarget={tutorialArrowTarget}
           onModelChange={onModelChange}
           onPlacementDrop={onPlacementDrop}
           onPlaySound={onPlaySound}
+          onTutorialEvent={onTutorialEvent}
         />
         <OrbitControls
           enablePan

@@ -127,6 +127,38 @@ describe('StageHud', () => {
     expect(onOpenHelp).toHaveBeenCalledOnce();
   });
 
+  it('toggles the tutorial from the button immediately before help', () => {
+    const onToggleTutorial = vi.fn();
+    render(
+      <StageHud
+        hud={hud}
+        isMuted={false}
+        simulationSpeed={1}
+        isTutorialEnabled={false}
+        onToggleTutorial={onToggleTutorial}
+        onToggleMuted={vi.fn()}
+        onToggleSimulationSpeed={vi.fn()}
+        onOpenHelp={vi.fn()}
+        onOpenSeed={vi.fn()}
+        onOpenEncyclopedia={vi.fn()}
+        onOpenRecipeTree={vi.fn()}
+      />,
+    );
+
+    const actions = screen
+      .getByLabelText('Game status')
+      .querySelector('.hud__actions');
+    expect(actions?.children[0]).toHaveAccessibleName(
+      'チュートリアルをオンにする',
+    );
+    expect(actions?.children[1]).toHaveAccessibleName('遊び方を開く');
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'チュートリアルをオンにする' }),
+    );
+    expect(onToggleTutorial).toHaveBeenCalledOnce();
+  });
+
   it('opens the seed value controls', () => {
     const onOpenSeed = vi.fn();
     render(
@@ -168,9 +200,9 @@ describe('StageHud', () => {
     const actions = screen
       .getByLabelText('Game status')
       .querySelector('.hud__actions');
-    expect(actions?.children[0]).toHaveAccessibleName('遊び方を開く');
-    expect(actions?.children[1]).toHaveAccessibleName('シェアを開く');
-    expect(actions?.children[2]).toHaveAccessibleName('シード値を開く');
+    expect(actions?.children[1]).toHaveAccessibleName('遊び方を開く');
+    expect(actions?.children[2]).toHaveAccessibleName('シェアを開く');
+    expect(actions?.children[3]).toHaveAccessibleName('シード値を開く');
 
     fireEvent.click(screen.getByRole('button', { name: 'シェアを開く' }));
     expect(onOpenShare).toHaveBeenCalledOnce();
@@ -236,5 +268,46 @@ describe('StageHud', () => {
 
     expect(screen.getByRole('img', { name: 'サラダ' })).toBeInTheDocument();
     expect(onOpenRecipeTree).toHaveBeenCalledWith('salad');
+  });
+
+  it('marks the requested goal UI as the tutorial arrow target', () => {
+    const { rerender } = render(
+      <StageHud
+        hud={hud}
+        isMuted={false}
+        simulationSpeed={1}
+        tutorialArrowTarget={{ kind: 'stage-goals' }}
+        onToggleMuted={vi.fn()}
+        onToggleSimulationSpeed={vi.fn()}
+        onOpenHelp={vi.fn()}
+        onOpenSeed={vi.fn()}
+        onOpenEncyclopedia={vi.fn()}
+        onOpenRecipeTree={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByLabelText('目標一覧')).toHaveAttribute(
+      'data-tutorial-anchor',
+      'active',
+    );
+
+    rerender(
+      <StageHud
+        hud={hud}
+        isMuted={false}
+        simulationSpeed={1}
+        tutorialArrowTarget={{ kind: 'goal-recipe', foodId: 'salad' }}
+        onToggleMuted={vi.fn()}
+        onToggleSimulationSpeed={vi.fn()}
+        onOpenHelp={vi.fn()}
+        onOpenSeed={vi.fn()}
+        onOpenEncyclopedia={vi.fn()}
+        onOpenRecipeTree={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.getByRole('button', { name: 'サラダのレシピツリーを開く' }),
+    ).toHaveAttribute('data-tutorial-anchor', 'active');
   });
 });

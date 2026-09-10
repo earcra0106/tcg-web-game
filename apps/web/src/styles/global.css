@@ -244,6 +244,11 @@ button.hud__goals-header:not(:disabled):active {
   background: #fff5f4;
 }
 
+.icon-button--tutorial-active {
+  border-color: #50b86b;
+  background: #f0fbf0;
+}
+
 .icon-button--quiet {
   box-shadow: none;
 }
@@ -734,6 +739,93 @@ button.hud__goals-header:not(:disabled):active {
   scrollbar-color: #e6d199 transparent;
 }
 
+.tutorial-guide__bubble {
+  position: absolute;
+  z-index: 3;
+  bottom: 184px;
+  left: max(16px, calc(50% - 450px));
+  width: min(520px, calc(100vw - 32px));
+  padding: 14px 16px;
+  border: 2px solid rgb(80 184 107 / 0.52);
+  border-radius: 14px;
+  color: #3b3028;
+  background: rgb(255 253 249 / 0.96);
+  box-shadow: 0 16px 40px rgb(92 64 42 / 0.18);
+  pointer-events: none;
+}
+
+.tutorial-guide__bubble::after {
+  position: absolute;
+  bottom: -10px;
+  left: 28px;
+  width: 16px;
+  height: 16px;
+  border-right: 2px solid rgb(80 184 107 / 0.52);
+  border-bottom: 2px solid rgb(80 184 107 / 0.52);
+  background: #fffdf9;
+  content: '';
+  transform: rotate(45deg);
+}
+
+.tutorial-guide__bubble p {
+  margin: 0;
+  font-size: clamp(0.82rem, 2vw, 0.96rem);
+  font-weight: 700;
+  line-height: 1.65;
+}
+
+.tutorial-guide__inline-icon {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.2em;
+  height: 1.2em;
+  vertical-align: -0.22em;
+}
+
+.tutorial-guide__inline-icon svg {
+  width: 1.1em;
+  height: 1.1em;
+}
+
+.tutorial-guide__beginner-icon {
+  line-height: 1;
+}
+
+.tutorial-guide__arrow {
+  position: fixed;
+  z-index: 6;
+  width: clamp(24px, 3.5vw, 34px);
+  height: auto;
+  pointer-events: none;
+  visibility: hidden;
+  animation: tutorial-arrow-blink 900ms ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.tutorial-world-anchor-wrapper,
+.tutorial-world-anchor {
+  pointer-events: none;
+}
+
+.tutorial-world-anchor {
+  display: block;
+  width: 58px;
+  height: 58px;
+}
+
+@keyframes tutorial-arrow-blink {
+  0%,
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+
+  50% {
+    opacity: 0.28;
+    transform: translate(-62%, -62%);
+  }
+}
+
 .tool-bar--scrollable {
   padding-bottom: 4px;
 }
@@ -1098,6 +1190,14 @@ button.hud__goals-header:not(:disabled):active {
     transform: none;
   }
 
+  .tutorial-guide__bubble {
+    right: 12px;
+    bottom: 180px;
+    left: 12px;
+    width: auto;
+    padding: 12px 14px;
+  }
+
   .hud__actions .icon-button:last-child span {
     display: none;
   }
@@ -1114,6 +1214,20 @@ button.hud__goals-header:not(:disabled):active {
       'header'
       'goals';
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hud__header {
+    min-width: 0;
+  }
+
+  .hud__actions {
+    max-width: calc(100vw - 32px);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .hud__actions::-webkit-scrollbar {
+    display: none;
   }
 }
 
@@ -1143,5 +1257,11 @@ button.hud__goals-header:not(:disabled):active {
 @media (prefers-reduced-motion: reduce) {
   button {
     transition: none;
+  }
+
+  .tutorial-guide__arrow {
+    opacity: 1;
+    animation: none;
+    transform: translate(-50%, -50%);
   }
 }

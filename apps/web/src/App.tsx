@@ -8,6 +8,7 @@ import { SeedModal } from './components/SeedModal.tsx';
 import { ShareModal } from './components/ShareModal.tsx';
 import { StageHud } from './components/StageHud.tsx';
 import { ModeToolBar, ToolBar } from './components/ToolBar.tsx';
+import { TutorialGuide } from './components/TutorialGuide.tsx';
 import { createGameAudioController, type GameSoundId } from './game/audio.ts';
 import { createInitialEditorModel } from './game/editorActions.ts';
 import { selectEditorTool, type EditorTool } from './game/editorState.ts';
@@ -25,6 +26,13 @@ import {
 } from './game/stageTools.ts';
 import { getStageGoal } from './game/stageGoals.ts';
 import { createDailySeed } from './game/seed.ts';
+import {
+  createInitialTutorialState,
+  createTutorialScenario,
+  createTutorialView,
+  reduceTutorial,
+  type TutorialEvent,
+} from './game/tutorial.ts';
 
 const TOOL_DRAG_THRESHOLD_PX = 6;
 
@@ -50,6 +58,14 @@ export function App() {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isSeedModalOpen, setIsSeedModalOpen] = useState(false);
   const [recipeTreeFoodId, setRecipeTreeFoodId] = useState<FoodId | null>(null);
+  const [tutorialState, setTutorialState] = useState(() =>
+    createInitialTutorialState(),
+  );
+  const [tutorialActionLabel, setTutorialActionLabel] = useState<
+    'タップ' | 'クリック'
+  >(() =>
+    window.matchMedia?.('(pointer: coarse)').matches ? 'タップ' : 'クリック',
+  );
   const [placementDrag, setPlacementDrag] = useState<PlacementDragState | null>(
     null,
   );
@@ -62,6 +78,14 @@ export function App() {
   const stageGoal = useMemo(
     () => getStageGoal({ seed, stageNumber }),
     [seed, stageNumber],
+  );
+  const tutorialScenario = useMemo(
+    () =>
+      createTutorialScenario(
+        getStageGoal({ seed, stageNumber: 1 }),
+        getStageGoal({ seed, stageNumber: 2 }),
+      ),
+    [seed],
   );
   const cumulativeStageGoals = useMemo(
     () =>
@@ -92,6 +116,31 @@ export function App() {
     () => getCraftableFoodIds(storageFoodIds),
     [storageFoodIds],
   );
+  const tutorialView = useMemo(
+    () =>
+      createTutorialView(
+        tutorialState,
+        tutorialScenario,
+        tutorialActionLabel,
+        model.editorState.selectedTool,
+      ),
+    [
+      model.editorState.selectedTool,
+      tutorialActionLabel,
+      tutorialScenario,
+      tutorialState,
+    ],
+  );
+  const tutorialArrowTarget = tutorialView?.arrowTarget ?? null;
+
+  const dispatchTutorialEvent = useCallback(
+    (event: TutorialEvent) => {
+      setTutorialState((current) =>
+        reduceTutorial(current, event, tutorialScenario),
+      );
+    },
+    [tutorialScenario],
+  );
 
   if (audioRef.current === null) {
     audioRef.current = createGameAudioController();
@@ -99,6 +148,22 @@ export function App() {
 
   const playSound = useCallback((soundId: GameSoundId) => {
     audioRef.current?.play(soundId);
+  }, []);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia?.('(pointer: coarse)');
+
+    if (mediaQuery === undefined) {
+      return;
+    }
+
+    const updateActionLabel = () => {
+      setTutorialActionLabel(mediaQuery.matches ? 'タップ' : 'クリック');
+    };
+
+    mediaQuery.addEventListener('change', updateActionLabel);
+
+    return () => mediaQuery.removeEventListener('change', updateActionLabel);
   }, []);
 
   useEffect(() => {
@@ -205,6 +270,10 @@ export function App() {
 
     lastClearedStageRef.current = renderView.hud.stageNumber;
     playSound('success');
+    dispatchTutorialEvent({
+      type: 'stage-cleared',
+      stageNumber: renderView.hud.stageNumber,
+    });
     setModel((current) => ({
       ...current,
       gameState: {
@@ -212,7 +281,12 @@ export function App() {
         stageIndex: current.gameState.stageIndex + 1,
       },
     }));
-  }, [playSound, renderView.hud.isCleared, renderView.hud.stageNumber]);
+  }, [
+    dispatchTutorialEvent,
+    playSound,
+    renderView.hud.isCleared,
+    renderView.hud.stageNumber,
+  ]);
 
   if (screen === 'encyclopedia') {
     return (
@@ -235,6 +309,24 @@ export function App() {
     setIsSeedModalOpen(false);
   };
 
+  const selectTool = (tool: EditorTool) => {
+    playSound('select');
+    setModel((current) => ({
+      ...current,
+      editorState: selectEditorTool(current.editorState, tool),
+    }));
+    dispatchTutorialEvent({ type: 'tool-selected', tool });
+  };
+
+  const openRecipeTree = (foodId: FoodId) => {
+    setRecipeTreeFoodId(foodId);
+    dispatchTutorialEvent({
+      type: 'goal-recipe-opened',
+      stageNumber,
+      foodId,
+    });
+  };
+
   return (
     <main className="app-shell">
       <GameCanvas
@@ -244,6 +336,7 @@ export function App() {
         dragPlacementTool={placementDrag?.tool ?? null}
         isDraggingPlacement={placementDrag?.isDragging === true}
         simulationSpeed={simulationSpeed}
+        tutorialArrowTarget={tutorialArrowTarget}
         onModelChange={(updater) => {
           setModel((current) => updater(current));
         }}
@@ -251,11 +344,15 @@ export function App() {
           setPlacementDrag(null);
         }}
         onPlaySound={playSound}
+        onTutorialEvent={dispatchTutorialEvent}
       />
       <StageHud
         hud={renderView.hud}
         isMuted={isMuted}
         simulationSpeed={simulationSpeed}
+        isTutorialEnabled={tutorialState.isEnabled}
+        tutorialArrowTarget={tutorialArrowTarget}
+        onToggleTutorial={() => dispatchTutorialEvent({ type: 'toggle' })}
         onOpenHelp={() => setIsHelpModalOpen(true)}
         onOpenShare={() => setIsShareModalOpen(true)}
         onOpenSeed={() => setIsSeedModalOpen(true)}
@@ -268,7 +365,7 @@ export function App() {
           setSimulationSpeed((current) => (current === 1 ? 2 : 1));
         }}
         onOpenEncyclopedia={() => setScreen('encyclopedia')}
-        onOpenRecipeTree={setRecipeTreeFoodId}
+        onOpenRecipeTree={openRecipeTree}
       />
       {isHelpModalOpen ? (
         <HelpModal onClose={() => setIsHelpModalOpen(false)} />
@@ -294,23 +391,15 @@ export function App() {
           onClose={() => setRecipeTreeFoodId(null)}
         />
       ) : null}
+      <TutorialGuide view={tutorialView} />
       <ToolBar
         selectedTool={model.editorState.selectedTool}
         storageFoodIds={storageFoodIds}
         shippingFoodIds={shippingFoodIds}
-        onSelectTool={(tool) => {
-          playSound('select');
-          setModel((current) => ({
-            ...current,
-            editorState: selectEditorTool(current.editorState, tool),
-          }));
-        }}
+        tutorialArrowTarget={tutorialArrowTarget}
+        onSelectTool={selectTool}
         onStartPlacementDrag={(tool, event) => {
-          playSound('select');
-          setModel((current) => ({
-            ...current,
-            editorState: selectEditorTool(current.editorState, tool),
-          }));
+          selectTool(tool);
           setPlacementDrag({
             tool,
             pointerId: event.pointerId,
@@ -322,13 +411,8 @@ export function App() {
       />
       <ModeToolBar
         selectedTool={model.editorState.selectedTool}
-        onSelectTool={(tool) => {
-          playSound('select');
-          setModel((current) => ({
-            ...current,
-            editorState: selectEditorTool(current.editorState, tool),
-          }));
-        }}
+        tutorialArrowTarget={tutorialArrowTarget}
+        onSelectTool={selectTool}
       />
     </main>
   );

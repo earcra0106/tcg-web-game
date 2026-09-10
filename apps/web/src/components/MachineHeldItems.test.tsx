@@ -207,4 +207,12 @@ describe('MachineHeldItems', () => {
 
     expect(onParentWheel).not.toHaveBeenCalled();
   });
+
+  it('marks the recipe button as the tutorial arrow target', () => {
+    renderMachineHeldItems({ showTutorialRecipeArrow: true });
+
+    expect(
+      screen.getByRole('button', { name: '製造する食べ物を選択' }),
+    ).toHaveAttribute('data-tutorial-anchor', 'active');
+  });
 });

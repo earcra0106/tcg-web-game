@@ -16,6 +16,7 @@ type MachineHeldItemsProps = {
   selectedRecipeId: FoodId | null;
   craftableFoodIds: readonly FoodId[];
   onSelectRecipe: (recipeId: FoodId | null) => void;
+  showTutorialRecipeArrow?: boolean;
 };
 
 function ProcessingBorder({ progress }: { progress: number }) {
@@ -62,6 +63,7 @@ export function MachineHeldItems({
   selectedRecipeId,
   craftableFoodIds,
   onSelectRecipe,
+  showTutorialRecipeArrow = false,
 }: MachineHeldItemsProps) {
   const [isRecipeSelectorOpen, setIsRecipeSelectorOpen] = useState(false);
   const inputItems = items
@@ -178,6 +180,9 @@ export function MachineHeldItems({
             data-empty={processingItem === undefined && selectedFood === null}
             aria-label="製造する食べ物を選択"
             aria-expanded={isRecipeSelectorOpen}
+            data-tutorial-anchor={
+              showTutorialRecipeArrow ? 'active' : undefined
+            }
             onPointerDown={(event) => event.stopPropagation()}
             onPointerUp={(event) => event.stopPropagation()}
             onClick={() => setIsRecipeSelectorOpen((current) => !current)}
