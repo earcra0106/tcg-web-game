@@ -817,12 +817,12 @@ button.hud__goals-header:not(:disabled):active {
   0%,
   100% {
     opacity: 1;
-    transform: translate(-100%, -50%);
+    transform: translate(-50%, -50%);
   }
 
   50% {
     opacity: 0.28;
-    transform: translate(-112%, -62%);
+    transform: translate(-62%, -62%);
   }
 }
 
@@ -1262,6 +1262,6 @@ button.hud__goals-header:not(:disabled):active {
   .tutorial-guide__arrow {
     opacity: 1;
     animation: none;
-    transform: translate(-100%, -50%);
+    transform: translate(-50%, -50%);
   }
 }
