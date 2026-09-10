@@ -486,7 +486,7 @@ export function createTutorialView(
           line(text('おみごとです！次のステージの目標に挑戦してみましょう。')),
           line(
             text(
-              `レシピが分からなくなったら、ここを${actionLabel}してレシピを確認できます。`,
+              `レシピが分からなくなったら、ステージ目標を${actionLabel}してレシピを確認できます。`,
             ),
           ),
         ],
@@ -515,7 +515,7 @@ export function createTutorialView(
       return {
         step: 15,
         lines: [
-          line(text(`ここを${actionLabel}して、加工する料理を指定できます。`)),
+          line(text(`加工する料理を指定できます。`)),
           line(
             text(
               `他の料理を間違えて作りたくないときに役立ちますよ！ 今回は\u3000${stageTwo.targetFoodName}を指定すればよさそうです。`,
