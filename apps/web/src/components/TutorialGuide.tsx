@@ -65,7 +65,7 @@ function TutorialArrow({ view }: { view: TutorialView }) {
         }
 
         const rect = target.getBoundingClientRect();
-        arrow.style.left = `${rect.left}px`;
+        arrow.style.left = `${rect.right}px`;
         arrow.style.top = `${rect.bottom}px`;
         arrow.style.visibility = 'visible';
       }

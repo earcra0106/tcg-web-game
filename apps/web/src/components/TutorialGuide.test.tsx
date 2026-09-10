@@ -39,7 +39,7 @@ describe('TutorialGuide', () => {
 
     const target = document.createElement('button');
     target.dataset.tutorialAnchor = 'active';
-    target.getBoundingClientRect = () => ({ left: 30, bottom: 80 }) as DOMRect;
+    target.getBoundingClientRect = () => ({ right: 70, bottom: 80 }) as DOMRect;
     document.body.append(target);
 
     const { container } = render(<TutorialGuide view={view} />);
@@ -47,7 +47,7 @@ describe('TutorialGuide', () => {
     const arrow = container.querySelector<HTMLImageElement>(
       '.tutorial-guide__arrow',
     );
-    expect(arrow?.style.left).toBe('30px');
+    expect(arrow?.style.left).toBe('70px');
     expect(arrow?.style.top).toBe('80px');
     expect(arrow?.style.visibility).toBe('visible');
 
