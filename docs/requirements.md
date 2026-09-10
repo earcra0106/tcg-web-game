@@ -151,9 +151,9 @@ Voxel Kitchen Automation（ボクセル・キッチン・オートメーショ�
 ```text
 apps/web
 ├── public
-│   ├── favicon.svg
-│   ├── pwa-192.svg
-│   └── pwa-512.svg
+│   ├── favicon.ico
+│   ├── pwa-192.png
+│   └── pwa-512.png
 ├── src
 │   ├── components
 │   │   └── GameCanvas.tsx
@@ -197,13 +197,15 @@ PWA は `vite-plugin-pwa` により生成する。手書きの `manifest.json` �
 
 ### Manifest 設定方針
 
-- アプリ名: Voxel Kitchen Automation
-- short name: VoxelKitchen
+- 言語: 日本語
+- アプリ名: cookers! Factory Game
+- short name: cookers!
+- 説明: 加工ラインを構築して料理を生産するゲーム。限界に挑戦しよう。
 - display: standalone
-- orientation: landscape
+- orientation: portrait
 - background color: `#F4EAE1`
-- theme color: `#A8DADC`
-- アイコン: `public` 配下の PWA 用アイコンを参照する
+- theme color: `#F4EAE1`
+- アイコン: `public/pwa-192.png` と `public/pwa-512.png` を参照する
 
 ## 8. 品質要件
 

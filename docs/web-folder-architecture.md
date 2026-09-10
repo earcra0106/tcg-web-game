@@ -9,9 +9,9 @@
 ```text
 apps/web
 ├── public
-│   ├── favicon.svg
-│   ├── pwa-192.svg
-│   └── pwa-512.svg
+│   ├── favicon.ico
+│   ├── pwa-192.png
+│   └── pwa-512.png
 ├── src
 │   ├── components
 │   │   └── GameCanvas.tsx
