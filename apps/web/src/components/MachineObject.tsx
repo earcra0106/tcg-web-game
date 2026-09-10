@@ -1,4 +1,5 @@
 import type { ThreeEvent } from '@react-three/fiber';
+import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import type { FoodId } from '../game/food.ts';
 import { getFoodInfo } from '../game/foods.ts';
@@ -27,6 +28,8 @@ type MachineObjectProps = {
   craftableFoodIds: readonly FoodId[];
   selectedRecipeId: FoodId | null;
   onSelectRecipe: (recipeId: FoodId | null) => void;
+  showTutorialMachineArrow?: boolean;
+  showTutorialRecipeArrow?: boolean;
   showHeldItems?: boolean;
   opacity?: number;
   isInteractive?: boolean;
@@ -129,6 +132,8 @@ export function MachineObject({
   craftableFoodIds,
   selectedRecipeId,
   onSelectRecipe,
+  showTutorialMachineArrow = false,
+  showTutorialRecipeArrow = false,
   showHeldItems = false,
   opacity = 1,
   isInteractive = true,
@@ -160,6 +165,20 @@ export function MachineObject({
       }
       userData={{ label }}
     >
+      {showTutorialMachineArrow ? (
+        <Html
+          center
+          position={[0, MACHINE_SPRITE_Y, 0]}
+          zIndexRange={[9, 0]}
+          wrapperClass="tutorial-world-anchor-wrapper"
+        >
+          <span
+            className="tutorial-world-anchor"
+            data-tutorial-anchor="active"
+            aria-hidden="true"
+          />
+        </Html>
+      ) : null}
       <mesh
         position={[0, MACHINE_BASE_Y, 0]}
         renderOrder={MACHINE_RENDER_ORDER}
@@ -241,6 +260,7 @@ export function MachineObject({
           selectedRecipeId={selectedRecipeId}
           craftableFoodIds={craftableFoodIds}
           onSelectRecipe={onSelectRecipe}
+          showTutorialRecipeArrow={showTutorialRecipeArrow}
         />
       ) : null}
     </group>

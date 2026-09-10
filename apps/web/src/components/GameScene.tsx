@@ -15,6 +15,7 @@ import type { GridPosition } from '../game/grid.ts';
 import { hasMachineInventory } from '../game/machine.ts';
 import { findMachineById, type PlacementId } from '../game/placement.ts';
 import type { RenderView } from '../game/renderView.ts';
+import type { TutorialArrowTarget, TutorialEvent } from '../game/tutorial.ts';
 import { ConveyorObject } from './ConveyorObject.tsx';
 import { FoodItemObject } from './FoodItemObject.tsx';
 import { MachineObject } from './MachineObject.tsx';
@@ -43,9 +44,11 @@ type GameSceneProps = {
   dragPlacementTool: PlaceMachineTool | null;
   isDraggingPlacement: boolean;
   simulationSpeed: 1 | 2;
+  tutorialArrowTarget?: TutorialArrowTarget | null;
   onModelChange: (updater: (model: EditorModel) => EditorModel) => void;
   onPlacementDrop: () => void;
   onPlaySound: (soundId: GameSoundId) => void;
+  onTutorialEvent?: (event: TutorialEvent) => void;
 };
 
 function toGridPosition(event: ThreeEvent<PointerEvent>) {
@@ -88,9 +91,11 @@ export function GameScene({
   dragPlacementTool,
   isDraggingPlacement,
   simulationSpeed,
+  tutorialArrowTarget = null,
   onModelChange,
   onPlacementDrop,
   onPlaySound,
+  onTutorialEvent,
 }: GameSceneProps) {
   const activePointerIdsRef = useRef(new Set<number>());
   const pressStateRef = useRef<PressState | null>(null);
@@ -116,6 +121,7 @@ export function GameScene({
   const updateModelWithSound = (
     updater: (current: EditorModel) => EditorModel,
     getSound: (current: EditorModel, next: EditorModel) => GameSoundId | null,
+    onUpdated?: (current: EditorModel, next: EditorModel) => void,
   ) => {
     const next = updater(model);
     const sound = getSound(model, next);
@@ -125,6 +131,65 @@ export function GameScene({
     }
 
     onModelChange(() => next);
+    onUpdated?.(model, next);
+  };
+
+  const notifyPlacedMachine = (current: EditorModel, next: EditorModel) => {
+    if (next.gameState.machines.length <= current.gameState.machines.length) {
+      return;
+    }
+
+    const currentIds = new Set(
+      current.gameState.machines.map((machine) => machine.id),
+    );
+    const machine = next.gameState.machines.find(
+      (candidate) => !currentIds.has(candidate.id),
+    );
+
+    if (machine !== undefined) {
+      onTutorialEvent?.({ type: 'machine-placed', machine });
+    }
+  };
+
+  const notifyMachineClick = (
+    machineId: PlacementId,
+    current: EditorModel,
+    next: EditorModel,
+  ) => {
+    const currentConnectionIds = new Set(
+      current.gameState.connections.map((connection) => connection.id),
+    );
+    const connection = next.gameState.connections.find(
+      (candidate) => !currentConnectionIds.has(candidate.id),
+    );
+
+    if (connection !== undefined) {
+      onTutorialEvent?.({
+        type: 'connection-created',
+        connectionId: connection.id,
+        fromMachineId: connection.fromMachineId,
+        toMachineId: connection.toMachineId,
+      });
+      return;
+    }
+
+    if (
+      current.editorState.connectionSourceMachineId === null &&
+      next.editorState.connectionSourceMachineId === machineId
+    ) {
+      onTutorialEvent?.({ type: 'connection-source-selected', machineId });
+      return;
+    }
+
+    const machine = findMachineById(next.gameState.machines, machineId);
+
+    if (
+      current.editorState.selectedTool.kind === 'select' &&
+      next.gameState.selection.selectedMachineId === machineId &&
+      machine !== null
+    ) {
+      onTutorialEvent?.({ type: 'machine-selected', machine });
+    }
   };
 
   const beginPress = (event: ThreeEvent<PointerEvent>, target: PressTarget) => {
@@ -229,6 +294,7 @@ export function GameScene({
                 current.gameState.machines.length
                   ? 'confirm'
                   : 'reject',
+              notifyPlacedMachine,
             );
             onPlacementDrop();
             return;
@@ -245,6 +311,7 @@ export function GameScene({
               next.gameState.selection.selectedMachineId
                 ? 'select'
                 : null,
+            notifyPlacedMachine,
           );
         }}
         onPointerLeave={() => {
@@ -327,10 +394,26 @@ export function GameScene({
           }
           onSelectRecipe={(recipeId) => {
             onPlaySound('select');
-            onModelChange((current) =>
-              setMachineRecipe(current, machineView.machine.id, recipeId),
+            const next = setMachineRecipe(
+              model,
+              machineView.machine.id,
+              recipeId,
             );
+            onModelChange(() => next);
+            onTutorialEvent?.({
+              type: 'recipe-selected',
+              machineId: machineView.machine.id,
+              recipeId,
+            });
           }}
+          showTutorialMachineArrow={
+            tutorialArrowTarget?.kind === 'machine' &&
+            tutorialArrowTarget.machineId === machineView.machine.id
+          }
+          showTutorialRecipeArrow={
+            tutorialArrowTarget?.kind === 'machine-recipe' &&
+            tutorialArrowTarget.machineId === machineView.machine.id
+          }
           showHeldItems={
             model.editorState.selectedTool.kind === 'select' &&
             selectedMachineId === machineView.machine.id &&
@@ -378,6 +461,7 @@ export function GameScene({
                   ? 'select'
                   : null;
               },
+              (current, next) => notifyMachineClick(machineId, current, next),
             );
           }}
         />

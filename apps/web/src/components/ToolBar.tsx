@@ -7,12 +7,14 @@ import { getFoodInfo } from '../game/foods.ts';
 import type { FoodId } from '../game/food.ts';
 import { machineInfos, type MachineId } from '../game/machine.ts';
 import type { EditorTool } from '../game/editorState.ts';
+import type { TutorialArrowTarget } from '../game/tutorial.ts';
 import { useHorizontalScroll } from './useHorizontalScroll.ts';
 
 type ToolBarProps = {
   selectedTool: EditorTool;
   storageFoodIds: readonly FoodId[];
   shippingFoodIds: readonly FoodId[];
+  tutorialArrowTarget?: TutorialArrowTarget | null;
   onSelectTool: (tool: EditorTool) => void;
   onStartPlacementDrag: (
     tool: Extract<EditorTool, { kind: 'place-machine' }>,
@@ -41,6 +43,7 @@ function ToolButton({
   children,
   onSelectTool,
   onStartPlacementDrag,
+  showTutorialArrow,
 }: {
   tool: EditorTool;
   selectedTool: EditorTool;
@@ -51,6 +54,7 @@ function ToolButton({
     tool: Extract<EditorTool, { kind: 'place-machine' }>,
     event: PointerEvent<HTMLButtonElement>,
   ) => void;
+  showTutorialArrow: boolean;
 }) {
   const shouldSuppressClickRef = useRef(false);
 
@@ -59,6 +63,8 @@ function ToolButton({
       className="tool-button"
       type="button"
       aria-pressed={getToolKey(tool) === getToolKey(selectedTool)}
+      data-tutorial-anchor={showTutorialArrow ? 'active' : undefined}
+      data-tutorial-scroll={showTutorialArrow ? 'true' : undefined}
       onPointerDown={(event) => {
         if (
           tool.kind === 'place-machine' &&
@@ -90,12 +96,14 @@ function ModeToolButton({
   label,
   children,
   onSelectTool,
+  showTutorialArrow,
 }: {
   tool: Extract<EditorTool, { kind: 'select' | 'connect' | 'delete' }>;
   selectedTool: EditorTool;
   label: string;
   children: ReactNode;
   onSelectTool: (tool: EditorTool) => void;
+  showTutorialArrow: boolean;
 }) {
   return (
     <button
@@ -103,6 +111,7 @@ function ModeToolButton({
       type="button"
       aria-label={label}
       aria-pressed={getToolKey(tool) === getToolKey(selectedTool)}
+      data-tutorial-anchor={showTutorialArrow ? 'active' : undefined}
       onClick={() => onSelectTool(tool)}
       title={label}
     >
@@ -114,9 +123,11 @@ function ModeToolButton({
 export function ModeToolBar({
   selectedTool,
   onSelectTool,
+  tutorialArrowTarget = null,
 }: {
   selectedTool: EditorTool;
   onSelectTool: (tool: EditorTool) => void;
+  tutorialArrowTarget?: TutorialArrowTarget | null;
 }) {
   return (
     <section className="mode-tool-bar" aria-label="編集モード">
@@ -125,6 +136,10 @@ export function ModeToolBar({
         selectedTool={selectedTool}
         label="選択"
         onSelectTool={onSelectTool}
+        showTutorialArrow={
+          tutorialArrowTarget?.kind === 'mode' &&
+          tutorialArrowTarget.tool === 'select'
+        }
       >
         <MousePointer2 aria-hidden="true" size={18} />
       </ModeToolButton>
@@ -133,6 +148,10 @@ export function ModeToolBar({
         selectedTool={selectedTool}
         label="コンベア"
         onSelectTool={onSelectTool}
+        showTutorialArrow={
+          tutorialArrowTarget?.kind === 'mode' &&
+          tutorialArrowTarget.tool === 'connect'
+        }
       >
         <MoveUpRight aria-hidden="true" size={18} />
       </ModeToolButton>
@@ -141,6 +160,7 @@ export function ModeToolBar({
         selectedTool={selectedTool}
         label="削除"
         onSelectTool={onSelectTool}
+        showTutorialArrow={false}
       >
         <Trash2 aria-hidden="true" size={18} />
       </ModeToolButton>
@@ -152,6 +172,7 @@ export function ToolBar({
   selectedTool,
   storageFoodIds,
   shippingFoodIds,
+  tutorialArrowTarget = null,
   onSelectTool,
   onStartPlacementDrag,
 }: ToolBarProps) {
@@ -187,6 +208,11 @@ export function ToolBar({
             label="倉庫"
             onSelectTool={onSelectTool}
             onStartPlacementDrag={onStartPlacementDrag}
+            showTutorialArrow={
+              tutorialArrowTarget?.kind === 'tool' &&
+              tutorialArrowTarget.machineId === 'storage' &&
+              tutorialArrowTarget.foodId === foodId
+            }
           >
             <span className="tool-button__icon tool-button__storage">
               <FoodSprite spriteId={food.spriteId} label={food.name} />
@@ -213,6 +239,11 @@ export function ToolBar({
             label="出荷口"
             onSelectTool={onSelectTool}
             onStartPlacementDrag={onStartPlacementDrag}
+            showTutorialArrow={
+              tutorialArrowTarget?.kind === 'tool' &&
+              tutorialArrowTarget.machineId === 'shipping' &&
+              tutorialArrowTarget.foodId === foodId
+            }
           >
             <span className="tool-button__icon tool-button__shipping">
               <FoodSprite spriteId={food.spriteId} label={food.name} />
@@ -235,6 +266,11 @@ export function ToolBar({
             label={machine.name}
             onSelectTool={onSelectTool}
             onStartPlacementDrag={onStartPlacementDrag}
+            showTutorialArrow={
+              tutorialArrowTarget?.kind === 'tool' &&
+              tutorialArrowTarget.machineId === machine.id &&
+              tutorialArrowTarget.foodId === undefined
+            }
           >
             <span className="tool-button__icon tool-button__machine">
               <MachineSprite machineId={machine.id} label={machine.name} />

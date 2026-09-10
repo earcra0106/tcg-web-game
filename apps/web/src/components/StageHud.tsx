@@ -13,15 +13,19 @@ import { useState } from 'react';
 import type { FoodId } from '../game/food.ts';
 import { getFoodInfo } from '../game/foods.ts';
 import type { StageHudView } from '../game/renderView.ts';
+import type { TutorialArrowTarget } from '../game/tutorial.ts';
 import { FoodSprite } from './FoodSprite.tsx';
 
 type StageHudProps = {
   hud: StageHudView;
   isMuted: boolean;
   simulationSpeed: 1 | 2;
+  isTutorialEnabled?: boolean;
+  tutorialArrowTarget?: TutorialArrowTarget | null;
   onToggleMuted: () => void;
   onToggleSimulationSpeed: () => void;
   onOpenHelp: () => void;
+  onToggleTutorial?: () => void;
   onOpenShare?: () => void;
   onOpenSeed: () => void;
   onOpenEncyclopedia: () => void;
@@ -36,9 +40,12 @@ export function StageHud({
   hud,
   isMuted,
   simulationSpeed,
+  isTutorialEnabled = true,
+  tutorialArrowTarget = null,
   onToggleMuted,
   onToggleSimulationSpeed,
   onOpenHelp,
+  onToggleTutorial = () => {},
   onOpenShare,
   onOpenSeed,
   onOpenEncyclopedia,
@@ -56,6 +63,23 @@ export function StageHud({
     <section className="hud" aria-label="Game status">
       <div className="hud__header">
         <div className="hud__actions">
+          <button
+            className={
+              isTutorialEnabled
+                ? 'icon-button icon-button--square icon-button--tutorial-active'
+                : 'icon-button icon-button--square'
+            }
+            type="button"
+            aria-label={
+              isTutorialEnabled
+                ? 'チュートリアルをオフにする'
+                : 'チュートリアルをオンにする'
+            }
+            aria-pressed={isTutorialEnabled}
+            onClick={onToggleTutorial}
+          >
+            <span aria-hidden="true">🔰</span>
+          </button>
           <button
             className="icon-button icon-button--square"
             type="button"
@@ -118,7 +142,13 @@ export function StageHud({
           </button>
         </div>
       </div>
-      <div className="hud__goals" aria-label="目標一覧">
+      <div
+        className="hud__goals"
+        aria-label="目標一覧"
+        data-tutorial-anchor={
+          tutorialArrowTarget?.kind === 'stage-goals' ? 'active' : undefined
+        }
+      >
         <button
           className="hud__goals-header"
           type="button"
@@ -145,6 +175,10 @@ export function StageHud({
               key={goal.foodId}
               goal={goal}
               onOpenRecipeTree={onOpenRecipeTree}
+              showTutorialArrow={
+                tutorialArrowTarget?.kind === 'goal-recipe' &&
+                tutorialArrowTarget.foodId === goal.foodId
+              }
             />
           ))}
           <div
@@ -162,6 +196,10 @@ export function StageHud({
                   goal={goal}
                   onOpenRecipeTree={onOpenRecipeTree}
                   tabIndex={areGoalsExpanded ? 0 : -1}
+                  showTutorialArrow={
+                    tutorialArrowTarget?.kind === 'goal-recipe' &&
+                    tutorialArrowTarget.foodId === goal.foodId
+                  }
                 />
               ))}
             </div>
@@ -176,9 +214,15 @@ type GoalCardProps = {
   goal: StageHudView['goals'][number];
   onOpenRecipeTree: (foodId: FoodId) => void;
   tabIndex?: 0 | -1;
+  showTutorialArrow?: boolean;
 };
 
-function GoalCard({ goal, onOpenRecipeTree, tabIndex }: GoalCardProps) {
+function GoalCard({
+  goal,
+  onOpenRecipeTree,
+  tabIndex,
+  showTutorialArrow = false,
+}: GoalCardProps) {
   const food = getFoodInfo(goal.foodId);
 
   return (
@@ -190,6 +234,7 @@ function GoalCard({ goal, onOpenRecipeTree, tabIndex }: GoalCardProps) {
         type="button"
         aria-label={`${goal.foodName}のレシピツリーを開く`}
         tabIndex={tabIndex}
+        data-tutorial-anchor={showTutorialArrow ? 'active' : undefined}
         onClick={() => onOpenRecipeTree(goal.foodId)}
       >
         {food ? (
