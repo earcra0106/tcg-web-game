@@ -3,6 +3,7 @@ import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
+  envPrefix: ['VITE_', 'GA_ID'],
   plugins: [
     react(),
     VitePWA({
