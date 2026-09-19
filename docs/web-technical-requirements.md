@@ -96,3 +96,7 @@ Vercel の project root は `apps/web` に設定します。
 - Build Command: `pnpm build`
 - Output Directory: `dist`
 - Framework Preset: Vite
+
+### Google Analytics 4
+
+Vercel の環境変数 `GA_ID` に GA4 の測定 ID（`G-` から始まる値）を設定します。Vite がビルド時に `apps/web/index.html` の `%GA_ID%` を置換し、Google タグを全ページで読み込みます。
